@@ -1,0 +1,121 @@
+@import url("https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&display=swap");
+@import "tailwindcss";
+
+:root {
+  color-scheme: light;
+  --font-display: var(
+    --font-manrope,
+    var(--font-noto-sans),
+    "Manrope",
+    "Noto Sans",
+    "PingFang TC",
+    "Microsoft JhengHei",
+    sans-serif
+  );
+  --color-primary: #13ec5b;
+  --color-primary-dark: #0ea841;
+  --color-background-light: #f6f8f6;
+  --color-background-dark: #f6f8f6;
+  --color-surface-light: #ffffff;
+  --color-surface-dark: #ffffff;
+  --color-text-main: #0d1b12;
+  --color-text-sub: #4c9a66;
+  --color-border-light: #cfe7d7;
+  --color-border-dark: #cfe7d7;
+  --color-forest: #1f402a;
+}
+
+:root.dark,
+.dark :root {
+  color-scheme: dark;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-display, "Manrope", sans-serif);
+  background-color: var(--color-background-light);
+  color: var(--color-text-main);
+  min-height: 100vh;
+}
+
+.dark body {
+  background-color: var(--color-background-dark);
+  color: #ffffff;
+}
+
+:where(.font-display) {
+  font-family: var(--font-display);
+}
+
+:where(.material-symbols-outlined) {
+  font-family: "Material Symbols Outlined";
+  font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24;
+}
+
+:where(.animate-fade-in) {
+  animation: fade-in 0.2s ease-out both;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Token utility fallbacks to keep legacy class names working */
+:where(.text-text-main) {
+  color: var(--color-text-main);
+}
+:where(.text-text-sub) {
+  color: var(--color-text-sub);
+}
+:where(.text-forest) {
+  color: var(--color-forest);
+}
+:where(.text-primary) {
+  color: var(--color-primary);
+}
+:where(.text-primary-dark) {
+  color: var(--color-primary-dark);
+}
+:where(.bg-background-light) {
+  background-color: var(--color-background-light);
+}
+:where(.bg-background-dark) {
+  background-color: var(--color-background-dark);
+}
+:where(.bg-surface-light) {
+  background-color: var(--color-surface-light);
+}
+:where(.bg-surface-dark) {
+  background-color: var(--color-surface-dark);
+}
+:where(.bg-primary) {
+  background-color: var(--color-primary);
+}
+:where(.bg-primary-dark) {
+  background-color: var(--color-primary-dark);
+}
+:where(.bg-text-main) {
+  background-color: var(--color-text-main);
+}
+:where(.border-border-light) {
+  border-color: var(--color-border-light);
+}
+:where(.border-border-dark) {
+  border-color: var(--color-border-dark);
+}
+:where(.text-text-main\/70) {
+  color: color-mix(in srgb, var(--color-text-main) 70%, transparent);
+}
+:where(.text-text-main\/80) {
+  color: color-mix(in srgb, var(--color-text-main) 80%, transparent);
+}
