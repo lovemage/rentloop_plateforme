@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+
+<html class="light" lang="zh-Hant">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Rentaloop - 擁抱體驗，何必佔有</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&amp;display=swap" rel="stylesheet" />
+    <!-- Material Symbols -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <!-- Theme Configuration -->
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#13ec5b",
+                        "primary-dark": "#0ea841",
+                        "background-light": "#f6f8f6",
+                        "background-dark": "#102216",
+                        "surface-light": "#ffffff",
+                        "surface-dark": "#1a3322",
+                        "text-main": "#0d1b12",
+                        "text-sub": "#4c9a66",
+                    },
+                    fontFamily: {
+                        "display": ["Manrope", "Noto Sans", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "2xl": "1rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+    <style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+
+<body
+    class="bg-background-light dark:bg-background-dark text-text-main dark:text-white font-display transition-colors duration-200">
+    <div class="relative flex min-h-screen w-full flex-col overflow-x-hidden">
+        <!-- Header -->
+        <header
+            class="sticky top-0 z-50 flex items-center justify-between whitespace-nowrap border-b border-solid border-b-[#e7f3eb] dark:border-b-[#1f402a] px-4 lg:px-10 py-3 bg-surface-light/90 dark:bg-surface-dark/90 backdrop-blur-md">
+            <div class="flex items-center gap-4 md:gap-8">
+                <!-- Hamburger Button -->
+                <button id="mobile-menu-btn"
+                    class="md:hidden flex items-center justify-center text-text-main dark:text-white">
+                    <span class="material-symbols-outlined text-3xl">menu</span>
+                </button>
+
+                <a href="../index.html" class="flex items-center gap-3 text-text-main dark:text-white cursor-pointer">
+                    <span class="material-symbols-outlined text-primary text-3xl">recycling</span>
+                    <h2 class="text-lg font-bold leading-tight tracking-[-0.015em]">Rentaloop DEMO</h2>
+                </a>
+                <nav class="hidden md:flex items-center gap-9">
+                    <a class="text-sm font-medium hover:text-primary transition-colors" href="../index.html">Home</a>
+                    <a class="text-sm font-medium hover:text-primary transition-colors"
+                        href="../products/code.html">Products</a>
+                    <a class="text-sm font-medium hover:text-primary transition-colors"
+                        href="../contact/code.html">Contact</a>
+                    <a class="text-sm font-medium hover:text-primary transition-colors"
+                        href="../member/code.html">Member</a>
+                    <a class="text-sm font-medium hover:text-primary transition-colors"
+                        href="../upload/code.html">Upload</a>
+                </nav>
+            </div>
+            <div class="flex flex-1 justify-end gap-4 md:gap-8">
+                <label class="hidden md:flex flex-col min-w-40 h-10 max-w-64">
+                    <div
+                        class="flex w-full flex-1 items-stretch rounded-lg h-full bg-[#e7f3eb] dark:bg-[#1f402a] focus-within:ring-2 focus-within:ring-primary/50 transition-all">
+                        <div
+                            class="text-text-sub dark:text-green-400 flex items-center justify-center pl-4 rounded-l-lg">
+                            <span class="material-symbols-outlined text-[20px]">search</span>
+                        </div>
+                        <input
+                            class="flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg rounded-l-none border-none bg-transparent text-text-main dark:text-white focus:outline-0 focus:ring-0 placeholder:text-text-sub dark:placeholder:text-green-400 px-4 pl-2 text-sm font-normal"
+                            placeholder="搜尋裝備..." value="" />
+                    </div>
+                </label>
+                <div class="flex gap-2">
+                    <button
+                        class="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-primary hover:bg-primary-dark transition-colors text-text-main text-sm font-bold">
+                        <span class="truncate">開始租賃</span>
+                    </button>
+                    <button
+                        class="hidden sm:flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-[#e7f3eb] dark:bg-[#1f402a] hover:bg-[#d5eadd] dark:hover:bg-[#2a5538] transition-colors text-text-main dark:text-white text-sm font-bold">
+                        <span class="truncate">登入</span>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Mobile Menu Overlay (outside header to avoid sticky backdrop issues) -->
+        <div id="mobile-menu"
+            class="fixed inset-0 z-[100] hidden bg-background-light dark:bg-background-dark flex-col animate-fade-in">
+            <div class="flex items-center justify-between px-4 py-3 border-b border-[#e7f3eb] dark:border-[#1f402a]">
+                <a href="../index.html" class="flex items-center gap-3">
+                    <span class="material-symbols-outlined text-primary text-3xl">recycling</span>
+                    <h2 class="text-lg font-bold text-text-main dark:text-white">Rentaloop DEMO</h2>
+                </a>
+                <button id="close-menu-btn"
+                    class="p-2 text-text-main dark:text-white hover:text-primary transition-colors">
+                    <span class="material-symbols-outlined text-3xl">close</span>
+                </button>
+            </div>
+            <nav class="flex flex-col p-6 gap-2">
+                <a href="../index.html"
+                    class="flex items-center justify-between p-4 rounded-xl hover:bg-[#e7f3eb] dark:hover:bg-[#1f402a] text-text-main dark:text-white transition-all group">
+                    <span class="text-lg font-bold">Home</span>
+                    <span
+                        class="material-symbols-outlined text-text-sub group-hover:text-primary">arrow_forward_ios</span>
+                </a>
+                <a href="../products/code.html"
+                    class="flex items-center justify-between p-4 rounded-xl hover:bg-[#e7f3eb] dark:hover:bg-[#1f402a] text-text-main dark:text-white transition-all group">
+                    <span class="text-lg font-bold">Products</span>
+                    <span
+                        class="material-symbols-outlined text-text-sub group-hover:text-primary">arrow_forward_ios</span>
+                </a>
+                <a href="../contact/code.html"
+                    class="flex items-center justify-between p-4 rounded-xl hover:bg-[#e7f3eb] dark:hover:bg-[#1f402a] text-text-main dark:text-white transition-all group">
+                    <span class="text-lg font-bold">Contact</span>
+                    <span
+                        class="material-symbols-outlined text-text-sub group-hover:text-primary">arrow_forward_ios</span>
+                </a>
+                <a href="../member/code.html"
+                    class="flex items-center justify-between p-4 rounded-xl hover:bg-[#e7f3eb] dark:hover:bg-[#1f402a] text-text-main dark:text-white transition-all group">
+                    <span class="text-lg font-bold">Member</span>
+                    <span
+                        class="material-symbols-outlined text-text-sub group-hover:text-primary">arrow_forward_ios</span>
+                </a>
+                <a href="../upload/code.html"
+                    class="flex items-center justify-between p-4 rounded-xl hover:bg-[#e7f3eb] dark:hover:bg-[#1f402a] text-text-main dark:text-white transition-all group">
+                    <span class="text-lg font-bold">Upload</span>
+                    <span
+                        class="material-symbols-outlined text-text-sub group-hover:text-primary">arrow_forward_ios</span>
+                </a>
+
+                <div class="h-px bg-[#e7f3eb] dark:bg-[#1f402a] my-2"></div>
+
+                <button
+                    class="w-full flex items-center justify-center gap-2 p-4 rounded-xl bg-[#e7f3eb] dark:bg-[#1f402a] text-text-main dark:text-white font-bold hover:bg-[#d5eadd] dark:hover:bg-[#2a5538] transition-colors">
+                    <span class="material-symbols-outlined">login</span>
+                    登入
+                </button>
+            </nav>
+        </div>
+
+        <script>
+            const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+            const closeMenuBtn = document.getElementById('close-menu-btn');
+            const mobileMenu = document.getElementById('mobile-menu');
+
+            function toggleMenu() {
+                const isHidden = mobileMenu.classList.contains('hidden');
+                if (isHidden) {
+                    mobileMenu.classList.remove('hidden');
+                    mobileMenu.classList.add('flex');
+                    document.body.style.overflow = 'hidden'; // Prevent scrolling
+                } else {
+                    mobileMenu.classList.add('hidden');
+                    mobileMenu.classList.remove('flex');
+                    document.body.style.overflow = ''; // Restore scrolling
+                }
+            }
+
+            mobileMenuBtn.addEventListener('click', toggleMenu);
+            closeMenuBtn.addEventListener('click', toggleMenu);
+        </script>
+        <!-- Main Content -->
+        <main class="flex flex-col items-center">
+            <!-- Hero Section -->
+            <section class="w-full max-w-[1280px] px-4 md:px-10 py-5">
+                <div class="w-full rounded-2xl overflow-hidden relative min-h-[560px] flex items-center justify-center text-center p-6 md:p-12 group"
+                    data-alt="Happy people camping outdoors with rented gear, sunlight filtering through trees"
+                    style='background-image: linear-gradient(rgba(0, 0, 0, 0.2) 0%, rgba(0, 0, 0, 0.6) 100%), url("https://lh3.googleusercontent.com/aida-public/AB6AXuDTBPvJJQMMJ_r6epTr33NaItdolKC0lJ2vtXkCgBRVHKf5ibNgR9fGm7YvRATfVAiSCXG2R6erxAeH-AIMGNYHyv9PaUBHor69DF3JAKls2QUhOSvk3IzkoXoSHszd_hNrExcM4EkRFzcqryorEGDY8QflTqBSqMzGggmMLDMU_CR_jQXzKgjU-piZmfz75A_ogiMouI9YRGebhSM9S7b6aDAtbCpB-xLNheKgcXUYH-n2NBZpfT5-pxBE6cDHQcTQO8nZHbIR"); background-size: cover; background-position: center;'>
+                    <div class="relative z-10 flex flex-col gap-6 max-w-3xl items-center">
+                        <h1
+                            class="text-white text-4xl md:text-6xl font-black leading-tight tracking-tight drop-shadow-sm">
+                            擁抱體驗，<br class="md:hidden" />何必佔有
+                        </h1>
+                        <h2
+                            class="text-white/90 text-base md:text-xl font-medium leading-relaxed max-w-2xl drop-shadow-md">
+                            加入循環經濟的行列。租賃優質裝備，不僅能省下開銷，更能透過減少浪費為地球盡一份心力。
+                        </h2>
+                        <div class="flex flex-col sm:flex-row gap-3 mt-4">
+                            <button
+                                class="flex items-center justify-center rounded-lg h-12 px-8 bg-primary hover:bg-primary-dark text-text-main text-base font-bold transition-all transform hover:scale-105 shadow-lg shadow-primary/30">
+                                立即開始租賃
+                            </button>
+                            <button
+                                class="flex items-center justify-center rounded-lg h-12 px-8 bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/30 text-white text-base font-bold transition-all">
+                                了解運作方式
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            <!-- Stats Section -->
+            <section class="w-full max-w-[1280px] px-4 md:px-10 py-8">
+                <div class="flex flex-wrap gap-4 justify-center">
+                    <div
+                        class="flex min-w-[200px] flex-1 flex-col gap-2 rounded-xl p-6 border border-[#cfe7d7] dark:border-[#1f402a] bg-surface-light dark:bg-surface-dark shadow-sm">
+                        <div class="flex items-center gap-3 mb-2">
+                            <div class="p-2 rounded-full bg-primary/10 text-primary">
+                                <span class="material-symbols-outlined">delete_outline</span>
+                            </div>
+                            <p class="text-text-main dark:text-gray-200 text-base font-medium">廢棄物減量</p>
+                        </div>
+                        <p class="text-text-main dark:text-white text-3xl font-bold tracking-tight">15,000 kg</p>
+                        <p
+                            class="text-[#078829] dark:text-primary text-sm font-bold bg-[#e7f3eb] dark:bg-primary/20 w-fit px-2 py-0.5 rounded">
+                            +12% 同比增長</p>
+                    </div>
+                    <div
+                        class="flex min-w-[200px] flex-1 flex-col gap-2 rounded-xl p-6 border border-[#cfe7d7] dark:border-[#1f402a] bg-surface-light dark:bg-surface-dark shadow-sm">
+                        <div class="flex items-center gap-3 mb-2">
+                            <div class="p-2 rounded-full bg-primary/10 text-primary">
+                                <span class="material-symbols-outlined">sync_alt</span>
+                            </div>
+                            <p class="text-text-main dark:text-gray-200 text-base font-medium">物品流通次數</p>
+                        </div>
+                        <p class="text-text-main dark:text-white text-3xl font-bold tracking-tight">50,000+</p>
+                        <p
+                            class="text-[#078829] dark:text-primary text-sm font-bold bg-[#e7f3eb] dark:bg-primary/20 w-fit px-2 py-0.5 rounded">
+                            +25% 活躍度</p>
+                    </div>
+                    <div
+                        class="flex min-w-[200px] flex-1 flex-col gap-2 rounded-xl p-6 border border-[#cfe7d7] dark:border-[#1f402a] bg-surface-light dark:bg-surface-dark shadow-sm">
+                        <div class="flex items-center gap-3 mb-2">
+                            <div class="p-2 rounded-full bg-primary/10 text-primary">
+                                <span class="material-symbols-outlined">co2</span>
+                            </div>
+                            <p class="text-text-main dark:text-gray-200 text-base font-medium">碳排放減少</p>
+                        </div>
+                        <p class="text-text-main dark:text-white text-3xl font-bold tracking-tight">8,500 kg</p>
+                        <p
+                            class="text-[#078829] dark:text-primary text-sm font-bold bg-[#e7f3eb] dark:bg-primary/20 w-fit px-2 py-0.5 rounded">
+                            +10% 貢獻值</p>
+                    </div>
+                </div>
+            </section>
+            <!-- Features / Why Rent? -->
+            <section class="w-full max-w-[960px] px-4 py-16">
+                <div class="flex flex-col gap-12">
+                    <div class="flex flex-col gap-4 text-center items-center">
+                        <span class="text-primary font-bold tracking-wider uppercase text-sm">我們的價值主張</span>
+                        <h2 class="text-text-main dark:text-white text-3xl md:text-4xl font-black leading-tight">
+                            為什麼選擇租賃？
+                        </h2>
+                        <p class="text-text-main/70 dark:text-gray-300 text-lg max-w-[600px]">
+                            從「擁有」轉向「使用」。探索循環經濟模式帶來的便利與環保效益。
+                        </p>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <!-- Feature 1 -->
+                        <div
+                            class="flex flex-col gap-4 rounded-2xl border border-[#cfe7d7] dark:border-[#1f402a] bg-surface-light dark:bg-surface-dark p-6 hover:shadow-lg transition-shadow duration-300">
+                            <div
+                                class="size-12 rounded-full bg-primary/20 flex items-center justify-center text-primary-dark dark:text-primary">
+                                <span class="material-symbols-outlined text-3xl">home</span>
+                            </div>
+                            <div class="flex flex-col gap-2">
+                                <h3 class="text-text-main dark:text-white text-xl font-bold">釋放居家空間</h3>
+                                <p class="text-text-sub dark:text-gray-400 text-sm leading-relaxed">
+                                    只在需要時使用物品，讓家裡不再堆滿一年只用一次的裝備。享受極簡生活。
+                                </p>
+                            </div>
+                        </div>
+                        <!-- Feature 2 -->
+                        <div
+                            class="flex flex-col gap-4 rounded-2xl border border-[#cfe7d7] dark:border-[#1f402a] bg-surface-light dark:bg-surface-dark p-6 hover:shadow-lg transition-shadow duration-300">
+                            <div
+                                class="size-12 rounded-full bg-primary/20 flex items-center justify-center text-primary-dark dark:text-primary">
+                                <span class="material-symbols-outlined text-3xl">eco</span>
+                            </div>
+                            <div class="flex flex-col gap-2">
+                                <h3 class="text-text-main dark:text-white text-xl font-bold">永續環保選擇</h3>
+                                <p class="text-text-sub dark:text-gray-400 text-sm leading-relaxed">
+                                    每次租賃都能減少製造新產品的碳排放與資源消耗，直接為地球減負。
+                                </p>
+                            </div>
+                        </div>
+                        <!-- Feature 3 -->
+                        <div
+                            class="flex flex-col gap-4 rounded-2xl border border-[#cfe7d7] dark:border-[#1f402a] bg-surface-light dark:bg-surface-dark p-6 hover:shadow-lg transition-shadow duration-300">
+                            <div
+                                class="size-12 rounded-full bg-primary/20 flex items-center justify-center text-primary-dark dark:text-primary">
+                                <span class="material-symbols-outlined text-3xl">payments</span>
+                            </div>
+                            <div class="flex flex-col gap-2">
+                                <h3 class="text-text-main dark:text-white text-xl font-bold">經濟實惠聰明</h3>
+                                <p class="text-text-sub dark:text-gray-400 text-sm leading-relaxed">
+                                    以零售價的一小部分體驗頂級產品，把省下的錢花在更美好的體驗上。
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            <!-- How It Works (Custom Component) -->
+            <section class="w-full bg-[#e7f3eb]/30 dark:bg-surface-dark/50 py-16">
+                <div class="max-w-[1280px] mx-auto px-4 md:px-10">
+                    <div class="flex flex-col md:flex-row gap-8 items-center justify-between mb-12">
+                        <h2 class="text-text-main dark:text-white text-3xl font-black">簡單四步，開啟循環生活</h2>
+                        <a class="text-primary hover:text-primary-dark font-bold flex items-center gap-1" href="#">
+                            查看完整指南 <span class="material-symbols-outlined text-sm">arrow_forward</span>
+                        </a>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 relative">
+                        <!-- Step 1 -->
+                        <div class="flex flex-col items-center text-center p-4 relative z-10">
+                            <div
+                                class="w-16 h-16 rounded-full bg-surface-light dark:bg-[#2a5538] border-2 border-primary flex items-center justify-center mb-4 shadow-sm">
+                                <span class="material-symbols-outlined text-3xl text-primary">search</span>
+                            </div>
+                            <h4 class="text-lg font-bold mb-2 dark:text-white">瀏覽與預訂</h4>
+                            <p class="text-sm text-text-sub dark:text-gray-400">在我們的目錄中找到您需要的裝備，選擇日期。</p>
+                        </div>
+                        <!-- Step 2 -->
+                        <div class="flex flex-col items-center text-center p-4 relative z-10">
+                            <div
+                                class="w-16 h-16 rounded-full bg-surface-light dark:bg-[#2a5538] border-2 border-primary flex items-center justify-center mb-4 shadow-sm">
+                                <span class="material-symbols-outlined text-3xl text-primary">inventory_2</span>
+                            </div>
+                            <h4 class="text-lg font-bold mb-2 dark:text-white">接收與使用</h4>
+                            <p class="text-sm text-text-sub dark:text-gray-400">我們將物品直接送到您手中，盡情享受體驗。</p>
+                        </div>
+                        <!-- Step 3 -->
+                        <div class="flex flex-col items-center text-center p-4 relative z-10">
+                            <div
+                                class="w-16 h-16 rounded-full bg-surface-light dark:bg-[#2a5538] border-2 border-primary flex items-center justify-center mb-4 shadow-sm">
+                                <span class="material-symbols-outlined text-3xl text-primary">autorenew</span>
+                            </div>
+                            <h4 class="text-lg font-bold mb-2 dark:text-white">輕鬆歸還</h4>
+                            <p class="text-sm text-text-sub dark:text-gray-400">使用完畢後，將物品放回包裝盒，我們負責收回。</p>
+                        </div>
+                        <!-- Step 4 -->
+                        <div class="flex flex-col items-center text-center p-4 relative z-10">
+                            <div
+                                class="w-16 h-16 rounded-full bg-surface-light dark:bg-[#2a5538] border-2 border-primary flex items-center justify-center mb-4 shadow-sm">
+                                <span class="material-symbols-outlined text-3xl text-primary">cleaning_services</span>
+                            </div>
+                            <h4 class="text-lg font-bold mb-2 dark:text-white">專業翻新</h4>
+                            <p class="text-sm text-text-sub dark:text-gray-400">我們進行專業清潔與維護，讓物品煥然一新，準備下一次旅程。</p>
+                        </div>
+                        <!-- Connector Line (Desktop) -->
+                        <div
+                            class="hidden lg:block absolute top-12 left-0 w-full h-0.5 bg-gray-200 dark:bg-gray-700 -z-0 transform translate-y-[-50%]">
+                        </div>
+                    </div>
+                </div>
+            </section>
+            <!-- SDGs Commitment -->
+            <section class="w-full max-w-[960px] px-4 py-16">
+                <div class="flex flex-col gap-10">
+                    <div class="flex flex-col gap-4">
+                        <h2 class="text-text-main dark:text-white text-3xl md:text-4xl font-black leading-tight">
+                            我們對 SDGs 的承諾
+                        </h2>
+                        <p class="text-text-main/70 dark:text-gray-300 text-base max-w-[720px]">
+                            RentCycle 的核心使命與聯合國永續發展目標 (SDGs) 高度一致，我們致力於創造一個負責任的未來。
+                        </p>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                        <!-- Goal 12 -->
+                        <div class="group flex flex-col gap-4">
+                            <div class="w-full aspect-video bg-cover bg-center rounded-xl overflow-hidden shadow-sm"
+                                data-alt="Close up of hands repairing an electronic device, representing responsible consumption"
+                                style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDkoJVaNkuUJpqSqpsjfefIJfPKNnBcvGY-1tSPH0cpO1VtdBxx4I9ezwD1siRvGpPyNKufpdGwlLoCtgTUMZLb4_o96brXoCWYYMlBumm8ohN9r33RfEdnC76aJysIEHq4OjhVx9ff6bdvpSn3Vy4UzVKGPe5BQkUkDMIuVo4SM2s5sBDuLG5VRGO4LusFO6g2EXxZxMqbFjz_G9OqCnZ48tbUDTC61krnwNKiiGyYEYADIuKo9qW28OyGOlpRe6QRHrqRH3o6");'>
+                                <div class="w-full h-full bg-black/10 group-hover:bg-black/0 transition-colors"></div>
+                            </div>
+                            <div>
+                                <p class="text-text-main dark:text-white text-lg font-bold leading-normal mb-1">目標
+                                    12：負責任的消費與生產</p>
+                                <p class="text-text-sub dark:text-gray-400 text-sm font-normal leading-relaxed">
+                                    透過延長產品生命週期與共享模式，確保永續的消費模式，減少過度生產。
+                                </p>
+                            </div>
+                        </div>
+                        <!-- Goal 13 -->
+                        <div class="group flex flex-col gap-4">
+                            <div class="w-full aspect-video bg-cover bg-center rounded-xl overflow-hidden shadow-sm"
+                                data-alt="A small green plant growing from soil held in hands, representing climate action"
+                                style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuD2zRYJ8leExYoogwCA29kg1mOOoeTKI4qoN0toTA4FCysnUumVC0G5VozCWKuXsZ_E-04wZJXY3kmy0oWzHhdvsNcRdn2-SMZyk7hXMF0nnrhXlp4zLOL1SneH7-lYN7i_jaQl0wZRPx0DJwcR5ZA6qdwx5PTgYRiDL5EF3M0tjiEcTSFHIqFaoNeu_V1F8mw7S4Bx8v1myFZXpX0xZk_2-YhxdXPDIDiAsPARi2_Qv8o4mRF1D24g6xLsTEQlKwpONs9NQdrm");'>
+                                <div class="w-full h-full bg-black/10 group-hover:bg-black/0 transition-colors"></div>
+                            </div>
+                            <div>
+                                <p class="text-text-main dark:text-white text-lg font-bold leading-normal mb-1">目標
+                                    13：氣候行動</p>
+                                <p class="text-text-sub dark:text-gray-400 text-sm font-normal leading-relaxed">
+                                    採取緊急行動應對氣候變遷，透過資源效率化減少碳足跡。
+                                </p>
+                            </div>
+                        </div>
+                        <!-- Goal 11 -->
+                        <div class="group flex flex-col gap-4">
+                            <div class="w-full aspect-video bg-cover bg-center rounded-xl overflow-hidden shadow-sm"
+                                data-alt="Modern city skyline with green park in foreground, representing sustainable cities"
+                                style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBBvDmMunigSJTmTJ2EhqqA1FAowiMsFqsTjT-xOR86qkJc81rjeeaXxPN7X5EvASiFkqOsXnje1R_a161XiG3ng24-VtX1PpoMY8lVHUmM_umj0ChCdDgzembXlR7M5bV_DRj4UOf3ZDPPDkkpOFlAEavFFKDxXlwe-l-MCZUYunTPhPO2HRWlYHigs_w2EccdPOuSHLDyDG-AUEBBBiRAwZtuESKk61zXa1hRRLP9hN3NfCdIDnQHfINHdC0iVcas_6HTP8Gx");'>
+                                <div class="w-full h-full bg-black/10 group-hover:bg-black/0 transition-colors"></div>
+                            </div>
+                            <div>
+                                <p class="text-text-main dark:text-white text-lg font-bold leading-normal mb-1">目標
+                                    11：永續城市</p>
+                                <p class="text-text-sub dark:text-gray-400 text-sm font-normal leading-relaxed">
+                                    減少城市廢棄物，讓我們的社區更加包容、安全、有韌性且永續。
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            <!-- CTA Footer Banner -->
+            <section class="w-full max-w-[1280px] px-4 md:px-10 py-10 mb-10">
+                <div
+                    class="w-full bg-text-main dark:bg-[#0a160e] rounded-2xl p-8 md:p-16 text-center flex flex-col items-center gap-6 shadow-2xl relative overflow-hidden">
+                    <!-- Decorate Circles -->
+                    <div
+                        class="absolute top-0 left-0 w-64 h-64 bg-primary/10 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2">
+                    </div>
+                    <div
+                        class="absolute bottom-0 right-0 w-64 h-64 bg-primary/10 rounded-full blur-3xl translate-x-1/2 translate-y-1/2">
+                    </div>
+                    <h2 class="relative z-10 text-white text-3xl md:text-5xl font-black tracking-tight">準備好改變生活方式了嗎？
+                    </h2>
+                    <p class="relative z-10 text-gray-300 text-lg max-w-xl">加入數千名使用者的行列，開始體驗更聰明、更環保的生活。</p>
+                    <button
+                        class="relative z-10 mt-4 flex min-w-[160px] cursor-pointer items-center justify-center rounded-lg h-12 px-8 bg-primary hover:bg-white hover:text-text-main transition-colors text-text-main text-base font-bold">
+                        免費註冊
+                    </button>
+                </div>
+            </section>
+        </main>
+        <!-- Footer -->
+        <footer
+            class="border-t border-[#e7f3eb] dark:border-[#1f402a] bg-surface-light dark:bg-surface-dark py-12 px-4 md:px-10">
+            <div class="max-w-[1280px] mx-auto flex flex-col md:flex-row justify-between gap-10">
+                <div class="flex flex-col gap-4">
+                    <div class="flex items-center gap-2 text-text-main dark:text-white">
+                        <span class="material-symbols-outlined text-primary">recycling</span>
+                        <h2 class="text-lg font-bold">RentCycle</h2>
+                    </div>
+                    <p class="text-text-sub dark:text-gray-400 text-sm max-w-[300px]">
+                        我們致力於打造一個共享、永續的未來。透過租賃，讓每個人都能享受高品質生活，同時守護地球。
+                    </p>
+                </div>
+                <div class="flex gap-12 flex-wrap">
+                    <div class="flex flex-col gap-3">
+                        <h4 class="text-text-main dark:text-white font-bold">平台</h4>
+                        <a class="text-text-sub dark:text-gray-400 text-sm hover:text-primary transition-colors"
+                            href="#">關於我們</a>
+                        <a class="text-text-sub dark:text-gray-400 text-sm hover:text-primary transition-colors"
+                            href="#">運作流程</a>
+                        <a class="text-text-sub dark:text-gray-400 text-sm hover:text-primary transition-colors"
+                            href="#">定價方案</a>
+                    </div>
+                    <div class="flex flex-col gap-3">
+                        <h4 class="text-text-main dark:text-white font-bold">支援</h4>
+                        <a class="text-text-sub dark:text-gray-400 text-sm hover:text-primary transition-colors"
+                            href="#">常見問題</a>
+                        <a class="text-text-sub dark:text-gray-400 text-sm hover:text-primary transition-colors"
+                            href="#">聯絡客服</a>
+                        <a class="text-text-sub dark:text-gray-400 text-sm hover:text-primary transition-colors"
+                            href="#">隱私政策</a>
+                    </div>
+                    <div class="flex flex-col gap-3">
+                        <h4 class="text-text-main dark:text-white font-bold">社群</h4>
+                        <a class="text-text-sub dark:text-gray-400 text-sm hover:text-primary transition-colors"
+                            href="#">Instagram</a>
+                        <a class="text-text-sub dark:text-gray-400 text-sm hover:text-primary transition-colors"
+                            href="#">Facebook</a>
+                        <a class="text-text-sub dark:text-gray-400 text-sm hover:text-primary transition-colors"
+                            href="#">Blog</a>
+                    </div>
+                </div>
+            </div>
+            <div
+                class="max-w-[1280px] mx-auto mt-12 pt-8 border-t border-[#e7f3eb] dark:border-[#2a5538] text-center md:text-left">
+                <p class="text-text-sub dark:text-gray-500 text-xs">© 2023 RentCycle Inc. All rights reserved.</p>
+            </div>
+        </footer>
+    </div>
+</body>
+
+</html>

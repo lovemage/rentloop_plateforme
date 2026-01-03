@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>網站開發報價單 - Mr. Rex</title>
+    <style>
+        body {
+            font-family: "Helvetica Neue", Helvetica, Arial, "Microsoft JhengHei", sans-serif;
+            font-size: 12px;
+            line-height: 1.5;
+            color: #000;
+            background-color: #fff;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            border: 1px solid #000;
+            padding: 20px;
+        }
+        h1 {
+            font-size: 20px;
+            text-align: center;
+            margin: 0 0 15px 0;
+            border-bottom: 2px solid #000;
+            padding-bottom: 10px;
+        }
+        .header-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            font-size: 11px;
+        }
+        .section-title {
+            font-weight: bold;
+            font-size: 14px;
+            border-bottom: 1px solid #000;
+            margin-top: 20px;
+            margin-bottom: 10px;
+            padding-bottom: 3px;
+            background-color: #f9f9f9;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 15px;
+            font-size: 11px;
+        }
+        th, td {
+            border: 1px solid #000;
+            padding: 8px;
+            text-align: left;
+            vertical-align: top;
+        }
+        th {
+            background-color: #f0f0f0;
+            font-weight: bold;
+            text-align: center;
+        }
+        .no-border-table td {
+            border: none;
+            padding: 3px 0;
+        }
+        .text-right {
+            text-align: right;
+        }
+        .text-center {
+            text-align: center;
+        }
+        .footer {
+            text-align: center;
+            font-size: 10px;
+            margin-top: 30px;
+            border-top: 1px solid #000;
+            padding-top: 10px;
+            color: #555;
+        }
+        ul {
+            margin: 0;
+            padding-left: 18px;
+        }
+        li {
+            margin-bottom: 4px;
+        }
+        .highlight {
+            color: #d9534f;
+            font-weight: bold;
+        }
+        .sub-point {
+            margin-top: 5px;
+            font-style: italic;
+            color: #444;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>網站開發報價單</h1>
+
+    <div class="header-info">
+        <div>
+            <strong>報價日期：</strong> 2025年 12月 30日<br>
+            <strong>報價編號：</strong> REX-2025-1230
+        </div>
+        <div class="text-right">
+            <strong>服務提供商：</strong> 海水不可斗量工作室<br>
+            <strong>負責人：</strong> Ivan Bai | 0912-305-910
+        </div>
+    </div>
+
+    <!-- 1. 專案雙方資訊 -->
+    <table style="border: none;">
+        <tr>
+            <td style="width: 50%; border: none; padding-right: 10px;">
+                <div class="section-title" style="margin-top: 0;">1. 服務提供商 (Provider)</div>
+                <table class="no-border-table">
+                    <tr><td><strong>公司名稱：</strong> 海水不可斗量工作室 (Oceanads.org)</td></tr>
+                    <tr><td><strong>負責人：</strong> Ivan Bai</td></tr>
+                    <tr><td><strong>電話：</strong> 0912-305-910</td></tr>
+                    <tr><td><strong>Email：</strong> support@oceanads.org</td></tr>
+                    <tr><td><strong>地址：</strong> 臺中市西區中興街183號四樓</td></tr>
+                </table>
+            </td>
+            <td style="width: 50%; border: none; padding-left: 10px;">
+                <div class="section-title" style="margin-top: 0;">2. 客戶資訊 (Client)</div>
+                <table class="no-border-table">
+                    <tr><td><strong>客戶名稱：</strong> Mr. Rex</td></tr>
+                    <tr><td><strong>專案名稱：</strong> Rentaloop 平台開發與部署</td></tr>
+                    <tr><td><strong>聯絡人：</strong> Mr. Rex</td></tr>
+                    <tr><td><strong>Email：</strong> (待補)</td></tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+
+    <!-- 3. 技術架構與功能規劃 -->
+    <div class="section-title">3. 專案技術架構與功能規劃 (Technical & Functional Scope)</div>
+    <div style="margin-bottom: 20px;">
+        <h3 style="font-size: 14px; margin: 10px 0;">3.1 核心功能模組 (Feature Modules)</h3>
+        <ul>
+            <li><strong>使用者認證與管理：</strong>註冊/登入/登出、社群登入、個人資料編輯、實名認證。</li>
+            <li><strong>商品管理系統：</strong>物品上架、瀏覽、進階搜尋、多維度篩選 (類別/價格/狀況)、排序、收藏功能。</li>
+            <li><strong>租賃交易系統：</strong>租賃預訂、訂單狀態管理 (待確認/租賃中/已歸還/已完成)、費用計算、歷史訂單查詢。</li>
+            <li><strong>會員中心與儀表板：</strong>個人活動數據 (租借數/減碳量)、庫存管理、當前租借、交易歷史、評價系統。</li>
+            <li><strong>支援與客服：</strong>常見問題分類、聯絡表單/工單系統。</li>
+        </ul>
+
+        <h3 style="font-size: 14px; margin: 10px 0;">3.2 建議 API 架構 (Proposed API Endpoints)</h3>
+        <table style="font-size: 11px;">
+            <thead>
+                <tr>
+                    <th style="width: 20%;">模組</th>
+                    <th>主要 API 接口</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>認證 (Auth)</strong></td>
+                    <td>Register, Login, Logout, Current User Profile</td>
+                </tr>
+                <tr>
+                    <td><strong>使用者 (User)</strong></td>
+                    <td>Profile (Get/Update), Inventory, Active Rentals, History, Reviews</td>
+                </tr>
+                <tr>
+                    <td><strong>物品 (Items)</strong></td>
+                    <td>List (Search/Filter), Detail, Create/Update/Delete, Favorite, Upload Image</td>
+                </tr>
+                <tr>
+                    <td><strong>租賃 (Rentals)</strong></td>
+                    <td>Create Order, Get Detail, Update Status</td>
+                </tr>
+                <tr>
+                    <td><strong>系統 (System)</strong></td>
+                    <td>Platform Stats, Support Ticket</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 style="font-size: 14px; margin: 10px 0;">3.3 數位資產自主權與半自助服務 (Semi-Self-Service & Asset Ownership)</h3>
+        <p style="margin-bottom: 10px;">
+            本工作室提倡<strong>「半自助服務」</strong>模式，旨在協助客戶直接持有核心數位資產。此舉確保您不會因委託開發而被收取第三方服務的代管溢價，且在未來若需更換維護團隊時，能擁有完整的資產控制權與無痛交接。
+            <br><span class="sub-point">我們將提供完整教學協助您申請以下服務，完成後將這些帳號的 API Key 提供給我們進行開發整合：</span>
+        </p>
+        <ul>
+            <li>
+                <strong>Supabase (Backend/Database)：</strong>
+                <br>現代化的開源資料庫服務 (BaaS)。提供強大的 PostgreSQL 資料庫、使用者認證 (Auth) 與即時訂閱功能。免費層級通常已足夠初期專案使用。
+            </li>
+            <li>
+                <strong>Vercel (Hosting/Deployment)：</strong>
+                <br>專為前端框架設計的託管平台。提供全球 CDN 加速、自動化部署 (CI/CD) 與極致的加載速度，確保網站運作流暢。
+            </li>
+            <li>
+                <strong>Cloudflare R2 (Object Storage)：</strong>
+                <br>用於儲存使用者上傳的圖片與檔案。相容於 AWS S3 但<strong>無流量傳輸費 (Egress Fees)</strong>，能大幅降低長期營運成本。
+            </li>
+            <li>
+                <strong>Domain Service (Namecheap / GoDaddy)：</strong>
+                <br>網域註冊商。用於購買與管理您的品牌網址 (如 rentaloop.com)，確保品牌資產完全歸您所有。
+            </li>
+        </ul>
+    </div>
+
+    <!-- 4. 專案報價細項 (Project Breakdown) -->
+    <div class="section-title">4. 專案報價細項 (Project Breakdown)</div>
+    <table>
+        <thead>
+            <tr>
+                <th style="width: 25%;">項目細節</th>
+                <th>規格說明</th>
+                <th style="width: 15%;">費用 (NTD)</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>前端 UI/UX 開發</strong></td>
+                <td>
+                    基於現有設計稿進行 React/Next.js 元件開發。<br>
+                    整合 Tailwind CSS 確保 RWD 響應式佈局。<br>
+                    包含首頁、產品頁、會員中心等頁面邏輯實作。
+                </td>
+                <td class="text-right">$ 11,500</td>
+            </tr>
+            <tr>
+                <td><strong>後端與資料庫整合</strong></td>
+                <td>
+                    Supabase 資料庫架構規劃與建置 (PostgreSQL)。<br>
+                    會員系統 (Supabase Auth) 與權限管理整合。<br>
+                    API Routes 開發與資料串接。<br>
+                    整合 Cloudflare R2 圖片儲存。
+                </td>
+                <td class="text-right">$ 13,000</td>
+            </tr>
+            <tr>
+                <td class="highlight"><strong>半自助服務折扣</strong></td>
+                <td>
+                    客戶自行申請上述雲端服務帳號 (Supabase, Vercel, R2, Domain)。<br>
+                    工作室協助設定與教學，資產歸客戶所有。
+                </td>
+                <td class="text-right highlight">- $ 3,000</td>
+            </tr>
+            <tr style="background-color: #f9f9f9;">
+                <td colspan="2" class="text-right"><strong>專案小計 (Subtotal)</strong></td>
+                <td class="text-right"><strong>$ 21,500</strong></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div style="font-size: 11px; color: #555; margin-top: -10px; margin-bottom: 20px;">
+        * 註：原始總價 $24,500，扣除半自助服務折扣 $3,000 後為 $21,500。
+    </div>
+
+    <!-- 5. 報價總表 (Summary) -->
+    <div class="section-title">5. 報價總表 (Summary)</div>
+    <table style="width: 60%; margin-left: auto;">
+        <tr>
+            <td class="text-right" style="width: 60%;"><strong>專案原價</strong></td>
+            <td class="text-right">$ 24,500</td>
+        </tr>
+        <tr>
+            <td class="text-right">半自助服務折扣</td>
+            <td class="text-right text-red-500" style="color: #d9534f;">- $ 3,000</td>
+        </tr>
+        <tr style="background-color: #f0f0f0;">
+            <td class="text-right" style="font-size: 14px;"><strong>總計應付金額 (Total Amount)</strong></td>
+            <td class="text-right" style="font-size: 14px; color: #d9534f;"><strong>$ 21,500</strong></td>
+        </tr>
+    </table>
+
+    <!-- 6. 服務條款 -->
+    <div class="section-title">6. 服務條款 (Terms & Conditions)</div>
+    <table style="border: none;">
+        <tr>
+            <td style="border: none; padding: 0 10px 0 0; width: 33%;">
+                <strong>💳 付款資訊</strong>
+                <ul>
+                    <li><strong>訂金：</strong>總額 50% (專案啟動前)。</li>
+                    <li><strong>尾款：</strong>總額 50% (驗收完成後)。</li>
+                    <li><strong>支付方式：</strong>016高雄銀行 台中分行</li>
+                    <li><strong>帳號：</strong>229102623611</li>
+                    <li><strong>戶名：</strong>卉田國際有限公司<br>(海水不可斗量工作室)</li>
+                </ul>
+            </td>
+            <td style="border: none; padding: 0 10px 0 0; width: 33%;">
+                <strong>時程與維護</strong>
+                <ul>
+                    <li><strong>預計工期：</strong>約 2-3 週 (自資料齊全與訂金到位起算)。</li>
+                    <li><strong>保固服務：</strong>驗收後一個月內免費修復程式錯誤 (Bug)。</li>
+                    <li><strong>新增功能：</strong>如需新增其餘功能另外報價。</li>
+                    <li><strong>修改費用：</strong>超出報價範圍之修改，依 NT$400/hr 計費。</li>
+                </ul>
+            </td>
+            <td style="border: none; padding: 0;">
+                <strong>備註</strong>
+                <ul>
+                    <li>第三方服務費用 (Vercel/Supabase Pro) 若有產生由客戶自行支付。</li>
+                    <li>客戶需自行妥善保管系統帳號密碼。</li>
+                </ul>
+            </td>
+        </tr>
+    </table>
+
+    <div class="footer">
+        海水不可斗量工作室 | Oceanads.org | Professional Web Development Service
+    </div>
+</div>
+
+</body>
+</html>

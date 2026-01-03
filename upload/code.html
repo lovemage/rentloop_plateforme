@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+
+<html class="light" lang="zh-TW">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Rentaloop - Upload</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&amp;family=Noto+Sans:wght@400;500;700&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#13ec5b",
+                        "primary-dark": "#0dbd47",
+                        "background-light": "#f8fcf9",
+                        "background-dark": "#102216",
+                        "surface-light": "#ffffff",
+                        "surface-dark": "#1a2e22",
+                        "text-main-light": "#0d1b12",
+                        "text-main-dark": "#eefdf3",
+                        "text-secondary-light": "#4c9a66",
+                        "text-secondary-dark": "#8bc49e",
+                        "border-light": "#cfe7d7",
+                        "border-dark": "#2a4533",
+                        "input-bg-light": "#f8fcf9",
+                        "input-bg-dark": "#15281d",
+                        "text-main": "#0d1b12",
+                        "text-sub": "#4c9a66",
+                    },
+                    fontFamily: {
+                        "display": ["Manrope", "Noto Sans", "sans-serif"]
+                    },
+                    borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "2xl": "1rem", "full": "9999px" },
+                },
+            },
+        }
+    </script>
+</head>
+
+<body class="bg-background-light dark:bg-background-dark font-display antialiased transition-colors duration-200">
+    <div class="flex min-h-screen flex-col">
+        <!-- Top Navigation -->
+        <header
+            class="sticky top-0 z-50 flex items-center justify-between whitespace-nowrap border-b border-solid border-b-[#e7f3eb] dark:border-b-[#1f402a] px-4 lg:px-10 py-3 bg-surface-light/90 dark:bg-surface-dark/90 backdrop-blur-md">
+            <div class="flex items-center gap-4 md:gap-8">
+                <!-- Hamburger Button -->
+                <button id="mobile-menu-btn"
+                    class="md:hidden flex items-center justify-center text-text-main dark:text-white">
+                    <span class="material-symbols-outlined text-3xl">menu</span>
+                </button>
+
+                <a href="../index.html" class="flex items-center gap-3 text-text-main dark:text-white cursor-pointer">
+                    <span class="material-symbols-outlined text-primary text-3xl">recycling</span>
+                    <h2 class="text-lg font-bold leading-tight tracking-[-0.015em]">Rentaloop DEMO</h2>
+                </a>
+                <nav class="hidden md:flex items-center gap-9">
+                    <a class="text-sm font-medium hover:text-primary transition-colors" href="../index.html">Home</a>
+                    <a class="text-sm font-medium hover:text-primary transition-colors"
+                        href="../products/code.html">Products</a>
+                    <a class="text-sm font-medium hover:text-primary transition-colors"
+                        href="../contact/code.html">Contact</a>
+                    <a class="text-sm font-medium hover:text-primary transition-colors"
+                        href="../member/code.html">Member</a>
+                    <a class="text-sm font-medium hover:text-primary transition-colors" href="code.html">Upload</a>
+                </nav>
+            </div>
+            <div class="flex flex-1 justify-end gap-4 md:gap-8">
+                <label class="hidden md:flex flex-col min-w-40 h-10 max-w-64">
+                    <div
+                        class="flex w-full flex-1 items-stretch rounded-lg h-full bg-[#e7f3eb] dark:bg-[#1f402a] focus-within:ring-2 focus-within:ring-primary/50 transition-all">
+                        <div
+                            class="text-text-sub dark:text-green-400 flex items-center justify-center pl-4 rounded-l-lg">
+                            <span class="material-symbols-outlined text-[20px]">search</span>
+                        </div>
+                        <input
+                            class="flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg rounded-l-none border-none bg-transparent text-text-main dark:text-white focus:outline-0 focus:ring-0 placeholder:text-text-sub dark:placeholder:text-green-400 px-4 pl-2 text-sm font-normal"
+                            placeholder="搜尋裝備..." value="" />
+                    </div>
+                </label>
+                <div class="flex gap-2">
+                    <button
+                        class="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-primary hover:bg-primary-dark transition-colors text-text-main text-sm font-bold">
+                        <span class="truncate">開始租賃</span>
+                    </button>
+                    <button
+                        class="hidden sm:flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-[#e7f3eb] dark:bg-[#1f402a] hover:bg-[#d5eadd] dark:hover:bg-[#2a5538] transition-colors text-text-main dark:text-white text-sm font-bold">
+                        <span class="truncate">登入</span>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Mobile Menu Overlay (outside header to avoid sticky backdrop issues) -->
+        <div id="mobile-menu"
+            class="fixed inset-0 z-[100] hidden bg-background-light dark:bg-background-dark flex-col animate-fade-in">
+            <div class="flex items-center justify-between px-4 py-3 border-b border-[#e7f3eb] dark:border-[#1f402a]">
+                <a href="../index.html" class="flex items-center gap-3">
+                    <span class="material-symbols-outlined text-primary text-3xl">recycling</span>
+                    <h2 class="text-lg font-bold text-text-main dark:text-white">Rentaloop DEMO</h2>
+                </a>
+                <button id="close-menu-btn"
+                    class="p-2 text-text-main dark:text-white hover:text-primary transition-colors">
+                    <span class="material-symbols-outlined text-3xl">close</span>
+                </button>
+            </div>
+            <nav class="flex flex-col p-6 gap-2">
+                <a href="../index.html"
+                    class="flex items-center justify-between p-4 rounded-xl hover:bg-[#e7f3eb] dark:hover:bg-[#1f402a] text-text-main dark:text-white transition-all group">
+                    <span class="text-lg font-bold">Home</span>
+                    <span
+                        class="material-symbols-outlined text-text-sub group-hover:text-primary">arrow_forward_ios</span>
+                </a>
+                <a href="../products/code.html"
+                    class="flex items-center justify-between p-4 rounded-xl hover:bg-[#e7f3eb] dark:hover:bg-[#1f402a] text-text-main dark:text-white transition-all group">
+                    <span class="text-lg font-bold">Products</span>
+                    <span
+                        class="material-symbols-outlined text-text-sub group-hover:text-primary">arrow_forward_ios</span>
+                </a>
+                <a href="../contact/code.html"
+                    class="flex items-center justify-between p-4 rounded-xl hover:bg-[#e7f3eb] dark:hover:bg-[#1f402a] text-text-main dark:text-white transition-all group">
+                    <span class="text-lg font-bold">Contact</span>
+                    <span
+                        class="material-symbols-outlined text-text-sub group-hover:text-primary">arrow_forward_ios</span>
+                </a>
+                <a href="../member/code.html"
+                    class="flex items-center justify-between p-4 rounded-xl hover:bg-[#e7f3eb] dark:hover:bg-[#1f402a] text-text-main dark:text-white transition-all group">
+                    <span class="text-lg font-bold">Member</span>
+                    <span
+                        class="material-symbols-outlined text-text-sub group-hover:text-primary">arrow_forward_ios</span>
+                </a>
+                <a href="code.html"
+                    class="flex items-center justify-between p-4 rounded-xl hover:bg-[#e7f3eb] dark:hover:bg-[#1f402a] text-text-main dark:text-white transition-all group">
+                    <span class="text-lg font-bold">Upload</span>
+                    <span
+                        class="material-symbols-outlined text-text-sub group-hover:text-primary">arrow_forward_ios</span>
+                </a>
+
+                <div class="h-px bg-[#e7f3eb] dark:bg-[#1f402a] my-2"></div>
+
+                <button
+                    class="w-full flex items-center justify-center gap-2 p-4 rounded-xl bg-[#e7f3eb] dark:bg-[#1f402a] text-text-main dark:text-white font-bold hover:bg-[#d5eadd] dark:hover:bg-[#2a5538] transition-colors">
+                    <span class="material-symbols-outlined">login</span>
+                    登入
+                </button>
+            </nav>
+        </div>
+
+        <script>
+            const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+            const closeMenuBtn = document.getElementById('close-menu-btn');
+            const mobileMenu = document.getElementById('mobile-menu');
+
+            function toggleMenu() {
+                const isHidden = mobileMenu.classList.contains('hidden');
+                if (isHidden) {
+                    mobileMenu.classList.remove('hidden');
+                    mobileMenu.classList.add('flex');
+                    document.body.style.overflow = 'hidden'; // Prevent scrolling
+                } else {
+                    mobileMenu.classList.add('hidden');
+                    mobileMenu.classList.remove('flex');
+                    document.body.style.overflow = ''; // Restore scrolling
+                }
+            }
+
+            mobileMenuBtn.addEventListener('click', toggleMenu);
+            closeMenuBtn.addEventListener('click', toggleMenu);
+        </script>
+        <!-- Main Content -->
+        <main class="flex-1 px-4 lg:px-10 py-8 max-w-7xl mx-auto w-full">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                <!-- Left Column: Form -->
+                <div class="lg:col-span-8 flex flex-col gap-8">
+                    <!-- Page Heading -->
+                    <div class="flex flex-col gap-3">
+                        <h1
+                            class="text-text-main-light dark:text-text-main-dark text-3xl md:text-4xl font-black leading-tight tracking-tight">
+                            上架物品</h1>
+                        <p class="text-text-secondary-light dark:text-text-secondary-dark text-base md:text-lg">
+                            讓您的閒置物品創造價值，支持永續生活。</p>
+                    </div>
+                    <!-- Section: Basic Info -->
+                    <section
+                        class="rounded-xl bg-surface-light dark:bg-surface-dark p-6 md:p-8 shadow-sm border border-border-light dark:border-border-dark">
+                        <h2
+                            class="text-text-main-light dark:text-text-main-dark text-xl font-bold mb-6 flex items-center gap-2">
+                            <span class="material-symbols-outlined text-primary">info</span> 基本資訊
+                        </h2>
+                        <div class="flex flex-col gap-6">
+                            <label class="flex flex-col gap-2">
+                                <span
+                                    class="text-text-main-light dark:text-text-main-dark text-sm font-medium">物品名稱</span>
+                                <input
+                                    class="w-full rounded-lg border-border-light dark:border-border-dark bg-input-bg-light dark:bg-input-bg-dark text-text-main-light dark:text-text-main-dark h-12 px-4 focus:border-primary focus:ring-1 focus:ring-primary placeholder:text-text-secondary-light dark:placeholder:text-text-secondary-dark transition-colors"
+                                    placeholder="例如：Canon EOS R6 相機" type="text" />
+                            </label>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <label class="flex flex-col gap-2">
+                                    <span
+                                        class="text-text-main-light dark:text-text-main-dark text-sm font-medium">類別</span>
+                                    <div class="relative">
+                                        <select
+                                            class="w-full appearance-none rounded-lg border-border-light dark:border-border-dark bg-input-bg-light dark:bg-input-bg-dark text-text-main-light dark:text-text-main-dark h-12 px-4 pr-10 focus:border-primary focus:ring-1 focus:ring-primary transition-colors">
+                                            <option disabled="" selected="" value="">選擇類別</option>
+                                            <option value="electronics">3C 電子</option>
+                                            <option value="outdoor">戶外露營</option>
+                                            <option value="camera">攝影器材</option>
+                                            <option value="home">居家生活</option>
+                                            <option value="clothing">服飾配件</option>
+                                        </select>
+                                        <span
+                                            class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-text-secondary-light pointer-events-none">expand_more</span>
+                                    </div>
+                                </label>
+                                <label class="flex flex-col gap-2">
+                                    <span
+                                        class="text-text-main-light dark:text-text-main-dark text-sm font-medium">物品狀況</span>
+                                    <div class="relative">
+                                        <select
+                                            class="w-full appearance-none rounded-lg border-border-light dark:border-border-dark bg-input-bg-light dark:bg-input-bg-dark text-text-main-light dark:text-text-main-dark h-12 px-4 pr-10 focus:border-primary focus:ring-1 focus:ring-primary transition-colors">
+                                            <option disabled="" selected="" value="">選擇狀況</option>
+                                            <option value="new">全新</option>
+                                            <option value="like-new">近全新</option>
+                                            <option value="good">狀況良好</option>
+                                            <option value="fair">可接受</option>
+                                        </select>
+                                        <span
+                                            class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-text-secondary-light pointer-events-none">expand_more</span>
+                                    </div>
+                                </label>
+                            </div>
+                            <label class="flex flex-col gap-2">
+                                <span
+                                    class="text-text-main-light dark:text-text-main-dark text-sm font-medium">物品描述</span>
+                                <textarea
+                                    class="w-full rounded-lg border-border-light dark:border-border-dark bg-input-bg-light dark:bg-input-bg-dark text-text-main-light dark:text-text-main-dark p-4 focus:border-primary focus:ring-1 focus:ring-primary placeholder:text-text-secondary-light dark:placeholder:text-text-secondary-dark transition-colors resize-none"
+                                    placeholder="請詳細描述物品的功能、配件、以及任何外觀上的瑕疵..." rows="5"></textarea>
+                            </label>
+                        </div>
+                    </section>
+                    <!-- Section: Photos -->
+                    <section
+                        class="rounded-xl bg-surface-light dark:bg-surface-dark p-6 md:p-8 shadow-sm border border-border-light dark:border-border-dark">
+                        <div class="flex justify-between items-start mb-6">
+                            <h2
+                                class="text-text-main-light dark:text-text-main-dark text-xl font-bold flex items-center gap-2">
+                                <span class="material-symbols-outlined text-primary">imagesmode</span> 物品照片
+                            </h2>
+                            <span
+                                class="text-xs font-medium px-2 py-1 rounded bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100">建議至少
+                                3 張</span>
+                        </div>
+                        <div
+                            class="border-2 border-dashed border-border-light dark:border-border-dark rounded-xl p-8 flex flex-col items-center justify-center gap-4 bg-background-light dark:bg-background-dark hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer group">
+                            <div
+                                class="size-16 rounded-full bg-surface-light dark:bg-surface-dark shadow-sm flex items-center justify-center group-hover:scale-110 transition-transform duration-200">
+                                <span class="material-symbols-outlined text-primary text-3xl">cloud_upload</span>
+                            </div>
+                            <div class="text-center">
+                                <p class="text-text-main-light dark:text-text-main-dark font-bold text-lg">點擊或拖曳上傳照片</p>
+                                <p class="text-text-secondary-light dark:text-text-secondary-dark text-sm mt-1">支援 JPG,
+                                    PNG 格式，單檔不超過 5MB</p>
+                            </div>
+                        </div>
+                        <div class="mt-6 grid grid-cols-2 md:grid-cols-4 gap-4">
+                            <!-- Placeholder for uploaded images -->
+                            <div
+                                class="aspect-square rounded-lg bg-gray-100 dark:bg-gray-800 relative group overflow-hidden border border-border-light dark:border-border-dark">
+                                <img class="w-full h-full object-cover" data-alt="Sample camera image preview"
+                                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuCkIB2qvM2gbFdtnpC4gDzm8ndylKC-OpQwUqrw34LtfVnXwWCGUPRfudpLqQhhB56zQiYokS6Mq3KyZIf-N6BRCoyqPlAuryoJmpwgL_7l_uncvzxgSMTrEejmWn01DnNhoYFCHkneP-OBvX30j0CNRGZdBSCfwmcij7-vXYhaUY4Wsm3wc82hGNt2nuRyyXNlFm_UW4gsIRC6WxcX-cfSZhfwVz5INcFzmOCETG49uaGB8GTJO5z1275s8t4xipvbEw5taTY0" />
+                                <button
+                                    class="absolute top-2 right-2 p-1 bg-black/50 hover:bg-red-500 rounded-full text-white transition-colors opacity-0 group-hover:opacity-100">
+                                    <span class="material-symbols-outlined text-sm">close</span>
+                                </button>
+                                <div
+                                    class="absolute bottom-0 left-0 right-0 bg-black/60 text-white text-xs py-1 text-center">
+                                    封面照片</div>
+                            </div>
+                            <div
+                                class="aspect-square rounded-lg bg-gray-50 dark:bg-gray-800 border border-border-light dark:border-border-dark flex items-center justify-center text-text-secondary-light">
+                                <span class="material-symbols-outlined text-2xl opacity-20">add_photo_alternate</span>
+                            </div>
+                        </div>
+                    </section>
+                    <!-- Section: Pricing & Availability -->
+                    <section
+                        class="rounded-xl bg-surface-light dark:bg-surface-dark p-6 md:p-8 shadow-sm border border-border-light dark:border-border-dark">
+                        <h2
+                            class="text-text-main-light dark:text-text-main-dark text-xl font-bold mb-6 flex items-center gap-2">
+                            <span class="material-symbols-outlined text-primary">payments</span> 租金與時間
+                        </h2>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                            <label class="flex flex-col gap-2">
+                                <span class="text-text-main-light dark:text-text-main-dark text-sm font-medium">每日租金
+                                    (TWD)</span>
+                                <div class="relative">
+                                    <span
+                                        class="absolute left-4 top-1/2 -translate-y-1/2 text-text-secondary-light font-bold">$</span>
+                                    <input
+                                        class="w-full rounded-lg border-border-light dark:border-border-dark bg-input-bg-light dark:bg-input-bg-dark text-text-main-light dark:text-text-main-dark h-12 pl-8 pr-4 focus:border-primary focus:ring-1 focus:ring-primary transition-colors text-right font-medium"
+                                        placeholder="0" type="number" />
+                                </div>
+                            </label>
+                            <label class="flex flex-col gap-2">
+                                <span class="text-text-main-light dark:text-text-main-dark text-sm font-medium">押金
+                                    (TWD)</span>
+                                <div class="relative">
+                                    <span
+                                        class="absolute left-4 top-1/2 -translate-y-1/2 text-text-secondary-light font-bold">$</span>
+                                    <input
+                                        class="w-full rounded-lg border-border-light dark:border-border-dark bg-input-bg-light dark:bg-input-bg-dark text-text-main-light dark:text-text-main-dark h-12 pl-8 pr-4 focus:border-primary focus:ring-1 focus:ring-primary transition-colors text-right font-medium"
+                                        placeholder="0" type="number" />
+                                </div>
+                            </label>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <label class="flex flex-col gap-2">
+                                <span
+                                    class="text-text-main-light dark:text-text-main-dark text-sm font-medium">最早可租借日期</span>
+                                <div class="relative">
+                                    <input
+                                        class="w-full rounded-lg border-border-light dark:border-border-dark bg-input-bg-light dark:bg-input-bg-dark text-text-main-light dark:text-text-main-dark h-12 px-4 focus:border-primary focus:ring-1 focus:ring-primary transition-colors"
+                                        type="date" />
+                                </div>
+                            </label>
+                            <label class="flex flex-col gap-2">
+                                <span
+                                    class="text-text-main-light dark:text-text-main-dark text-sm font-medium">面交地點</span>
+                                <div class="relative">
+                                    <span
+                                        class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary-light">location_on</span>
+                                    <input
+                                        class="w-full rounded-lg border-border-light dark:border-border-dark bg-input-bg-light dark:bg-input-bg-dark text-text-main-light dark:text-text-main-dark h-12 pl-10 pr-4 focus:border-primary focus:ring-1 focus:ring-primary transition-colors"
+                                        placeholder="例如：台北市大安捷運站" type="text" />
+                                </div>
+                            </label>
+                        </div>
+                    </section>
+                    <!-- Section: Instructions & Rules -->
+                    <section
+                        class="rounded-xl bg-surface-light dark:bg-surface-dark p-6 md:p-8 shadow-sm border border-border-light dark:border-border-dark">
+                        <h2
+                            class="text-text-main-light dark:text-text-main-dark text-xl font-bold mb-6 flex items-center gap-2">
+                            <span class="material-symbols-outlined text-primary">assignment</span> 使用說明與注意事項
+                        </h2>
+                        <div class="flex flex-col gap-6">
+                            <label class="flex flex-col gap-2">
+                                <span
+                                    class="text-text-main-light dark:text-text-main-dark text-sm font-medium">使用說明</span>
+                                <textarea
+                                    class="w-full rounded-lg border-border-light dark:border-border-dark bg-input-bg-light dark:bg-input-bg-dark text-text-main-light dark:text-text-main-dark p-4 focus:border-primary focus:ring-1 focus:ring-primary placeholder:text-text-secondary-light dark:placeholder:text-text-secondary-dark transition-colors resize-none"
+                                    placeholder="簡單說明如何操作或使用此物品..." rows="3"></textarea>
+                            </label>
+                            <label class="flex flex-col gap-2">
+                                <span
+                                    class="text-text-main-light dark:text-text-main-dark text-sm font-medium">注意事項</span>
+                                <textarea
+                                    class="w-full rounded-lg border-border-light dark:border-border-dark bg-input-bg-light dark:bg-input-bg-dark text-text-main-light dark:text-text-main-dark p-4 focus:border-primary focus:ring-1 focus:ring-primary placeholder:text-text-secondary-light dark:placeholder:text-text-secondary-dark transition-colors resize-none"
+                                    placeholder="例如：請勿在雨天使用、歸還前請清潔..." rows="3"></textarea>
+                            </label>
+                        </div>
+                    </section>
+                    <!-- Mobile Action Buttons (Visible on small screens only) -->
+                    <div class="lg:hidden flex flex-col gap-3 mt-4">
+                        <button
+                            class="w-full h-12 rounded-lg bg-primary hover:bg-primary-dark text-text-main-light font-bold text-lg shadow-lg shadow-primary/20 transition-all flex items-center justify-center gap-2">
+                            發布物品
+                        </button>
+                        <button
+                            class="w-full h-12 rounded-lg border border-border-light dark:border-border-dark text-text-secondary-light dark:text-text-secondary-dark font-bold hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+                            儲存草稿
+                        </button>
+                    </div>
+                </div>
+                <!-- Right Column: Sticky Preview -->
+                <div class="lg:col-span-4 hidden lg:block">
+                    <div class="sticky top-28 flex flex-col gap-6">
+                        <div class="flex items-center justify-between">
+                            <h3 class="text-text-main-light dark:text-text-main-dark font-bold text-lg">預覽效果</h3>
+                            <span
+                                class="text-xs text-text-secondary-light bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">即時更新</span>
+                        </div>
+                        <!-- Item Card Preview -->
+                        <div
+                            class="bg-surface-light dark:bg-surface-dark rounded-xl overflow-hidden shadow-lg border border-border-light dark:border-border-dark group">
+                            <div class="relative aspect-[4/3] overflow-hidden">
+                                <img alt="Preview Image"
+                                    class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                                    data-alt="Preview of the camera item being listed"
+                                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuAxqupoW9Q9fFfe6JcvM8--cALTLvzdChNa7y3fqf1M5NQ5Qny2-dVJ5jQOwGOQfKuERItnKiGFwNlp9AU1lovy8TS5YPDGXi_zb7z8LecmynN8b8mNpdRhoRAy8_vJK5oJkaHgxi8zpbe2akayKPhAbu3wBPyj90ZxA-cXbnbMddl5B_UjfQZGRtU-umwIeWZ9peQ4of01nEB-HjAeu0teMUEBWleGwGZpbwnpAHemo2RtoqiE7IEQd4O8QmBdYwLSl-DWGIyv" />
+                                <div
+                                    class="absolute top-3 left-3 bg-white/90 dark:bg-black/80 backdrop-blur text-xs font-bold px-2 py-1 rounded text-text-main-light dark:text-text-main-dark">
+                                    攝影器材
+                                </div>
+                                <div
+                                    class="absolute bottom-3 right-3 bg-primary text-text-main-light text-xs font-bold px-2 py-1 rounded-full flex items-center gap-1 shadow-sm">
+                                    <span class="material-symbols-outlined text-sm">verified_user</span> 押金保障
+                                </div>
+                            </div>
+                            <div class="p-5 flex flex-col gap-3">
+                                <div class="flex justify-between items-start">
+                                    <h4
+                                        class="font-bold text-text-main-light dark:text-text-main-dark text-lg line-clamp-1">
+                                        Canon EOS R6 相機</h4>
+                                    <div class="flex items-center gap-1 text-yellow-500 text-sm">
+                                        <span class="material-symbols-outlined text-sm fill-current">star</span>
+                                        <span>5.0</span>
+                                    </div>
+                                </div>
+                                <div
+                                    class="flex items-center gap-2 text-text-secondary-light dark:text-text-secondary-dark text-sm">
+                                    <span class="material-symbols-outlined text-base">location_on</span>
+                                    <span>台北市大安區</span>
+                                </div>
+                                <hr class="border-border-light dark:border-border-dark my-1" />
+                                <div class="flex items-end justify-between">
+                                    <div>
+                                        <span class="text-2xl font-black text-primary">$800</span>
+                                        <span
+                                            class="text-text-secondary-light dark:text-text-secondary-dark text-sm">/日</span>
+                                    </div>
+                                    <span
+                                        class="text-xs text-text-secondary-light dark:text-text-secondary-dark bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">
+                                        押金 $5,000
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Desktop Actions -->
+                        <div class="flex flex-col gap-3">
+                            <button
+                                class="w-full h-12 rounded-lg bg-primary hover:bg-primary-dark text-text-main-light font-bold text-lg shadow-lg shadow-primary/20 transition-all flex items-center justify-center gap-2 group">
+                                <span class="material-symbols-outlined group-hover:animate-bounce">publish</span>
+                                發布物品
+                            </button>
+                            <button
+                                class="w-full h-12 rounded-lg border border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark text-text-secondary-light dark:text-text-secondary-dark font-bold hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                                儲存草稿
+                            </button>
+                        </div>
+                        <!-- Eco Tip -->
+                        <div class="bg-primary/10 rounded-lg p-4 flex gap-3 items-start border border-primary/20">
+                            <span class="material-symbols-outlined text-primary mt-0.5">forest</span>
+                            <p class="text-sm text-text-main-light dark:text-text-main-dark leading-relaxed">
+                                <span class="font-bold block mb-1">環保小知識</span>
+                                每出租一次這個物品，相當於減少了約 15kg 的碳排放，感謝您的貢獻！
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+        <!-- Footer -->
+        <footer
+            class="border-t border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark py-8 mt-10">
+            <div class="max-w-7xl mx-auto px-6 lg:px-10 flex flex-col md:flex-row justify-between items-center gap-4">
+                <div class="flex items-center gap-2 text-text-secondary-light dark:text-text-secondary-dark text-sm">
+                    <span>© 2024 租賃平台. All rights reserved.</span>
+                </div>
+                <div class="flex gap-6">
+                    <a class="text-text-secondary-light dark:text-text-secondary-dark text-sm hover:text-primary"
+                        href="#">隱私權政策</a>
+                    <a class="text-text-secondary-light dark:text-text-secondary-dark text-sm hover:text-primary"
+                        href="#">使用條款</a>
+                    <a class="text-text-secondary-light dark:text-text-secondary-dark text-sm hover:text-primary"
+                        href="#">協助中心</a>
+                </div>
+            </div>
+        </footer>
+    </div>
+</body>
+
+</html>

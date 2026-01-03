@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Rentaloop - Explore Items</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <!-- Google Fonts: Manrope -->
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&amp;display=swap" rel="stylesheet" />
+    <!-- Material Symbols -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <!-- Theme Configuration -->
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#13ec5b",
+                        "primary-hover": "#0fc84d",
+                        "background-light": "#f8fcf9",
+                        "background-card": "#ffffff",
+                        "background-dark": "#102216",
+                        "text-main": "#0d1b12",
+                        "text-secondary": "#4c9a66",
+                        "text-sub": "#4c9a66",
+                        "primary-dark": "#0fc84d",
+                        "surface-light": "#ffffff",
+                        "surface-dark": "#1a3322",
+                        "border-color": "#cfe7d7",
+                    },
+                    fontFamily: {
+                        "display": ["Manrope", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.5rem",
+                        "lg": "0.75rem",
+                        "xl": "1rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Manrope', sans-serif;
+        }
+
+        /* Custom range slider styling */
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 16px;
+            width: 16px;
+            border-radius: 50%;
+            background: #13ec5b;
+            cursor: pointer;
+            margin-top: -6px;
+        }
+
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 4px;
+            cursor: pointer;
+            background: #cfe7d7;
+            border-radius: 2px;
+        }
+    </style>
+</head>
+
+<body class="bg-background-light text-text-main antialiased selection:bg-primary selection:text-text-main">
+    <div class="flex min-h-screen flex-col">
+        <!-- Top Navigation -->
+        <header
+            class="sticky top-0 z-50 flex items-center justify-between whitespace-nowrap border-b border-solid border-b-[#e7f3eb] dark:border-b-[#1f402a] px-4 lg:px-10 py-3 bg-surface-light/90 dark:bg-surface-dark/90 backdrop-blur-md">
+            <div class="flex items-center gap-4 md:gap-8">
+                <!-- Hamburger Button -->
+                <button id="mobile-menu-btn"
+                    class="md:hidden flex items-center justify-center text-text-main dark:text-white">
+                    <span class="material-symbols-outlined text-3xl">menu</span>
+                </button>
+
+                <a href="../index.html" class="flex items-center gap-3 text-text-main dark:text-white cursor-pointer">
+                    <span class="material-symbols-outlined text-primary text-3xl">recycling</span>
+                    <h2 class="text-lg font-bold leading-tight tracking-[-0.015em]">Rentaloop DEMO</h2>
+                </a>
+                <nav class="hidden md:flex items-center gap-9">
+                    <a class="text-sm font-medium hover:text-primary transition-colors" href="../index.html">Home</a>
+                    <a class="text-sm font-medium hover:text-primary transition-colors" href="code.html">Products</a>
+                    <a class="text-sm font-medium hover:text-primary transition-colors"
+                        href="../contact/code.html">Contact</a>
+                    <a class="text-sm font-medium hover:text-primary transition-colors"
+                        href="../member/code.html">Member</a>
+                    <a class="text-sm font-medium hover:text-primary transition-colors"
+                        href="../upload/code.html">Upload</a>
+                </nav>
+            </div>
+            <div class="flex flex-1 justify-end gap-4 md:gap-8">
+                <label class="hidden md:flex flex-col min-w-40 h-10 max-w-64">
+                    <div
+                        class="flex w-full flex-1 items-stretch rounded-lg h-full bg-[#e7f3eb] dark:bg-[#1f402a] focus-within:ring-2 focus-within:ring-primary/50 transition-all">
+                        <div
+                            class="text-text-sub dark:text-green-400 flex items-center justify-center pl-4 rounded-l-lg">
+                            <span class="material-symbols-outlined text-[20px]">search</span>
+                        </div>
+                        <input
+                            class="flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg rounded-l-none border-none bg-transparent text-text-main dark:text-white focus:outline-0 focus:ring-0 placeholder:text-text-sub dark:placeholder:text-green-400 px-4 pl-2 text-sm font-normal"
+                            placeholder="搜尋裝備..." value="" />
+                    </div>
+                </label>
+                <div class="flex gap-2">
+                    <button
+                        class="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-primary hover:bg-primary-dark transition-colors text-text-main text-sm font-bold">
+                        <span class="truncate">開始租賃</span>
+                    </button>
+                    <button
+                        class="hidden sm:flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-[#e7f3eb] dark:bg-[#1f402a] hover:bg-[#d5eadd] dark:hover:bg-[#2a5538] transition-colors text-text-main dark:text-white text-sm font-bold">
+                        <span class="truncate">登入</span>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Mobile Menu Overlay (outside header to avoid sticky backdrop issues) -->
+        <div id="mobile-menu"
+            class="fixed inset-0 z-[100] hidden bg-background-light dark:bg-background-dark flex-col animate-fade-in">
+            <div class="flex items-center justify-between px-4 py-3 border-b border-[#e7f3eb] dark:border-[#1f402a]">
+                <a href="../index.html" class="flex items-center gap-3">
+                    <span class="material-symbols-outlined text-primary text-3xl">recycling</span>
+                    <h2 class="text-lg font-bold text-text-main dark:text-white">Rentaloop DEMO</h2>
+                </a>
+                <button id="close-menu-btn"
+                    class="p-2 text-text-main dark:text-white hover:text-primary transition-colors">
+                    <span class="material-symbols-outlined text-3xl">close</span>
+                </button>
+            </div>
+            <nav class="flex flex-col p-6 gap-2">
+                <a href="../index.html"
+                    class="flex items-center justify-between p-4 rounded-xl hover:bg-[#e7f3eb] dark:hover:bg-[#1f402a] text-text-main dark:text-white transition-all group">
+                    <span class="text-lg font-bold">Home</span>
+                    <span
+                        class="material-symbols-outlined text-text-sub group-hover:text-primary">arrow_forward_ios</span>
+                </a>
+                <a href="code.html"
+                    class="flex items-center justify-between p-4 rounded-xl hover:bg-[#e7f3eb] dark:hover:bg-[#1f402a] text-text-main dark:text-white transition-all group">
+                    <span class="text-lg font-bold">Products</span>
+                    <span
+                        class="material-symbols-outlined text-text-sub group-hover:text-primary">arrow_forward_ios</span>
+                </a>
+                <a href="../contact/code.html"
+                    class="flex items-center justify-between p-4 rounded-xl hover:bg-[#e7f3eb] dark:hover:bg-[#1f402a] text-text-main dark:text-white transition-all group">
+                    <span class="text-lg font-bold">Contact</span>
+                    <span
+                        class="material-symbols-outlined text-text-sub group-hover:text-primary">arrow_forward_ios</span>
+                </a>
+                <a href="../member/code.html"
+                    class="flex items-center justify-between p-4 rounded-xl hover:bg-[#e7f3eb] dark:hover:bg-[#1f402a] text-text-main dark:text-white transition-all group">
+                    <span class="text-lg font-bold">Member</span>
+                    <span
+                        class="material-symbols-outlined text-text-sub group-hover:text-primary">arrow_forward_ios</span>
+                </a>
+                <a href="../upload/code.html"
+                    class="flex items-center justify-between p-4 rounded-xl hover:bg-[#e7f3eb] dark:hover:bg-[#1f402a] text-text-main dark:text-white transition-all group">
+                    <span class="text-lg font-bold">Upload</span>
+                    <span
+                        class="material-symbols-outlined text-text-sub group-hover:text-primary">arrow_forward_ios</span>
+                </a>
+
+                <div class="h-px bg-[#e7f3eb] dark:bg-[#1f402a] my-2"></div>
+
+                <button
+                    class="w-full flex items-center justify-center gap-2 p-4 rounded-xl bg-[#e7f3eb] dark:bg-[#1f402a] text-text-main dark:text-white font-bold hover:bg-[#d5eadd] dark:hover:bg-[#2a5538] transition-colors">
+                    <span class="material-symbols-outlined">login</span>
+                    登入
+                </button>
+            </nav>
+        </div>
+
+        <script>
+            const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+            const closeMenuBtn = document.getElementById('close-menu-btn');
+            const mobileMenu = document.getElementById('mobile-menu');
+
+            function toggleMenu() {
+                const isHidden = mobileMenu.classList.contains('hidden');
+                if (isHidden) {
+                    mobileMenu.classList.remove('hidden');
+                    mobileMenu.classList.add('flex');
+                    document.body.style.overflow = 'hidden'; // Prevent scrolling
+                } else {
+                    mobileMenu.classList.add('hidden');
+                    mobileMenu.classList.remove('flex');
+                    document.body.style.overflow = ''; // Restore scrolling
+                }
+            }
+
+            mobileMenuBtn.addEventListener('click', toggleMenu);
+            closeMenuBtn.addEventListener('click', toggleMenu);
+        </script>
+        <!-- Main Content Layout -->
+        <main class="mx-auto flex w-full max-w-[1440px] flex-1 flex-col gap-8 px-4 py-8 sm:px-6 lg:flex-row lg:px-8">
+            <!-- Sidebar Filters -->
+            <aside class="w-full lg:w-64 lg:shrink-0 space-y-8">
+                <!-- Mobile Filter Toggle -->
+                <div class="lg:hidden flex justify-between items-center mb-4">
+                    <h2 class="text-lg font-bold">Filters</h2>
+                    <button class="flex items-center gap-2 text-sm font-medium text-primary">
+                        <span class="material-symbols-outlined">tune</span>
+                        Show Filters
+                    </button>
+                </div>
+                <!-- Categories -->
+                <div class="hidden lg:block space-y-4">
+                    <div class="flex items-center justify-between">
+                        <h3 class="font-bold text-text-main">Categories</h3>
+                        <button class="text-xs font-medium text-text-secondary hover:text-primary">Clear</button>
+                    </div>
+                    <ul class="space-y-1">
+                        <li>
+                            <a class="flex items-center gap-3 rounded-lg bg-primary/10 px-3 py-2 text-sm font-bold text-text-main"
+                                href="#">
+                                <span class="material-symbols-outlined text-[20px]">grid_view</span>
+                                All Items
+                            </a>
+                        </li>
+                        <li>
+                            <a class="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-text-secondary hover:bg-gray-100 hover:text-text-main transition-colors"
+                                href="#">
+                                <span class="material-symbols-outlined text-[20px]">photo_camera</span>
+                                Electronics
+                            </a>
+                        </li>
+                        <li>
+                            <a class="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-text-secondary hover:bg-gray-100 hover:text-text-main transition-colors"
+                                href="#">
+                                <span class="material-symbols-outlined text-[20px]">camping</span>
+                                Outdoors
+                            </a>
+                        </li>
+                        <li>
+                            <a class="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-text-secondary hover:bg-gray-100 hover:text-text-main transition-colors"
+                                href="#">
+                                <span class="material-symbols-outlined text-[20px]">construction</span>
+                                Tools &amp; DIY
+                            </a>
+                        </li>
+                        <li>
+                            <a class="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-text-secondary hover:bg-gray-100 hover:text-text-main transition-colors"
+                                href="#">
+                                <span class="material-symbols-outlined text-[20px]">checkroom</span>
+                                Fashion
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                <hr class="hidden lg:block border-border-color" />
+                <!-- Price Filter -->
+                <div class="hidden lg:block space-y-4">
+                    <h3 class="font-bold text-text-main">Price Range (Daily)</h3>
+                    <div class="space-y-4 px-1">
+                        <!-- Custom visual slider representation -->
+                        <div class="relative h-1 w-full rounded-full bg-border-color">
+                            <div class="absolute left-[10%] right-[40%] h-full rounded-full bg-primary"></div>
+                            <div
+                                class="absolute left-[10%] top-1/2 h-4 w-4 -translate-y-1/2 rounded-full border-2 border-white bg-primary shadow-sm cursor-pointer hover:scale-110 transition-transform">
+                            </div>
+                            <div
+                                class="absolute right-[40%] top-1/2 h-4 w-4 -translate-y-1/2 rounded-full border-2 border-white bg-primary shadow-sm cursor-pointer hover:scale-110 transition-transform">
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between text-sm text-text-main font-medium">
+                            <div class="rounded-md border border-border-color bg-white px-3 py-1">$50</div>
+                            <span class="text-text-secondary">-</span>
+                            <div class="rounded-md border border-border-color bg-white px-3 py-1">$800</div>
+                        </div>
+                    </div>
+                </div>
+                <hr class="hidden lg:block border-border-color" />
+                <!-- Condition Filter -->
+                <div class="hidden lg:block space-y-3">
+                    <h3 class="font-bold text-text-main">Condition</h3>
+                    <div class="space-y-2">
+                        <label class="flex cursor-pointer items-center gap-3">
+                            <input checked=""
+                                class="size-5 rounded border-2 border-border-color text-primary focus:ring-primary focus:ring-offset-0"
+                                type="checkbox" />
+                            <span class="text-sm text-text-main">Like New</span>
+                        </label>
+                        <label class="flex cursor-pointer items-center gap-3">
+                            <input
+                                class="size-5 rounded border-2 border-border-color text-primary focus:ring-primary focus:ring-offset-0"
+                                type="checkbox" />
+                            <span class="text-sm text-text-main">Good</span>
+                        </label>
+                        <label class="flex cursor-pointer items-center gap-3">
+                            <input
+                                class="size-5 rounded border-2 border-border-color text-primary focus:ring-primary focus:ring-offset-0"
+                                type="checkbox" />
+                            <span class="text-sm text-text-main">Fair</span>
+                        </label>
+                    </div>
+                </div>
+                <!-- Reset Button -->
+                <button
+                    class="hidden lg:flex w-full items-center justify-center rounded-lg border border-border-color bg-white py-2.5 text-sm font-bold text-text-main hover:bg-gray-50 transition-colors">
+                    Reset All Filters
+                </button>
+            </aside>
+            <!-- Main Content Area -->
+            <div class="flex-1 flex flex-col gap-6">
+                <!-- Hero / Promo Banner -->
+                <div class="relative overflow-hidden rounded-2xl bg-black px-8 py-10 md:py-14 shadow-lg isolate"
+                    data-alt="Abstract dark green gradient background evoking nature and technology">
+                    <div
+                        class="absolute inset-0 -z-10 bg-[url('https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?q=80&amp;w=2813&amp;auto=format&amp;fit=crop')] bg-cover bg-center opacity-40">
+                    </div>
+                    <div class="absolute inset-0 -z-10 bg-gradient-to-r from-background-dark/90 to-transparent"></div>
+                    <div class="flex max-w-lg flex-col gap-4">
+                        <div
+                            class="inline-flex w-fit items-center gap-1.5 rounded-full bg-primary/20 px-3 py-1 text-xs font-bold text-primary backdrop-blur-md border border-primary/30">
+                            <span class="material-symbols-outlined text-[16px]">eco</span>
+                            Sustainability Impact
+                        </div>
+                        <h1 class="text-3xl font-extrabold tracking-tight text-white md:text-4xl">
+                            Don't Buy it. <span class="text-primary">Rent it.</span>
+                        </h1>
+                        <p class="text-gray-200 text-sm md:text-base leading-relaxed">
+                            Access premium gear for your next adventure without the clutter. Save money and reduce waste
+                            with every rental.
+                        </p>
+                    </div>
+                </div>
+                <!-- Results Header -->
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                        <h2 class="text-xl font-bold text-text-main">Available Items</h2>
+                        <p class="text-sm text-text-secondary">Showing 124 results for "All"</p>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <span class="text-sm font-medium text-text-secondary whitespace-nowrap">Sort by:</span>
+                        <div class="relative">
+                            <select
+                                class="h-10 w-full min-w-[160px] appearance-none rounded-lg border-border-color bg-white pl-4 pr-10 text-sm font-medium text-text-main focus:border-primary focus:ring-primary">
+                                <option>Recommended</option>
+                                <option>Price: Low to High</option>
+                                <option>Price: High to Low</option>
+                                <option>Newest Arrivals</option>
+                            </select>
+                            <span
+                                class="material-symbols-outlined absolute right-3 top-2.5 pointer-events-none text-text-secondary text-[20px]">expand_more</span>
+                        </div>
+                    </div>
+                </div>
+                <!-- Item Grid -->
+                <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3">
+                    <!-- Card 1 -->
+                    <div
+                        class="group flex flex-col overflow-hidden rounded-xl bg-white border border-border-color shadow-sm transition-all hover:-translate-y-1 hover:shadow-md hover:border-primary/50">
+                        <div class="relative aspect-[4/3] w-full overflow-hidden bg-gray-100">
+                            <img alt="Professional camera on a wooden table"
+                                class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                                data-alt="Black DSLR camera with lens sitting on a wooden surface"
+                                src="https://lh3.googleusercontent.com/aida-public/AB6AXuDf1Onthql8S7MPmaKq7OT4c1Vx1Zum2z8_OnPamSK5ZzAUzUBkYCbwzdJ65FkBIS1HkKONQNUk7-APqf0lj3EMXW42VqVcgxqdwKePAW2Axe5LXTctTBxW7DnVihtagJ-YhptO1rztk_Ox4Wz5jZEkjBMaOgCdWF1ttQYuqhpO6d1LuEdGCDS9OO1elPVXCf_HdGH9fj3wYVWMQ9a_AY9QCaTzTt8HZdxKgNGdMJNQ1FTaSH_8NBKnSzlrSki91FbrJFjaSEMD" />
+                            <button
+                                class="absolute right-3 top-3 flex size-8 items-center justify-center rounded-full bg-white/90 text-text-secondary shadow-sm backdrop-blur-sm transition-colors hover:text-red-500">
+                                <span class="material-symbols-outlined text-[20px]">favorite</span>
+                            </button>
+                            <div
+                                class="absolute left-3 bottom-3 inline-flex items-center gap-1 rounded-md bg-white/95 px-2 py-1 text-xs font-bold text-text-main shadow-sm">
+                                <span class="material-symbols-outlined text-[14px] text-yellow-500 filled">star</span>
+                                4.9 (28)
+                            </div>
+                        </div>
+                        <div class="flex flex-1 flex-col p-4">
+                            <div class="flex justify-between items-start gap-2">
+                                <h3 class="text-base font-bold text-text-main line-clamp-2">Sony Alpha a7 III Mirrorless
+                                    Camera</h3>
+                            </div>
+                            <div class="mt-2 flex items-center gap-2 text-xs text-text-secondary">
+                                <span class="material-symbols-outlined text-[16px]">location_on</span>
+                                Da'an District • 2.5km away
+                            </div>
+                            <div class="mt-auto flex items-center justify-between pt-4">
+                                <div>
+                                    <p class="text-lg font-extrabold text-primary">$800 <span
+                                            class="text-xs font-medium text-text-secondary">/ day</span></p>
+                                </div>
+                                <button
+                                    class="rounded-lg bg-background-light px-3 py-1.5 text-xs font-bold text-text-main border border-border-color hover:bg-white hover:border-primary transition-colors">
+                                    Rent Now
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Card 2 -->
+                    <div
+                        class="group flex flex-col overflow-hidden rounded-xl bg-white border border-border-color shadow-sm transition-all hover:-translate-y-1 hover:shadow-md hover:border-primary/50">
+                        <div class="relative aspect-[4/3] w-full overflow-hidden bg-gray-100">
+                            <img alt="Camping tent in a forest"
+                                class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                                data-alt="Yellow camping tent pitched in a green forest clearing"
+                                src="https://lh3.googleusercontent.com/aida-public/AB6AXuDuWX-AeVF2nBrFOQHn-z4nnUrXIiq4J92al9ypbxtjzz_OooBQ_LuhvHYEJKFqnfBrtXFV25S-UNaDzZz0jTiYBBLLFRAnasuYXWxuL7D2jdcHG0PlupESgDWchvTDKpsO8r1MAM55cxq2ApaK4DpIwotHBYxt1QRqJXL1YQ3SVlWXBakMqBGhEgJZKtSEayAWUW3MKOgvVROYpcrJmEaEwm5ipB518XoLb2R3rUS3wwY23r2nUxr3B2bkXN1L0N1n3G4Zcpyv" />
+                            <button
+                                class="absolute right-3 top-3 flex size-8 items-center justify-center rounded-full bg-white/90 text-text-secondary shadow-sm backdrop-blur-sm transition-colors hover:text-red-500">
+                                <span class="material-symbols-outlined text-[20px]">favorite</span>
+                            </button>
+                            <div
+                                class="absolute left-3 top-3 inline-flex items-center rounded-md bg-primary px-2 py-1 text-xs font-bold text-text-main shadow-sm">
+                                Popular
+                            </div>
+                        </div>
+                        <div class="flex flex-1 flex-col p-4">
+                            <div class="flex justify-between items-start gap-2">
+                                <h3 class="text-base font-bold text-text-main line-clamp-2">The North Face 4-Person Tent
+                                </h3>
+                            </div>
+                            <div class="mt-2 flex items-center gap-2 text-xs text-text-secondary">
+                                <span class="material-symbols-outlined text-[16px]">location_on</span>
+                                Xinyi District • 5km away
+                            </div>
+                            <div class="mt-auto flex items-center justify-between pt-4">
+                                <div>
+                                    <p class="text-lg font-extrabold text-primary">$450 <span
+                                            class="text-xs font-medium text-text-secondary">/ day</span></p>
+                                </div>
+                                <button
+                                    class="rounded-lg bg-background-light px-3 py-1.5 text-xs font-bold text-text-main border border-border-color hover:bg-white hover:border-primary transition-colors">
+                                    Rent Now
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Card 3 -->
+                    <div
+                        class="group flex flex-col overflow-hidden rounded-xl bg-white border border-border-color shadow-sm transition-all hover:-translate-y-1 hover:shadow-md hover:border-primary/50">
+                        <div class="relative aspect-[4/3] w-full overflow-hidden bg-gray-100">
+                            <img alt="Electric drill on workbench"
+                                class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                                data-alt="Yellow cordless drill sitting on a wooden workbench"
+                                src="https://lh3.googleusercontent.com/aida-public/AB6AXuDFqeULbSfBTKT9y_nGhWtaCFmi0IJrizea0NuVGvoe2wxvDG7Rg_HwYbKTVD5-bgaYW74v_BhA0w-2Oh9mQT_YxbxA32JJlKYkYiRql-ZDKkIhL9C36IBYu0j5G2n6DqV3gUKK7Y4Q5lp5kHtML-cRiBQtpv9udYzpnVpiB-9ppAO3RaSNJuUFQR26N87v25NaZujoGDs4ITVlGmwTaV_FXG0IpTJrksB2w1mUEjMBIKhexO1YEXIIUQ63RL8MI9yPOu0Eo6V8" />
+                            <button
+                                class="absolute right-3 top-3 flex size-8 items-center justify-center rounded-full bg-white/90 text-text-secondary shadow-sm backdrop-blur-sm transition-colors hover:text-red-500">
+                                <span class="material-symbols-outlined text-[20px]">favorite</span>
+                            </button>
+                        </div>
+                        <div class="flex flex-1 flex-col p-4">
+                            <div class="flex justify-between items-start gap-2">
+                                <h3 class="text-base font-bold text-text-main line-clamp-2">DeWalt Cordless Drill Kit
+                                </h3>
+                            </div>
+                            <div class="mt-2 flex items-center gap-2 text-xs text-text-secondary">
+                                <span class="material-symbols-outlined text-[16px]">location_on</span>
+                                Zhongshan District • 1.2km away
+                            </div>
+                            <div class="mt-auto flex items-center justify-between pt-4">
+                                <div>
+                                    <p class="text-lg font-extrabold text-primary">$150 <span
+                                            class="text-xs font-medium text-text-secondary">/ day</span></p>
+                                </div>
+                                <button
+                                    class="rounded-lg bg-background-light px-3 py-1.5 text-xs font-bold text-text-main border border-border-color hover:bg-white hover:border-primary transition-colors">
+                                    Rent Now
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Card 4 -->
+                    <div
+                        class="group flex flex-col overflow-hidden rounded-xl bg-white border border-border-color shadow-sm transition-all hover:-translate-y-1 hover:shadow-md hover:border-primary/50">
+                        <div class="relative aspect-[4/3] w-full overflow-hidden bg-gray-100">
+                            <img alt="High end dress"
+                                class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                                data-alt="Elegant beige dress hanging on a rack"
+                                src="https://lh3.googleusercontent.com/aida-public/AB6AXuB-4OtdEobDvK8rot_B2jDHkDTeq7QlUILOO0EwEz-DhE8t9L69fNJsQR5iIR7ZRgKtcbVdU6FRoFAfXzm67_VQkJeG1KYEjaPPjHjJlND7lmma1ccLMPTnqcPjBttoPNQ10dMVXO-2HaMEASffDMZdMaCNRtjj4hC0cOxXVt1sULKhl3_EyKWwPwBZvfYTN4fGMg1D10tU4lwSrmpuXoc5MrwhNkCs9gTHoHkJm_bYkHr_VnlxjiVHLJM1AKV7MOft1StOiAM5" />
+                            <button
+                                class="absolute right-3 top-3 flex size-8 items-center justify-center rounded-full bg-white/90 text-text-secondary shadow-sm backdrop-blur-sm transition-colors hover:text-red-500">
+                                <span class="material-symbols-outlined text-[20px]">favorite</span>
+                            </button>
+                            <div
+                                class="absolute left-3 bottom-3 inline-flex items-center gap-1 rounded-md bg-white/95 px-2 py-1 text-xs font-bold text-text-main shadow-sm">
+                                <span class="material-symbols-outlined text-[14px] text-yellow-500 filled">star</span>
+                                5.0 (5)
+                            </div>
+                        </div>
+                        <div class="flex flex-1 flex-col p-4">
+                            <div class="flex justify-between items-start gap-2">
+                                <h3 class="text-base font-bold text-text-main line-clamp-2">Designer Evening Gown (Size
+                                    M)</h3>
+                            </div>
+                            <div class="mt-2 flex items-center gap-2 text-xs text-text-secondary">
+                                <span class="material-symbols-outlined text-[16px]">location_on</span>
+                                Songshan District • 3km away
+                            </div>
+                            <div class="mt-auto flex items-center justify-between pt-4">
+                                <div>
+                                    <p class="text-lg font-extrabold text-primary">$1,200 <span
+                                            class="text-xs font-medium text-text-secondary">/ day</span></p>
+                                </div>
+                                <button
+                                    class="rounded-lg bg-background-light px-3 py-1.5 text-xs font-bold text-text-main border border-border-color hover:bg-white hover:border-primary transition-colors">
+                                    Rent Now
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Card 5 -->
+                    <div
+                        class="group flex flex-col overflow-hidden rounded-xl bg-white border border-border-color shadow-sm transition-all hover:-translate-y-1 hover:shadow-md hover:border-primary/50">
+                        <div class="relative aspect-[4/3] w-full overflow-hidden bg-gray-100">
+                            <img alt="DJ Controller"
+                                class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                                data-alt="Pioneer DJ controller mixing board on a table"
+                                src="https://lh3.googleusercontent.com/aida-public/AB6AXuBQSOQr4dRP43B-iFRaSb5yXDfbwnliptBR8SsFd_UFP4B6ZBYy9vOs5LRSagTwwu-UKfg8uBjwOtLFRQOJjl2VkYvlUpM_b_r5P0abRx1IW618VOovpl38wqhvCqjBqaT_w0SNGD7QZfgqh8H9JT2fqgd3GSlvgVay46T53cR67x-1d1BIiUGeYgwYdn1Nt3e40ASEB1KzSIbTpaVvKuwq-CWGs08XHIfExJtzdmfBT4nyWMrdlwo2CjTh4-v59q0_JdxNB0SV" />
+                            <button
+                                class="absolute right-3 top-3 flex size-8 items-center justify-center rounded-full bg-white/90 text-text-secondary shadow-sm backdrop-blur-sm transition-colors hover:text-red-500">
+                                <span class="material-symbols-outlined text-[20px]">favorite</span>
+                            </button>
+                        </div>
+                        <div class="flex flex-1 flex-col p-4">
+                            <div class="flex justify-between items-start gap-2">
+                                <h3 class="text-base font-bold text-text-main line-clamp-2">Pioneer DDJ-400 Controller
+                                </h3>
+                            </div>
+                            <div class="mt-2 flex items-center gap-2 text-xs text-text-secondary">
+                                <span class="material-symbols-outlined text-[16px]">location_on</span>
+                                Neihu District • 8km away
+                            </div>
+                            <div class="mt-auto flex items-center justify-between pt-4">
+                                <div>
+                                    <p class="text-lg font-extrabold text-primary">$600 <span
+                                            class="text-xs font-medium text-text-secondary">/ day</span></p>
+                                </div>
+                                <button
+                                    class="rounded-lg bg-background-light px-3 py-1.5 text-xs font-bold text-text-main border border-border-color hover:bg-white hover:border-primary transition-colors">
+                                    Rent Now
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Card 6 -->
+                    <div
+                        class="group flex flex-col overflow-hidden rounded-xl bg-white border border-border-color shadow-sm transition-all hover:-translate-y-1 hover:shadow-md hover:border-primary/50">
+                        <div class="relative aspect-[4/3] w-full overflow-hidden bg-gray-100">
+                            <img alt="Projector"
+                                class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                                data-alt="Portable mini projector projecting light on a dark background"
+                                src="https://lh3.googleusercontent.com/aida-public/AB6AXuBaAUBSMmM73iSiVWb-gsougygIg251i25W3vzX6KuqGMmNdgDvOL1ma5ffWtT5o-axQNPsch2e-3NrhvHHT787pwWWNDgheXkaLE0vk-LxOQrkgPZ8VTffuzJHLhWQFz1vg1dub8dx2hZFRTqwDrWDtJL1uSxQbNZvxdR_PzqSNNHd-GPVt9tt9f-kbkdNw_xI2LOTJLkqCB_vI9_cOUXfG6_sg58OayPC0l5Y71C7s3p-rD11Fi3e38AA-sYoxEdwMCocsE1g" />
+                            <button
+                                class="absolute right-3 top-3 flex size-8 items-center justify-center rounded-full bg-white/90 text-text-secondary shadow-sm backdrop-blur-sm transition-colors hover:text-red-500">
+                                <span class="material-symbols-outlined text-[20px]">favorite</span>
+                            </button>
+                            <div
+                                class="absolute left-3 bottom-3 inline-flex items-center gap-1 rounded-md bg-white/95 px-2 py-1 text-xs font-bold text-text-main shadow-sm">
+                                <span class="material-symbols-outlined text-[14px] text-yellow-500 filled">star</span>
+                                4.7 (15)
+                            </div>
+                        </div>
+                        <div class="flex flex-1 flex-col p-4">
+                            <div class="flex justify-between items-start gap-2">
+                                <h3 class="text-base font-bold text-text-main line-clamp-2">Portable 1080p Mini
+                                    Projector</h3>
+                            </div>
+                            <div class="mt-2 flex items-center gap-2 text-xs text-text-secondary">
+                                <span class="material-symbols-outlined text-[16px]">location_on</span>
+                                Zhongzheng District • 0.5km away
+                            </div>
+                            <div class="mt-auto flex items-center justify-between pt-4">
+                                <div>
+                                    <p class="text-lg font-extrabold text-primary">$350 <span
+                                            class="text-xs font-medium text-text-secondary">/ day</span></p>
+                                </div>
+                                <button
+                                    class="rounded-lg bg-background-light px-3 py-1.5 text-xs font-bold text-text-main border border-border-color hover:bg-white hover:border-primary transition-colors">
+                                    Rent Now
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Pagination -->
+                <div class="mt-8 flex justify-center pb-8">
+                    <nav class="flex items-center gap-2">
+                        <button
+                            class="flex size-10 items-center justify-center rounded-lg border border-border-color bg-white hover:bg-gray-50 disabled:opacity-50">
+                            <span class="material-symbols-outlined text-[20px]">chevron_left</span>
+                        </button>
+                        <button
+                            class="flex size-10 items-center justify-center rounded-lg bg-primary font-bold text-text-main">1</button>
+                        <button
+                            class="flex size-10 items-center justify-center rounded-lg border border-border-color bg-white font-medium text-text-main hover:bg-gray-50">2</button>
+                        <button
+                            class="flex size-10 items-center justify-center rounded-lg border border-border-color bg-white font-medium text-text-main hover:bg-gray-50">3</button>
+                        <span class="px-2 text-text-secondary">...</span>
+                        <button
+                            class="flex size-10 items-center justify-center rounded-lg border border-border-color bg-white font-medium text-text-main hover:bg-gray-50">12</button>
+                        <button
+                            class="flex size-10 items-center justify-center rounded-lg border border-border-color bg-white hover:bg-gray-50">
+                            <span class="material-symbols-outlined text-[20px]">chevron_right</span>
+                        </button>
+                    </nav>
+                </div>
+            </div>
+        </main>
+    </div>
+</body>
+
+</html>
