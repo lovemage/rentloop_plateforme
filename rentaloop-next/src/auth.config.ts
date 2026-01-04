@@ -5,6 +5,7 @@ const ADMIN_EMAILS = ['rexliaobusiness@gmail.com', 'aistorm0910@gmail.com'];
 
 export const authConfig = {
     trustHost: true,
+    session: { strategy: "jwt" },
     providers: [
         Google({
             clientId: process.env.AUTH_GOOGLE_ID,
@@ -30,6 +31,17 @@ export const authConfig = {
             }
             return true;
         },
+        async jwt({ token, user }) {
+            if (user) {
+                token.sub = user.id;
+                token.role = (user as any).role || 'basic';
+
+                if ((user as any).email && ADMIN_EMAILS.includes((user as any).email)) {
+                    token.role = 'admin';
+                }
+            }
+            return token;
+        },
         async session({ session, user, token }) {
             // Note: In middleware (using JWT strategy by default if no adapter), 'user' might be undefined
             // When using adapter in auth.ts, 'user' is populated from DB.
@@ -43,6 +55,7 @@ export const authConfig = {
                     session.user.role = (user as any).role || 'basic';
                 } else if (token) {
                     session.user.id = token.sub as string;
+                    session.user.role = (token as any).role || session.user.role;
                     // If we are using JWT strategy, role should be improved via jwt callback
                 }
 

@@ -17,28 +17,35 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     }),
     callbacks: {
         ...authConfig.callbacks,
-        async session({ session, user }) {
-            if (session.user && user) {
-                session.user.id = user.id;
+        async session({ session, user, token }) {
+            if (session.user) {
+                if (user) {
+                    session.user.id = user.id;
 
-                // Admin Whitelist Check
-                if (session.user.email && ADMIN_EMAILS.includes(session.user.email)) {
-                    session.user.role = 'admin';
+                    if (session.user.email && ADMIN_EMAILS.includes(session.user.email)) {
+                        session.user.role = 'admin';
 
-                    // Sync to DB if needed
-                    if ((user as any).role !== 'admin') {
-                        try {
-                            await db.update(users).set({ role: 'admin' }).where(eq(users.id, user.id));
-                        } catch (e) {
-                            console.error("Failed to auto-update admin role", e);
+                        if ((user as any).role !== 'admin') {
+                            try {
+                                await db.update(users).set({ role: 'admin' }).where(eq(users.id, user.id));
+                            } catch (e) {
+                                console.error("Failed to auto-update admin role", e);
+                            }
                         }
+                    } else {
+                        session.user.role = (user as any).role || 'basic';
                     }
-                } else {
-                    // Normal user, read from DB
-                    session.user.role = (user as any).role || 'basic';
+                } else if (token) {
+                    session.user.id = token.sub as string;
+                    session.user.role = (token as any).role || session.user.role;
+
+                    if (session.user.email && ADMIN_EMAILS.includes(session.user.email)) {
+                        session.user.role = 'admin';
+                    }
                 }
             }
+
             return session;
-        }
+        },
     }
 })
