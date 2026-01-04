@@ -14,10 +14,10 @@ type Tab = 'renter' | 'host';
 interface DashboardProps {
     user: {
         id: string;
-        name: string | null;
-        email: string | null;
-        image: string | null;
-        createdAt: Date | null;
+        name?: string | null;
+        email?: string | null;
+        image?: string | null;
+        role?: string;
     };
     profile: any;
     stats: any[];
@@ -91,8 +91,8 @@ export function MemberDashboard({
                         <button
                             onClick={() => setActiveTab('renter')}
                             className={`flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-bold transition-all ${activeTab === 'renter'
-                                    ? 'bg-primary text-text-main shadow-sm'
-                                    : 'text-text-sub hover:bg-gray-100 dark:hover:bg-neutral-800'
+                                ? 'bg-primary text-text-main shadow-sm'
+                                : 'text-text-sub hover:bg-gray-100 dark:hover:bg-neutral-800'
                                 }`}
                         >
                             <span className="material-symbols-outlined">shopping_bag</span>
@@ -101,8 +101,8 @@ export function MemberDashboard({
                         <button
                             onClick={() => setActiveTab('host')}
                             className={`flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-bold transition-all ${activeTab === 'host'
-                                    ? 'bg-primary text-text-main shadow-sm'
-                                    : 'text-text-sub hover:bg-gray-100 dark:hover:bg-neutral-800'
+                                ? 'bg-primary text-text-main shadow-sm'
+                                : 'text-text-sub hover:bg-gray-100 dark:hover:bg-neutral-800'
                                 }`}
                         >
                             <span className="material-symbols-outlined">storefront</span>

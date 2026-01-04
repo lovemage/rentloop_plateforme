@@ -7,8 +7,8 @@ import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 
 interface AvatarUploaderProps {
-    initialImage: string | null;
-    userName: string | null;
+    initialImage?: string | null;
+    userName?: string | null;
 }
 
 export function AvatarUploader({ initialImage, userName }: AvatarUploaderProps) {
