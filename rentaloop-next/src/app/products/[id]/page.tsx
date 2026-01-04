@@ -9,10 +9,6 @@ import { eq, desc, and, inArray, gt } from "drizzle-orm";
 import { auth } from "@/auth"; // New Import
 import { eachDayOfInterval } from "date-fns";
 
-const MOCK_PRODUCT = {
-    // ...
-};
-
 async function getProduct(id: string): Promise<{
     id: string;
     title: string;
@@ -42,8 +38,6 @@ async function getProduct(id: string): Promise<{
     notes: string[];
     condition: string;
 } | null> {
-    if (id === 'demo') return MOCK_PRODUCT;
-
     try {
         const result = await db.select({
             id: items.id,
@@ -127,48 +121,42 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
 
     // Fetch Questions
     // We intentionally do this here to keep getProduct focused on Item data
-    let questions: any[] = [];
-    if (id !== 'demo') {
-        questions = await db.select({
-            id: itemQuestions.id,
-            content: itemQuestions.content,
-            reply: itemQuestions.reply,
-            createdAt: itemQuestions.createdAt,
-            repliedAt: itemQuestions.repliedAt,
-            user: {
-                name: users.name,
-                image: users.image
-            }
-        })
-            .from(itemQuestions)
-            .leftJoin(users, eq(itemQuestions.userId, users.id))
-            .where(eq(itemQuestions.itemId, id))
-            .orderBy(desc(itemQuestions.createdAt));
-    }
+    const questions = await db.select({
+        id: itemQuestions.id,
+        content: itemQuestions.content,
+        reply: itemQuestions.reply,
+        createdAt: itemQuestions.createdAt,
+        repliedAt: itemQuestions.repliedAt,
+        user: {
+            name: users.name,
+            image: users.image
+        }
+    })
+        .from(itemQuestions)
+        .leftJoin(users, eq(itemQuestions.userId, users.id))
+        .where(eq(itemQuestions.itemId, id))
+        .orderBy(desc(itemQuestions.createdAt));
 
     // Fetch Blocked Dates
-    let blockedDates: Date[] = [];
-    if (id !== 'demo') {
-        const rentalRecords = await db.select({
-            startDate: rentals.startDate,
-            endDate: rentals.endDate
-        }).from(rentals)
-            .where(and(
-                eq(rentals.itemId, id),
-                inArray(rentals.status, ['pending', 'approved', 'ongoing', 'active']),
-                gt(rentals.endDate, new Date().toISOString().split('T')[0])
-            ));
+    const rentalRecords = await db.select({
+        startDate: rentals.startDate,
+        endDate: rentals.endDate
+    }).from(rentals)
+        .where(and(
+            eq(rentals.itemId, id),
+            inArray(rentals.status, ['pending', 'approved', 'ongoing', 'active']),
+            gt(rentals.endDate, new Date().toISOString().split('T')[0])
+        ));
 
-        blockedDates = rentalRecords.flatMap(r => {
-            if (!r.startDate || !r.endDate) return [];
-            try {
-                const start = new Date(r.startDate);
-                const end = new Date(r.endDate);
-                if (start > end) return [];
-                return eachDayOfInterval({ start, end });
-            } catch (e) { return []; }
-        });
-    }
+    const blockedDates = rentalRecords.flatMap(r => {
+        if (!r.startDate || !r.endDate) return [];
+        try {
+            const start = new Date(r.startDate);
+            const end = new Date(r.endDate);
+            if (start > end) return [];
+            return eachDayOfInterval({ start, end });
+        } catch (e) { return []; }
+    });
 
     const isOwner = session?.user?.id === product!.ownerId;
 
