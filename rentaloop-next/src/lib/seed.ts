@@ -100,7 +100,7 @@ async function main() {
                 categoryId: targetCat.id,
                 title: item.title,
                 description: item.desc,
-                pricePerDay: typeof item.price === 'string' ? parseInt(item.price.replace('$', '')) : item.price,
+                pricePerDay: typeof item.price === 'string' ? parseInt((item.price as string).replace('$', '')) : item.price as number,
                 deposit: item.deposit,
                 pickupLocation: item.location,
                 images: [item.image, item.image, item.image],
