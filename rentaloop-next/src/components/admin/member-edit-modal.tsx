@@ -81,145 +81,164 @@ export function MemberEditModal({ member, onClose, onRefresh }: ModalProps) {
     };
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-            <div className="bg-white dark:bg-neutral-900 rounded-2xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto ring-1 ring-neutral-200 dark:ring-neutral-800">
-                <div className="p-6 border-b border-neutral-100 dark:border-neutral-800 flex justify-between items-center sticky top-0 bg-white/95 dark:bg-neutral-900/95 backdrop-blur z-10 transition-colors">
-                    <h3 className="text-xl font-bold">會員詳情</h3>
-                    <button onClick={onClose} className="p-2 hover:bg-gray-100 dark:hover:bg-neutral-800 rounded-full">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur">
+            <div className="relative w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-2xl border border-gray-200 bg-white shadow-2xl">
+                <div className="sticky top-0 z-10 flex items-center justify-between px-6 py-4 bg-gradient-to-r from-green-600 to-emerald-500 text-white">
+                    <div>
+                        <p className="text-xs uppercase tracking-widest text-white/80">會員管理</p>
+                        <h3 className="text-2xl font-bold leading-tight">會員詳情</h3>
+                    </div>
+                    <button
+                        onClick={onClose}
+                        className="rounded-full bg-white/10 p-2 text-white hover:bg-white/20 transition-colors"
+                        aria-label="關閉"
+                    >
                         <span className="material-symbols-outlined">close</span>
                     </button>
                 </div>
 
-                <div className="p-6 space-y-8 text-neutral-800 dark:text-neutral-200">
-
+                <div className="p-6 space-y-8 text-gray-900">
                     {/* Basic Info */}
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="col-span-2 sm:col-span-1">
-                            <div className="text-sm text-neutral-500 font-bold mb-1">姓名</div>
-                            <div>{member.name} ({member.realName || '未實名'})</div>
-                        </div>
-                        <div className="col-span-2 sm:col-span-1">
-                            <div className="text-sm text-neutral-500 font-bold mb-1">Email</div>
-                            <div>{member.email}</div>
-                        </div>
-                        <div>
-                            <div className="text-sm text-neutral-500 font-bold mb-1">電話</div>
-                            <div>{member.phone || '-'}</div>
-                        </div>
-                        <div>
-                            <div className="text-sm text-neutral-500 font-bold mb-1">所在城市</div>
-                            <div>{member.hostCity || '-'}</div>
-                        </div>
-                        <div>
-                            <div className="text-sm text-neutral-500 font-bold mb-1">加入時間</div>
-                            <div>{member.createdAt ? new Date(member.createdAt).toLocaleDateString() : '-'}</div>
-                        </div>
-                        <div>
-                            <div className="text-sm text-neutral-500 font-bold mb-1">狀態</div>
-                            <div className={`font-bold ${member.isBlocked ? 'text-red-500' : 'text-green-500'}`}>
-                                {member.isBlocked ? '已封鎖' : '正常'}
-                            </div>
-                        </div>
+                    <div className="grid grid-cols-1 gap-4 rounded-2xl border border-gray-100 bg-gray-50/60 p-5 sm:grid-cols-2">
+                        <InfoField label="姓名" value={`${member.name || '未命名'}（${member.realName || '未實名'}）`} />
+                        <InfoField label="Email" value={member.email} />
+                        <InfoField label="電話" value={member.phone || '-'} />
+                        <InfoField label="所在城市" value={member.hostCity || '-'} />
+                        <InfoField label="加入時間" value={member.createdAt ? new Date(member.createdAt).toLocaleDateString() : '-'} />
+                        <InfoField
+                            label="帳號狀態"
+                            value={
+                                <span className={`rounded-full px-2.5 py-0.5 text-xs font-bold ${member.isBlocked ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-700'}`}>
+                                    {member.isBlocked ? '已封鎖' : '正常'}
+                                </span>
+                            }
+                        />
                     </div>
 
                     {/* KYC Section */}
-                    <div className="border-t border-neutral-100 dark:border-neutral-800 pt-6">
-                        <div className="flex items-center justify-between mb-4">
-                            <h4 className="font-bold text-lg">KYC 身份認證</h4>
-                            <span className={`px-2 py-0.5 text-xs font-bold rounded-full ${member.kycStatus === 'approved' ? 'bg-green-100 text-green-700' :
-                                    member.kycStatus === 'pending' ? 'bg-orange-100 text-orange-700' :
-                                        'bg-gray-100 text-gray-500'
+                    <section className="rounded-2xl border border-gray-100 bg-white shadow-sm">
+                        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-gray-100 px-5 py-4">
+                            <div>
+                                <h4 className="text-lg font-bold text-gray-900">KYC 身份認證</h4>
+                                <p className="text-sm text-gray-500">審核身份證上傳資料，維持平台安全性</p>
+                            </div>
+                            <span className={`rounded-full px-3 py-1 text-xs font-bold ${member.kycStatus === 'approved'
+                                ? 'bg-green-100 text-green-700 border border-green-200'
+                                : member.kycStatus === 'pending'
+                                    ? 'bg-orange-100 text-orange-700 border border-orange-200'
+                                    : 'bg-gray-100 text-gray-500 border border-gray-200'
                                 }`}>
                                 {member.kycStatus === 'approved' ? '已通過' : member.kycStatus === 'pending' ? '審核中' : member.kycStatus || '未申請'}
                             </span>
                         </div>
 
-                        {member.kycStatus === 'pending' && (
-                            <div className="flex gap-2 mb-4">
-                                <button
-                                    onClick={() => handleKyc('approved')}
-                                    className="px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-bold hover:bg-green-700"
-                                >
-                                    通過審核
-                                </button>
-                                <button
-                                    onClick={() => handleKyc('rejected')}
-                                    className="px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-bold hover:bg-red-700"
-                                >
-                                    退回申請
-                                </button>
-                            </div>
-                        )}
+                        <div className="space-y-4 p-5">
+                            {member.kycStatus === 'pending' && (
+                                <div className="flex flex-wrap gap-3">
+                                    <button
+                                        onClick={() => handleKyc('approved')}
+                                        className="rounded-xl bg-green-600 px-4 py-2 text-sm font-bold text-white transition-all duration-200 hover:bg-green-700 hover:-translate-y-0.5 active:scale-95"
+                                    >
+                                        通過審核
+                                    </button>
+                                    <button
+                                        onClick={() => handleKyc('rejected')}
+                                        className="rounded-xl bg-red-50 px-4 py-2 text-sm font-bold text-red-600 transition-all duration-200 hover:bg-red-100 hover:-translate-y-0.5 active:scale-95"
+                                    >
+                                        退回申請
+                                    </button>
+                                </div>
+                            )}
 
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="bg-neutral-50 dark:bg-neutral-800 p-2 rounded-xl">
-                                <div className="text-xs font-bold mb-2 text-center text-neutral-500">正面</div>
-                                {member.kycFront ? (
-                                    <div className="relative aspect-[16/10] w-full">
-                                        <Image src={member.kycFront} alt="KYC Front" fill className="object-contain rounded-lg" unoptimized />
-                                        <a href={member.kycFront} target="_blank" className="absolute bottom-1 right-1 bg-black/50 text-white p-1 rounded text-xs">查看原圖</a>
-                                    </div>
-                                ) : (
-                                    <div className="h-32 flex items-center justify-center text-neutral-400 text-xs">無圖片</div>
-                                )}
-                            </div>
-                            <div className="bg-neutral-50 dark:bg-neutral-800 p-2 rounded-xl">
-                                <div className="text-xs font-bold mb-2 text-center text-neutral-500">反面</div>
-                                {member.kycBack ? (
-                                    <div className="relative aspect-[16/10] w-full">
-                                        <Image src={member.kycBack} alt="KYC Back" fill className="object-contain rounded-lg" unoptimized />
-                                        <a href={member.kycBack} target="_blank" className="absolute bottom-1 right-1 bg-black/50 text-white p-1 rounded text-xs">查看原圖</a>
-                                    </div>
-                                ) : (
-                                    <div className="h-32 flex items-center justify-center text-neutral-400 text-xs">無圖片</div>
-                                )}
+                            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                                <KycCard label="身分證正面" imageUrl={member.kycFront} />
+                                <KycCard label="身分證反面" imageUrl={member.kycBack} />
                             </div>
                         </div>
-                    </div>
+                    </section>
 
                     {/* Admin Note */}
-                    <div className="border-t border-neutral-100 dark:border-neutral-800 pt-6">
-                        <h4 className="font-bold text-lg mb-2">管理員備註</h4>
+                    <section className="rounded-2xl border border-gray-100 bg-white shadow-sm p-5 space-y-3">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <h4 className="text-lg font-bold text-gray-900">管理員備註</h4>
+                                <p className="text-sm text-gray-500">僅供後台團隊查看的備註內容</p>
+                            </div>
+                            <span className="text-xs font-semibold uppercase tracking-widest text-gray-400">Internal</span>
+                        </div>
                         <textarea
                             value={note}
                             onChange={(e) => setNote(e.target.value)}
-                            className="w-full h-24 p-3 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                            className="w-full rounded-2xl border border-gray-200 bg-gray-50/80 p-4 text-sm text-gray-900 shadow-inner focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-100"
                             placeholder="在此輸入備註（僅管理員可見）"
                         />
-                        <div className="flex justify-end mt-2">
+                        <div className="flex justify-end">
                             <button
                                 onClick={handleSaveNote}
                                 disabled={isSaving}
-                                className="px-4 py-2 bg-neutral-900 dark:bg-white text-white dark:text-black rounded-lg text-sm font-bold disabled:opacity-50"
+                                className="rounded-xl bg-gray-900 px-5 py-2 text-sm font-bold text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-black disabled:opacity-50"
                             >
                                 {isSaving ? '儲存中...' : '儲存備註'}
                             </button>
                         </div>
-                    </div>
+                    </section>
 
                     {/* Danger Zone */}
-                    <div className="border-t border-neutral-100 dark:border-neutral-800 pt-6">
-                        <h4 className="font-bold text-lg mb-4 text-red-600">危險區域</h4>
-                        <div className="flex gap-3">
+                    <section className="rounded-2xl border border-red-100 bg-red-50/40 p-5 space-y-3">
+                        <h4 className="text-lg font-bold text-red-600">危險區域</h4>
+                        <div className="flex flex-wrap gap-3">
                             <button
                                 onClick={handleBlock}
-                                className={`px-4 py-2 text-sm font-bold rounded-lg border ${member.isBlocked
-                                        ? 'border-neutral-300 text-neutral-700 hover:bg-neutral-100'
-                                        : 'border-orange-200 text-orange-600 bg-orange-50 hover:bg-orange-100'
+                                className={`rounded-xl px-4 py-2 text-sm font-bold transition-all duration-200 hover:-translate-y-0.5 active:scale-95 ${member.isBlocked
+                                    ? 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'
+                                    : 'bg-orange-100 text-orange-700 border border-orange-200 hover:bg-orange-200'
                                     }`}
                             >
                                 {member.isBlocked ? '解除封鎖' : '封鎖用戶'}
                             </button>
                             <button
                                 onClick={handleDelete}
-                                className="px-4 py-2 bg-white border border-red-200 text-red-600 rounded-lg text-sm font-bold hover:bg-red-50"
+                                className="rounded-xl border border-red-200 bg-white px-4 py-2 text-sm font-bold text-red-600 transition-all duration-200 hover:bg-red-50 hover:-translate-y-0.5 active:scale-95"
                             >
                                 刪除用戶
                             </button>
                         </div>
-                    </div>
+                    </section>
                 </div>
             </div>
+        </div>
+    );
+}
+
+function InfoField({ label, value }: { label: string; value: React.ReactNode }) {
+    return (
+        <div className="space-y-1">
+            <div className="text-xs font-bold uppercase tracking-widest text-gray-500">{label}</div>
+            <div className="text-sm font-semibold text-gray-900">{value || '-'}</div>
+        </div>
+    );
+}
+
+function KycCard({ label, imageUrl }: { label: string; imageUrl: string | null }) {
+    return (
+        <div className="rounded-2xl border border-gray-100 bg-gray-50/80 p-3">
+            <div className="mb-2 flex items-center justify-between text-xs font-bold uppercase tracking-widest text-gray-500">
+                {label}
+                {imageUrl && (
+                    <a href={imageUrl} target="_blank" className="text-[11px] font-semibold text-green-700 hover:underline">
+                        查看原圖
+                    </a>
+                )}
+            </div>
+            {imageUrl ? (
+                <div className="relative aspect-[16/10] w-full overflow-hidden rounded-xl border border-gray-200 bg-white">
+                    <Image src={imageUrl} alt={label} fill className="object-contain" unoptimized />
+                </div>
+            ) : (
+                <div className="flex h-32 items-center justify-center rounded-xl border border-dashed border-gray-300 text-xs text-gray-400">
+                    無圖片
+                </div>
+            )}
         </div>
     );
 }

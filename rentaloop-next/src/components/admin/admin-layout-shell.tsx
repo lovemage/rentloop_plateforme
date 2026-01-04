@@ -11,6 +11,7 @@ import {
     Calendar,
     BadgeCheck,
     Mail,
+    Globe,
 } from "lucide-react";
 
 const sidebarItems = [
@@ -49,6 +50,12 @@ const sidebarItems = [
         href: "/admin/emails",
         icon: Mail,
     },
+    {
+        title: "檢視前台網站",
+        href: "/",
+        icon: Globe,
+        external: true,
+    },
 ];
 
 export function AdminLayoutShell({
@@ -79,6 +86,8 @@ export function AdminLayoutShell({
                             <Link
                                 key={item.href}
                                 href={item.href}
+                                target={item.external ? "_blank" : undefined}
+                                rel={item.external ? "noreferrer" : undefined}
                                 className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${isActive
                                     ? "bg-green-50 text-green-700"
                                     : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
@@ -104,21 +113,8 @@ export function AdminLayoutShell({
             </aside>
 
             {/* Main Content Area */}
-            <main className="flex-1 ml-64 min-w-0">
-                <header className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-8 sticky top-0 z-40">
-                    <h1 className="text-lg font-semibold text-gray-800">
-                        {sidebarItems.find(i => i.href === pathname)?.title || '後台管理'}
-                    </h1>
-                    <div className="flex items-center gap-4">
-                        <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center text-green-700 font-bold text-xs">
-                            AD
-                        </div>
-                    </div>
-                </header>
-
-                <div className="p-8">
-                    {children}
-                </div>
+            <main className="flex-1 ml-64 min-w-0 p-8">
+                {children}
             </main>
         </div>
     );

@@ -40,14 +40,14 @@ export default async function HostApplicationDetailPage({
           <h2 className="mt-2 text-xl font-bold text-gray-900">租貸會員審核</h2>
           <p className="text-sm text-gray-500">檢視申請資料與 KYC，並進行核准/拒絕。</p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           <form action={reject}>
-            <button className="px-4 py-2 rounded-lg border border-red-200 bg-red-50 text-red-700 text-sm font-bold hover:bg-red-100">
+            <button className="px-4 py-2 rounded-lg border border-red-200 bg-red-50 text-red-700 text-sm font-bold transition-all duration-200 hover:bg-red-100 hover:-translate-y-0.5 active:scale-95 focus-visible:ring-2 focus-visible:ring-red-200 focus-visible:outline-none">
               拒絕
             </button>
           </form>
           <form action={approve}>
-            <button className="px-4 py-2 rounded-lg bg-green-600 text-white text-sm font-bold hover:bg-green-700">
+            <button className="px-4 py-2 rounded-lg bg-green-600 text-white text-sm font-bold transition-all duration-200 hover:bg-green-700 hover:-translate-y-0.5 active:scale-95 shadow-sm focus-visible:ring-2 focus-visible:ring-green-200 focus-visible:outline-none">
               核准
             </button>
           </form>

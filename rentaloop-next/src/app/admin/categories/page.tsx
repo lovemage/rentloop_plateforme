@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { FolderTree, Plus, Edit2, Trash2, ChevronRight, ChevronDown, X } from 'lucide-react';
 import { getCategories, createCategory, updateCategory, deleteCategory } from '@/app/actions/categories';
 import type { Category } from '@/app/actions/categories';
@@ -8,6 +8,13 @@ import type { Category } from '@/app/actions/categories';
 // Types
 type CategoryNode = Category & {
     children?: CategoryNode[];
+};
+
+type FlatCategory = {
+    id: string;
+    name: string;
+    level: number | null;
+    depth: number;
 };
 
 // --- Simple Modal Component ---
@@ -128,6 +135,7 @@ function CategoryItem({
 // --- Main Page Component ---
 export default function CategoriesPage() {
     const [categoriesData, setCategoriesData] = useState<CategoryNode[]>([]);
+    const [flatCategories, setFlatCategories] = useState<FlatCategory[]>([]);
     const [loading, setLoading] = useState(true);
 
     // Modal State
@@ -135,6 +143,7 @@ export default function CategoriesPage() {
     const [modalMode, setModalMode] = useState<'create' | 'edit'>('create');
     const [editingNode, setEditingNode] = useState<CategoryNode | null>(null);
     const [parentNode, setParentNode] = useState<CategoryNode | null>(null);
+    const [selectedParentId, setSelectedParentId] = useState<string | null>(null);
 
     // Form State
     const [formData, setFormData] = useState({ name: '', slug: '' });
@@ -162,7 +171,15 @@ export default function CategoriesPage() {
                 });
                 return roots;
             };
-            setCategoriesData(buildTree(result.data));
+            const roots = buildTree(result.data);
+            setCategoriesData(roots);
+            const flatten = (nodes: CategoryNode[], depth = 0): FlatCategory[] => {
+                return nodes.flatMap(node => [
+                    { id: node.id, name: node.name, level: node.level ?? null, depth },
+                    ...(node.children ? flatten(node.children, depth + 1) : []),
+                ]);
+            };
+            setFlatCategories(flatten(roots));
         }
         setLoading(false);
     };
@@ -176,6 +193,7 @@ export default function CategoriesPage() {
     const handleOpenCreateRoot = () => {
         setModalMode('create');
         setParentNode(null);
+        setSelectedParentId(null);
         setEditFormData({ name: '', slug: '' });
         setIsModalOpen(true);
     };
@@ -183,6 +201,7 @@ export default function CategoriesPage() {
     const handleOpenCreateChild = (parent: CategoryNode) => {
         setModalMode('create');
         setParentNode(parent);
+        setSelectedParentId(parent.id);
         setEditFormData({ name: '', slug: '' });
         setIsModalOpen(true);
     };
@@ -191,6 +210,8 @@ export default function CategoriesPage() {
         setModalMode('edit');
         setEditingNode(node);
         setEditFormData({ name: node.name, slug: node.slug || '' });
+        setSelectedParentId(null);
+        setParentNode(null);
         setIsModalOpen(true);
     };
 
@@ -203,11 +224,14 @@ export default function CategoriesPage() {
         if (!formData.name) return;
 
         if (modalMode === 'create') {
+            const parentInfo = selectedParentId
+                ? flatCategories.find(c => c.id === selectedParentId) || null
+                : null;
             await createCategory({
                 name: formData.name,
                 slug: formData.slug || null,
-                parentId: parentNode?.id || null,
-                level: parentNode ? (parentNode.level || 0) + 1 : 1,
+                parentId: selectedParentId,
+                level: parentInfo ? ((parentInfo.level ?? parentInfo.depth + 1) + 1) : 1,
             });
         } else if (modalMode === 'edit' && editingNode) {
             await updateCategory(editingNode.id, {
@@ -216,6 +240,7 @@ export default function CategoriesPage() {
             });
         }
 
+        setSelectedParentId(null);
         setIsModalOpen(false);
         loadData(); // Reload tree
     };
@@ -287,6 +312,43 @@ export default function CategoriesPage() {
                             placeholder="例如：露營裝備"
                         />
                     </div>
+                    {modalMode === 'create' && (
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">上層分類</label>
+                            <select
+                                value={selectedParentId || ''}
+                                onChange={e => {
+                                    const value = e.target.value;
+                                    if (!value) {
+                                        setSelectedParentId(null);
+                                        setParentNode(null);
+                                    } else {
+                                        setSelectedParentId(value);
+                                        const findNodeById = (nodes: CategoryNode[], id: string): CategoryNode | null => {
+                                            for (const node of nodes) {
+                                                if (node.id === id) return node;
+                                                if (node.children) {
+                                                    const found = findNodeById(node.children, id);
+                                                    if (found) return found;
+                                                }
+                                            }
+                                            return null;
+                                        };
+                                        setParentNode(findNodeById(categoriesData, value));
+                                    }
+                                }}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all"
+                            >
+                                <option value="">(無) 建立主分類</option>
+                                {flatCategories.map(option => (
+                                    <option key={option.id} value={option.id}>
+                                        {`${'— '.repeat(option.depth)}${option.name}`}
+                                    </option>
+                                ))}
+                            </select>
+                            <p className="text-xs text-gray-500 mt-1">可選擇既有分類作為上層，建立 L2 / L3 結構。</p>
+                        </div>
+                    )}
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">網址代稱 (Slug)</label>
                         <input
