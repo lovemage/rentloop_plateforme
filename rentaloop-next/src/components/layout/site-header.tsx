@@ -51,12 +51,7 @@ export function SiteHeader() {
             href="/"
             className="flex items-center gap-3 text-text-main dark:text-white cursor-pointer"
           >
-            <span className="material-symbols-outlined text-primary text-3xl">
-              recycling
-            </span>
-            <h2 className="text-lg font-bold leading-tight tracking-[-0.015em]">
-              Rentaloop DEMO
-            </h2>
+            <Image src="/rentaloop_logo.png" alt="Rentaloop" width={140} height={32} priority />
           </Link>
           <nav className="hidden md:flex items-center gap-9">
             {navItems.map((item) => (
@@ -157,12 +152,7 @@ export function SiteHeader() {
         <div className="fixed inset-0 z-[100] flex flex-col bg-background-light dark:bg-background-dark animate-fade-in">
           <div className="flex items-center justify-between px-4 py-3 border-b border-[#e7f3eb] dark:border-border-dark">
             <Link href="/" className="flex items-center gap-3">
-              <span className="material-symbols-outlined text-primary text-3xl">
-                recycling
-              </span>
-              <h2 className="text-lg font-bold text-text-main dark:text-white">
-                Rentaloop DEMO
-              </h2>
+              <Image src="/rentaloop_logo.png" alt="Rentaloop" width={140} height={32} priority />
             </Link>
             <button
               type="button"

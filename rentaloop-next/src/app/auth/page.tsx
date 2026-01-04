@@ -1,7 +1,9 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { loginWithGoogle } from "@/app/actions/auth";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 type AuthTab = "login" | "register";
 
@@ -12,6 +14,14 @@ const tabs: { id: AuthTab; label: string; description: string }[] = [
 
 export default function AuthPage() {
   const [activeTab, setActiveTab] = useState<AuthTab>("login");
+  const { data: session } = useSession();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (session?.user?.id) {
+      router.replace("/member");
+    }
+  }, [router, session?.user?.id]);
 
   const tabCopy = useMemo(() => {
     switch (activeTab) {

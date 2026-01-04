@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 
 export function SiteFooter() {
   return (
@@ -6,8 +7,7 @@ export function SiteFooter() {
       <div className="max-w-[1280px] mx-auto flex flex-col md:flex-row justify-between gap-10">
         <div className="flex flex-col gap-4">
           <div className="flex items-center gap-2 text-text-main dark:text-white">
-            <span className="material-symbols-outlined text-primary">recycling</span>
-            <h2 className="text-lg font-bold">RentCycle</h2>
+            <Image src="/rentaloop_logo.png" alt="Rentaloop" width={140} height={32} />
           </div>
           <p className="text-text-sub dark:text-gray-400 text-sm max-w-[300px]">
             我們致力於打造一個共享、永續的未來。透過租賃，讓每個人都能享受高品質生活，同時守護地球。
@@ -53,7 +53,7 @@ export function SiteFooter() {
         </div>
       </div>
       <div className="max-w-[1280px] mx-auto mt-12 pt-8 border-t border-[#e7f3eb] dark:border-border-dark text-center md:text-left">
-        <p className="text-text-sub dark:text-gray-500 text-xs">© 2023 RentCycle Inc. All rights reserved.</p>
+        <p className="text-text-sub dark:text-gray-500 text-xs">© 2026 Rentaloop. All rights reserved.</p>
       </div>
     </footer>
   );

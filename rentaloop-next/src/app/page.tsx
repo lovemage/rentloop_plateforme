@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 
 const stats = [
   {
@@ -39,29 +40,6 @@ const features = [
     title: "經濟實惠聰明",
     description:
       "以零售價的一小部分體驗頂級產品，把省下的錢花在更美好的體驗上。",
-  },
-];
-
-const steps = [
-  {
-    icon: "search",
-    title: "瀏覽物品",
-    description: "搜尋其他會員上架的物品，找到您需要的裝備。",
-  },
-  {
-    icon: "chat",
-    title: "聯繫出租方",
-    description: "登入後與物品擁有者聯繫，協商租借細節。",
-  },
-  {
-    icon: "handshake",
-    title: "租借使用",
-    description: "依約定時間取得物品，盡情享受您的租借體驗。",
-  },
-  {
-    icon: "star",
-    title: "歸還與評價",
-    description: "使用完畢歸還物品，雙方互相評分，建立信任社群。",
   },
 ];
 
@@ -194,29 +172,16 @@ export default function Home() {
             <h2 className="text-text-main dark:text-white text-3xl font-black">
               簡單四步，開啟循環生活
             </h2>
-            <a className="text-primary hover:text-primary-dark font-bold flex items-center gap-1" href="#">
-              查看完整指南{" "}
-              <span className="material-symbols-outlined text-sm">arrow_forward</span>
-            </a>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 relative">
-            {steps.map((step) => (
-              <div
-                key={step.title}
-                className="flex flex-col items-center text-center p-4 relative z-10"
-              >
-                <div className="w-16 h-16 rounded-full bg-surface-light dark:bg-[#2a5538] border-2 border-primary flex items-center justify-center mb-4 shadow-sm">
-                  <span className="material-symbols-outlined text-3xl text-primary">
-                    {step.icon}
-                  </span>
-                </div>
-                <h4 className="text-lg font-bold mb-2 dark:text-white">{step.title}</h4>
-                <p className="text-sm text-text-sub dark:text-gray-400">
-                  {step.description}
-                </p>
-              </div>
-            ))}
-            <div className="hidden lg:block absolute top-12 left-0 w-full h-0.5 bg-gray-200 dark:bg-gray-700 -z-0 transform -translate-y-1/2" />
+          <div className="w-full overflow-hidden rounded-2xl border border-[#cfe7d7] dark:border-[#1f402a] bg-surface-light dark:bg-surface-dark p-3 shadow-sm">
+            <Image
+              src="/item-rental-process.jpeg"
+              alt="Rentaloop 租借流程"
+              width={2400}
+              height={1350}
+              className="h-auto w-full rounded-xl"
+              priority
+            />
           </div>
         </div>
       </section>
