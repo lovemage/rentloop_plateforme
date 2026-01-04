@@ -15,7 +15,7 @@ interface Question {
     user: {
         name: string | null;
         image: string | null;
-    }
+    } | null;
 }
 
 interface ProductQAProps {
@@ -73,18 +73,18 @@ export function ProductQA({ itemId, questions, isOwner, currentUserId }: Product
                             {/* Question Bubble */}
                             <div className="flex gap-3">
                                 <div className="flex-shrink-0">
-                                    {q.user.image ? (
-                                        <Image src={q.user.image} alt={q.user.name || 'User'} width={40} height={40} className="rounded-full" />
+                                    {q.user?.image ? (
+                                        <Image src={q.user.image} alt={q.user?.name || 'User'} width={40} height={40} className="rounded-full" />
                                     ) : (
                                         <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 font-bold">
-                                            {q.user.name?.[0]?.toUpperCase() || 'U'}
+                                            {q.user?.name?.[0]?.toUpperCase() || 'U'}
                                         </div>
                                     )}
                                 </div>
                                 <div className="flex-1">
                                     <div className="bg-gray-100 rounded-2xl rounded-tl-none px-4 py-3 text-sm text-gray-800">
                                         <div className="flex justify-between items-baseline mb-1">
-                                            <span className="font-bold text-gray-900">{q.user.name}</span>
+                                            <span className="font-bold text-gray-900">{q.user?.name || 'Anonymous'}</span>
                                             <span className="text-xs text-gray-500">
                                                 {q.createdAt && formatDistanceToNow(new Date(q.createdAt), { addSuffix: true, locale: zhTW })}
                                             </span>
