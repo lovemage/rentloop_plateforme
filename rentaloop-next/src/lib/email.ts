@@ -41,6 +41,12 @@ export const DEFAULT_TEMPLATES = {
         body: `<p>親愛的 {{name}}，</p><p>您的商品 {{item}} 有新的預約。</p><p>租客：{{renter}}</p><p>租期：{{dates}}</p><p>請登入系統進行確認。</p>`,
         description: "出租者收到預約通知",
         variables: "name, item, dates, renter"
+    },
+    review_invite: {
+        subject: "邀請評價：{{item_title}}",
+        body: `<p>親愛的 {{name}}，</p><p>感謝您租用 {{item_title}}。希望您有愉快的體驗。</p><p>請花一點時間為此次租賃留下評價：</p><p><a href="{{link}}">前往評價</a></p>`,
+        description: "邀請租客評價",
+        variables: "name, item_title, link"
     }
 };
 
