@@ -1,13 +1,14 @@
 import { notFound } from "next/navigation";
 import { ProductGallery } from "@/components/products/product-gallery";
 import { RentalCard } from "@/components/products/rental-card";
-import { ProductQA } from "@/components/products/product-qa"; // New Import
+import { ProductQA, type Question } from "@/components/products/product-qa";
 import { MapPin, ShieldCheck, User, Star, AlertCircle } from "lucide-react";
 import { db } from "@/lib/db";
 import { items, users, itemQuestions, rentals } from "@/lib/schema";
 import { eq, desc, and, inArray, gt } from "drizzle-orm";
-import { auth } from "@/auth"; // New Import
+import { auth } from "@/auth";
 import { eachDayOfInterval } from "date-fns";
+import { getTodayDateString } from "@/lib/date-utils";
 
 async function getProduct(id: string): Promise<{
     id: string;
@@ -119,9 +120,8 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
         notFound();
     }
 
-    // Fetch Questions
-    // We intentionally do this here to keep getProduct focused on Item data
-    const questions = await db.select({
+    // Fetch Questions with explicit type annotation
+    const questions: Question[] = await db.select({
         id: itemQuestions.id,
         content: itemQuestions.content,
         reply: itemQuestions.reply,
@@ -138,14 +138,17 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
         .orderBy(desc(itemQuestions.createdAt));
 
     // Fetch Blocked Dates
+    // Fetch rentals that are blocking dates (exclude cancelled and completed)
+    // Using UTC+8 (Taipei) timezone for date comparison
+    const today = getTodayDateString();
     const rentalRecords = await db.select({
         startDate: rentals.startDate,
         endDate: rentals.endDate
     }).from(rentals)
         .where(and(
             eq(rentals.itemId, id),
-            inArray(rentals.status, ['pending', 'approved', 'ongoing', 'active']),
-            gt(rentals.endDate, new Date().toISOString().split('T')[0])
+            inArray(rentals.status, ['pending', 'approved', 'ongoing']),
+            gt(rentals.endDate, today)
         ));
 
     const blockedDates = rentalRecords.flatMap(r => {
@@ -287,10 +290,14 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
                     <div className="lg:col-span-1">
                         <div className="sticky top-24">
                             <RentalCard
+                                itemId={product.id}
+                                itemTitle={product.title}
                                 pricePerDay={product.pricePerDay}
                                 deposit={product.deposit}
                                 blockedDates={blockedDates}
                                 availableRange={{ from: product.availableFrom, to: product.availableTo }}
+                                isLoggedIn={!!session?.user}
+                                isOwner={isOwner}
                             />
                         </div>
                     </div>

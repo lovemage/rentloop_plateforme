@@ -6,6 +6,21 @@ import { createItem } from '@/app/actions/item-create';
 import { ImagePlus, X, Loader2, MapPin } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { z } from 'zod';
+import toast from 'react-hot-toast';
+
+// Zod Schema for validation
+const itemFormSchema = z.object({
+    title: z.string().min(1, '請輸入物品標題').max(100, '標題過長，最多100字'),
+    categoryId: z.string().uuid('請選擇分類'),
+    description: z.string().min(10, '描述至少10字').max(2000, '描述過長，最多2000字'),
+    price: z.number().min(1, '租金必須大於0'),
+    deposit: z.number().min(0, '押金不可為負數'),
+    location: z.string().min(1, '請輸入面交地點'),
+    images: z.array(z.string().url()).min(1, '請至少上傳一張照片'),
+    availableFrom: z.string().optional(),
+    availableTo: z.string().optional(),
+});
 
 interface Category {
     id: string;
@@ -19,6 +34,7 @@ export function ItemCreateForm({ categories }: { categories: Category[] }) {
     const [imageUrls, setImageUrls] = useState<string[]>([]);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [errors, setErrors] = useState<Record<string, string>>({});
 
     // Group categories
     const parentCategories = categories.filter(c => !c.parentId);
@@ -31,7 +47,16 @@ export function ItemCreateForm({ categories }: { categories: Category[] }) {
         const files = Array.from(e.target.files);
 
         for (const file of files) {
-            if (!file.type.startsWith('image/')) continue;
+            if (!file.type.startsWith('image/')) {
+                toast.error('僅支援圖片格式 (JPG, PNG, WebP)');
+                continue;
+            }
+
+            // Check file size (max 5MB)
+            if (file.size > 5 * 1024 * 1024) {
+                toast.error('圖片大小不可超過 5MB');
+                continue;
+            }
 
             const formData = new FormData();
             formData.append('file', file);
@@ -39,8 +64,13 @@ export function ItemCreateForm({ categories }: { categories: Category[] }) {
             const result = await uploadImage(formData);
             if (result.success && result.url) {
                 setImageUrls(prev => [...prev, result.url]);
+                // Clear image error if exists
+                setErrors(prev => {
+                    const { images, ...rest } = prev;
+                    return rest;
+                });
             } else {
-                alert('上傳失敗');
+                toast.error('上傳失敗，請稍後再試');
             }
         }
         setUploading(false);
@@ -51,10 +81,58 @@ export function ItemCreateForm({ categories }: { categories: Category[] }) {
         setImageUrls(prev => prev.filter((_, i) => i !== index));
     };
 
+    const validateForm = (formData: FormData): boolean => {
+        const data = {
+            title: formData.get('title') as string,
+            categoryId: formData.get('categoryId') as string,
+            description: formData.get('description') as string,
+            price: Number(formData.get('price')),
+            deposit: Number(formData.get('deposit')),
+            location: formData.get('location') as string,
+            images: imageUrls,
+            availableFrom: formData.get('availableFrom') as string,
+            availableTo: formData.get('availableTo') as string,
+        };
+
+        const result = itemFormSchema.safeParse(data);
+
+        if (!result.success) {
+            const newErrors: Record<string, string> = {};
+            result.error.issues.forEach((issue) => {
+                const field = issue.path[0] as string;
+                newErrors[field] = issue.message;
+            });
+            setErrors(newErrors);
+
+            // Show first error as toast
+            const firstError = result.error.issues[0];
+            toast.error(firstError.message);
+            return false;
+        }
+
+        setErrors({});
+        return true;
+    };
+
     const handleSubmit = async (formData: FormData) => {
+        if (!validateForm(formData)) return;
+
         setIsSubmitting(true);
         formData.append('images', JSON.stringify(imageUrls));
-        await createItem(formData);
+
+        try {
+            const result = await createItem(formData);
+            if (result && 'error' in result) {
+                toast.error(result.error as string);
+                setIsSubmitting(false);
+            } else {
+                toast.success('商品上架成功！');
+                // Redirect will be handled by server action
+            }
+        } catch (error) {
+            toast.error('發生錯誤，請稍後再試');
+            setIsSubmitting(false);
+        }
     };
 
     return (
@@ -86,7 +164,10 @@ export function ItemCreateForm({ categories }: { categories: Category[] }) {
                                 type="button"
                                 onClick={() => fileInputRef.current?.click()}
                                 disabled={uploading}
-                                className="aspect-square flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-lg text-gray-400 hover:border-green-500 hover:text-green-500 hover:bg-green-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                className={`aspect-square flex flex-col items-center justify-center border-2 border-dashed rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${errors.images
+                                    ? 'border-red-300 text-red-400 hover:border-red-500 hover:text-red-500 hover:bg-red-50'
+                                    : 'border-gray-300 text-gray-400 hover:border-green-500 hover:text-green-500 hover:bg-green-50'
+                                    }`}
                             >
                                 {uploading ? (
                                     <Loader2 className="w-6 h-6 animate-spin" />
@@ -107,13 +188,9 @@ export function ItemCreateForm({ categories }: { categories: Category[] }) {
                         className="hidden"
                         onChange={handleFileChange}
                     />
-                    <p className="text-xs text-gray-500 mt-2">
-                        建議至少上傳一張照片。支援 JPG, PNG, WebP。
+                    <p className={`text-xs mt-2 ${errors.images ? 'text-red-500' : 'text-gray-500'}`}>
+                        {errors.images || '建議至少上傳一張照片。支援 JPG, PNG, WebP (最大 5MB)'}
                     </p>
-                    {/* Hidden input validation for images */}
-                    {imageUrls.length === 0 && (
-                        <input type="text" required className="sr-only" onInvalid={e => (e.target as HTMLInputElement).setCustomValidity('請至少上傳一張照片')} onInput={e => (e.target as HTMLInputElement).setCustomValidity('')} />
-                    )}
                 </div>
 
                 <hr className="border-gray-100" />
@@ -129,9 +206,11 @@ export function ItemCreateForm({ categories }: { categories: Category[] }) {
                             name="title"
                             id="title"
                             required
-                            className="w-full rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm px-4 py-2 border"
+                            className={`w-full rounded-lg shadow-sm sm:text-sm px-4 py-2 border ${errors.title ? 'border-red-300 focus:border-red-500 focus:ring-red-500' : 'border-gray-300 focus:border-green-500 focus:ring-green-500'
+                                }`}
                             placeholder="例如：Sony A7III 全片幅相機"
                         />
+                        {errors.title && <p className="text-xs text-red-500 mt-1">{errors.title}</p>}
                     </div>
 
                     <div>
@@ -142,7 +221,8 @@ export function ItemCreateForm({ categories }: { categories: Category[] }) {
                             id="categoryId"
                             name="categoryId"
                             required
-                            className="w-full rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm px-4 py-2 border"
+                            className={`w-full rounded-lg shadow-sm sm:text-sm px-4 py-2 border ${errors.categoryId ? 'border-red-300 focus:border-red-500 focus:ring-red-500' : 'border-gray-300 focus:border-green-500 focus:ring-green-500'
+                                }`}
                         >
                             <option value="">選擇分類...</option>
                             {parentCategories.map(parent => (
@@ -157,6 +237,7 @@ export function ItemCreateForm({ categories }: { categories: Category[] }) {
                                 <option key={c.id} value={c.id}>{c.name}</option>
                             ))}
                         </select>
+                        {errors.categoryId && <p className="text-xs text-red-500 mt-1">{errors.categoryId}</p>}
                     </div>
 
                     <div>
@@ -168,9 +249,11 @@ export function ItemCreateForm({ categories }: { categories: Category[] }) {
                             name="description"
                             required
                             rows={5}
-                            className="w-full rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm px-4 py-2 border"
+                            className={`w-full rounded-lg shadow-sm sm:text-sm px-4 py-2 border ${errors.description ? 'border-red-300 focus:border-red-500 focus:ring-red-500' : 'border-gray-300 focus:border-green-500 focus:ring-green-500'
+                                }`}
                             placeholder="請描述物品的新舊狀況、配件包含什麼、以及任何特殊注意事項..."
                         />
+                        {errors.description && <p className="text-xs text-red-500 mt-1">{errors.description}</p>}
                     </div>
                 </div>
 
@@ -185,14 +268,16 @@ export function ItemCreateForm({ categories }: { categories: Category[] }) {
                                 type="number"
                                 name="price"
                                 required
-                                min="0"
-                                className="block w-full rounded-lg border-gray-300 pl-7 focus:border-green-500 focus:ring-green-500 sm:text-sm px-4 py-2 border"
+                                min="1"
+                                className={`block w-full rounded-lg pl-7 sm:text-sm px-4 py-2 border ${errors.price ? 'border-red-300 focus:border-red-500 focus:ring-red-500' : 'border-gray-300 focus:border-green-500 focus:ring-green-500'
+                                    }`}
                                 placeholder="0"
                             />
                             <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
                                 <span className="text-gray-500 sm:text-sm">/ 日</span>
                             </div>
                         </div>
+                        {errors.price && <p className="text-xs text-red-500 mt-1">{errors.price}</p>}
                     </div>
 
                     <div>
@@ -206,7 +291,8 @@ export function ItemCreateForm({ categories }: { categories: Category[] }) {
                                 name="deposit"
                                 required
                                 min="0"
-                                className="block w-full rounded-lg border-gray-300 pl-7 focus:border-green-500 focus:ring-green-500 sm:text-sm px-4 py-2 border"
+                                className={`block w-full rounded-lg pl-7 sm:text-sm px-4 py-2 border ${errors.deposit ? 'border-red-300 focus:border-red-500 focus:ring-red-500' : 'border-gray-300 focus:border-green-500 focus:ring-green-500'
+                                    }`}
                                 placeholder="0"
                             />
                         </div>
@@ -224,15 +310,17 @@ export function ItemCreateForm({ categories }: { categories: Category[] }) {
                             type="text"
                             name="location"
                             required
-                            className="block w-full rounded-lg border-gray-300 pl-9 focus:border-green-500 focus:ring-green-500 sm:text-sm px-4 py-2 border"
+                            className={`block w-full rounded-lg pl-9 sm:text-sm px-4 py-2 border ${errors.location ? 'border-red-300 focus:border-red-500 focus:ring-red-500' : 'border-gray-300 focus:border-green-500 focus:ring-green-500'
+                                }`}
                             placeholder="例如：台北市信義區市政府站"
                         />
                     </div>
+                    {errors.location && <p className="text-xs text-red-500 mt-1">{errors.location}</p>}
                 </div>
 
                 <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">可租賃期間 (選填)</label>
-                    <div className="flex grid-cols-2 gap-4">
+                    <div className="flex gap-4">
                         <div className="flex-1">
                             <label className="text-xs text-gray-500 mb-1 block">開始日期 (最早)</label>
                             <input

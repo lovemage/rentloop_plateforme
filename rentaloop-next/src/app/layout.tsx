@@ -5,6 +5,7 @@ import { SiteHeader } from "@/components/layout/site-header";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SessionProvider } from "@/components/providers/session-provider";
 import { auth } from "@/auth";
+import { Toaster } from "react-hot-toast";
 
 const manrope = Manrope({
   subsets: ["latin"],
@@ -44,6 +45,31 @@ export default async function RootLayout({
       </head>
       <body className="bg-background-light dark:bg-background-dark text-text-main dark:text-white font-display">
         <SessionProvider session={session}>
+          <Toaster
+            position="top-center"
+            toastOptions={{
+              duration: 4000,
+              style: {
+                background: '#333',
+                color: '#fff',
+                borderRadius: '12px',
+                padding: '12px 16px',
+                fontSize: '14px',
+              },
+              success: {
+                iconTheme: {
+                  primary: '#22c55e',
+                  secondary: '#fff',
+                },
+              },
+              error: {
+                iconTheme: {
+                  primary: '#ef4444',
+                  secondary: '#fff',
+                },
+              },
+            }}
+          />
           <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden">
             <SiteHeader />
             <main className="flex-1 flex flex-col">{children}</main>
@@ -54,3 +80,4 @@ export default async function RootLayout({
     </html>
   );
 }
+

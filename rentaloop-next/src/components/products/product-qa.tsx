@@ -5,8 +5,10 @@ import { askQuestion, replyQuestion } from '@/app/actions/qa';
 import { formatDistanceToNow } from 'date-fns';
 import { zhTW } from 'date-fns/locale';
 import Image from 'next/image';
+import toast from 'react-hot-toast';
 
-interface Question {
+// Export Question interface for reuse
+export interface Question {
     id: string;
     content: string;
     reply: string | null;
@@ -38,8 +40,9 @@ export function ProductQA({ itemId, questions, isOwner, currentUserId }: Product
 
         const res = await askQuestion(itemId, askContent);
         if (res.error) {
-            alert(res.error);
+            toast.error(res.error);
         } else {
+            toast.success('問題已送出！');
             setAskContent('');
         }
         setSubmitting(false);
@@ -51,8 +54,9 @@ export function ProductQA({ itemId, questions, isOwner, currentUserId }: Product
 
         const res = await replyQuestion(itemId, questionId, replyContent);
         if (res.error) {
-            alert(res.error);
+            toast.error(res.error);
         } else {
+            toast.success('回覆成功！');
             setReplyingId(null);
             setReplyContent('');
         }
@@ -171,8 +175,10 @@ export function ProductQA({ itemId, questions, isOwner, currentUserId }: Product
                                 placeholder="請問這個還有空檔嗎？配件包含什麼？(請勿留下電話或Line，以免被系統屏蔽)"
                                 rows={3}
                                 required
+                                maxLength={500}
                             />
-                            <div className="flex justify-end mt-2">
+                            <div className="flex justify-between items-center mt-2">
+                                <span className="text-xs text-gray-400">{askContent.length}/500</span>
                                 <button
                                     type="submit"
                                     disabled={submitting}

@@ -20,6 +20,7 @@ import {
 } from 'date-fns';
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon } from 'lucide-react';
 import { zhTW } from 'date-fns/locale';
+import toast from 'react-hot-toast';
 
 interface RentalCalendarProps {
     pricePerDay: number;
@@ -81,7 +82,7 @@ export function RentalCalendar({ pricePerDay, disabledDates = [], availableRange
                 const hasDisabled = range.some(d => isDateDisabled(d));
 
                 if (hasDisabled) {
-                    alert('選擇期間包含不可租用的日期，請重新選擇');
+                    toast.error('選擇期間包含不可租用的日期，請重新選擇');
                     newStart = date;
                     newEnd = null;
                 } else {

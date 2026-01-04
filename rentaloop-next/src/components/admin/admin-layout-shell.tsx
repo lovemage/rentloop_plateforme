@@ -8,6 +8,7 @@ import {
     LayoutDashboard,
     FolderTree,
     LogOut,
+    Calendar,
 } from "lucide-react";
 
 const sidebarItems = [
@@ -15,6 +16,11 @@ const sidebarItems = [
         title: "總覽 (Dashboard)",
         href: "/admin",
         icon: LayoutDashboard,
+    },
+    {
+        title: "預約訂單管理",
+        href: "/admin/rentals",
+        icon: Calendar,
     },
     {
         title: "會員管理",
