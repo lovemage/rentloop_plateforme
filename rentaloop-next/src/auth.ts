@@ -9,6 +9,7 @@ import { eq } from "drizzle-orm"
 const ADMIN_EMAILS = ['rexliaobusiness@gmail.com', 'aistorm0910@gmail.com'];
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
+    trustHost: true, // Trust Railway proxy
     adapter: DrizzleAdapter(db, {
         usersTable: users,
         accountsTable: accounts,
