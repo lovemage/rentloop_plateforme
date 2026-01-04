@@ -21,6 +21,10 @@ const itemFormSchema = z.object({
     images: z.array(z.string().url()).min(1, '請至少上傳一張照片'),
     availableFrom: z.string().optional(),
     availableTo: z.string().optional(),
+    condition: z.string().optional(),
+    notes: z.string().optional(),
+    discountRate3Days: z.number().min(0).max(100).optional(),
+    discountRate7Days: z.number().min(0).max(100).optional(),
 });
 
 interface Category {
@@ -94,6 +98,10 @@ export function ItemCreateForm({ categories }: { categories: Category[] }) {
             images: imageUrls,
             availableFrom: formData.get('availableFrom') as string,
             availableTo: formData.get('availableTo') as string,
+            condition: formData.get('condition') as string,
+            notes: formData.get('notes') as string,
+            discountRate3Days: Number(formData.get('discountRate3Days') || 0),
+            discountRate7Days: Number(formData.get('discountRate7Days') || 0),
         };
 
         const result = itemFormSchema.safeParse(data);
@@ -299,6 +307,71 @@ export function ItemCreateForm({ categories }: { categories: Category[] }) {
                             />
                         </div>
                         <p className="text-xs text-gray-500 mt-1">租賃結束無損壞將全額退還</p>
+                    </div>
+                </div>
+
+                {/* Additional Info */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">物品狀況</label>
+                        <select
+                            name="condition"
+                            className="block w-full rounded-lg sm:text-sm px-4 py-2 border border-gray-300 focus:border-green-500 focus:ring-green-500"
+                        >
+                            <option value="good">良好</option>
+                            <option value="mint">近全新</option>
+                            <option value="fair">可接受</option>
+                            <option value="poor">有明顯使用痕跡</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">注意事項 / 租賃補充規則</label>
+                    <textarea
+                        name="notes"
+                        rows={3}
+                        className="w-full rounded-lg shadow-sm sm:text-sm px-4 py-2 border border-gray-300 focus:border-green-500 focus:ring-green-500"
+                        placeholder="例如：請勿在沙灘使用、歸還前請清潔..."
+                    />
+                </div>
+
+                {/* Discounts */}
+                <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">長租優惠 (折扣百分比 %)</label>
+                    <div className="grid grid-cols-2 gap-6">
+                        <div>
+                            <label className="text-xs text-gray-500 mb-1 block">租滿 3 天 (以上)</label>
+                            <div className="relative rounded-md shadow-sm">
+                                <input
+                                    type="number"
+                                    name="discountRate3Days"
+                                    min="0"
+                                    max="100"
+                                    className="block w-full rounded-lg pr-8 sm:text-sm px-4 py-2 border border-gray-300 focus:border-green-500 focus:ring-green-500"
+                                    placeholder="0"
+                                />
+                                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+                                    <span className="text-gray-500 sm:text-sm">% off</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <label className="text-xs text-gray-500 mb-1 block">租滿 7 天 (以上)</label>
+                            <div className="relative rounded-md shadow-sm">
+                                <input
+                                    type="number"
+                                    name="discountRate7Days"
+                                    min="0"
+                                    max="100"
+                                    className="block w-full rounded-lg pr-8 sm:text-sm px-4 py-2 border border-gray-300 focus:border-green-500 focus:ring-green-500"
+                                    placeholder="0"
+                                />
+                                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+                                    <span className="text-gray-500 sm:text-sm">% off</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 

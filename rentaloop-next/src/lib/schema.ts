@@ -119,6 +119,13 @@ export const items = pgTable('items', {
     availableFrom: timestamp('available_from'),
     availableTo: timestamp('available_to'),
     status: text('status').default('active'),
+
+    // New Fields
+    discountRate3Days: integer('discount_rate_3_days').default(0), // Percentage off (e.g. 10 = 10% off)
+    discountRate7Days: integer('discount_rate_7_days').default(0),
+    condition: text('condition').default('good'),
+    notes: text('notes'), // Could be JSON or newline separated string
+
     createdAt: timestamp('created_at').defaultNow(),
 });
 

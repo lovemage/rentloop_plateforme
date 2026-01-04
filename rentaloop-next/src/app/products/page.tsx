@@ -1,34 +1,35 @@
 import { db } from "@/lib/db";
 import { items, categories } from "@/lib/schema";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, inArray } from "drizzle-orm";
 import Link from "next/link";
 import Image from "next/image";
 
-// Reusing category structure for UI, but mapping to DB later could be better
-const categoryLinks = [
-  { icon: "grid_view", label: "All Items", href: "/products" },
-  { icon: "photo_camera", label: "Electronics", slug: "3c-camera" },
-  { icon: "camping", label: "Outdoors", slug: "outdoor-camping" },
-  { icon: "construction", label: "Tools & DIY", slug: "home-appliances" },
-  { icon: "checkroom", label: "Fashion", slug: "apparel" },
-];
+// Helper to get category hierarchy
+async function getAllCategories() {
+  const all = await db.select().from(categories).orderBy(desc(categories.level)); // Fetch all
+  // Build tree
+  const roots = all.filter(c => !c.parentId);
+  const getChildren = (pid: string) => all.filter(c => c.parentId === pid);
+  return { roots, getChildren, all };
+}
 
 async function getProducts(categorySlug?: string) {
   try {
-    const query = db.select().from(items).orderBy(desc(items.createdAt));
+    let query = db.select().from(items).orderBy(desc(items.createdAt));
 
-    // 如果有分類篩選，需要 Join categories
     if (categorySlug) {
-      // 這裡簡化處理：先查 category id，再 filter items
-      // 實際上應該用 Join，但這邊寫兩個查詢比較快理解
       const cat = await db.select().from(categories).where(eq(categories.slug, categorySlug)).limit(1);
+
       if (cat.length > 0) {
-        // 找出該分類及其子分類
-        // SQL Recursive CTE 比較好，但這裡先只查這個 categoryId 下的 items (假設 items 已經 link 到正確的 category)
-        // 我們的 seed 邏輯是 link 到 child category，所以如果點選 root category 可能查不到？
-        // 沒關係，先實作簡單版本：查所有 items
-        // TODO: Implement proper category filtering
-        return await db.select().from(items).orderBy(desc(items.createdAt)); // Fallback: return all for demo
+        const targetCat = cat[0];
+        // Find all descendant category IDs (including self)
+        // Simplification: just find direct children if it's a parent, or self.
+        // For distinct "levels", we might need recursive query, but let's do 1 level deep for now.
+        const children = await db.select({ id: categories.id }).from(categories).where(eq(categories.parentId, targetCat.id));
+        const ids = [targetCat.id, ...children.map(c => c.id)];
+
+        // Filter items
+        query = db.select().from(items).where(inArray(items.categoryId, ids)).orderBy(desc(items.createdAt));
       }
     }
 
@@ -46,6 +47,7 @@ export default async function ProductsPage({
 }) {
   const { category } = await searchParams;
   const productList = await getProducts(category);
+  const { roots, getChildren } = await getAllCategories();
 
   return (
     <div className="flex min-h-screen flex-col bg-gray-50 text-gray-900">
@@ -68,27 +70,47 @@ export default async function ProductsPage({
                 Clear
               </Link>
             </div>
-            <ul className="space-y-1">
-              {categoryLinks.map((cat) => {
-                const isActive = !category && !cat.slug || category === cat.slug;
+
+            <div className="space-y-4">
+              {roots.map((root) => {
+                const children = getChildren(root.id);
+                const isRootActive = category === root.slug || category === root.id;
+
                 return (
-                  <li key={cat.label}>
+                  <div key={root.id}>
                     <Link
-                      href={cat.slug ? `/products?category=${cat.slug}` : '/products'}
-                      className={`flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors ${isActive
-                        ? "bg-green-100 text-green-800 font-bold"
-                        : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
-                        }`}
+                      href={`/products?category=${root.slug || root.id}`}
+                      className={`flex w-full items-center gap-3 rounded-lg px-2 py-2 text-sm transition-colors font-bold ${isRootActive ? "text-green-700" : "text-gray-900 hover:text-green-600"}`}
                     >
-                      <span className="material-symbols-outlined text-[20px]">
-                        {cat.icon}
-                      </span>
-                      {cat.label}
+                      <span className="material-symbols-outlined text-[20px] text-gray-400">category</span>
+                      {root.name}
                     </Link>
-                  </li>
+
+                    {children.length > 0 && (
+                      <ul className="ml-8 space-y-1 mt-1 border-l-2 border-gray-100 pl-2">
+                        {children.map(child => {
+                          const isChildActive = category === child.slug || category === child.id;
+                          return (
+                            <li key={child.id}>
+                              <Link
+                                href={`/products?category=${child.slug || child.id}`}
+                                className={`block py-1 text-sm transition-colors ${isChildActive ? "text-green-600 font-bold" : "text-gray-500 hover:text-gray-900"}`}
+                              >
+                                {child.name}
+                              </Link>
+                            </li>
+                          )
+                        })}
+                      </ul>
+                    )}
+                  </div>
                 );
               })}
-            </ul>
+            </div>
+
+            {roots.length === 0 && (
+              <div className="text-sm text-gray-400 italic">No categories found.</div>
+            )}
           </div>
 
           <hr className="hidden lg:block border-gray-200" />

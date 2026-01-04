@@ -34,6 +34,11 @@ export async function createItem(formData: FormData) {
     const availableFrom = availableFromStr ? new Date(availableFromStr) : null;
     const availableTo = availableToStr ? new Date(availableToStr) : null;
 
+    const condition = formData.get('condition') as string || 'good';
+    const notes = formData.get('notes') as string || '';
+    const discountRate3Days = parseInt(formData.get('discountRate3Days') as string) || 0;
+    const discountRate7Days = parseInt(formData.get('discountRate7Days') as string) || 0;
+
     try {
         const [newItem] = await db.insert(items).values({
             ownerId,
@@ -47,6 +52,10 @@ export async function createItem(formData: FormData) {
             availableFrom,
             availableTo,
             status: 'active',
+            condition,
+            notes,
+            discountRate3Days,
+            discountRate7Days
         }).returning({ id: items.id });
 
         revalidatePath('/products');

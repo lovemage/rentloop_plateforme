@@ -235,7 +235,7 @@ export function MemberHostOnboarding({ initialProfile }: { initialProfile: Profi
                 </a>
               </li>
             </ul>
-            <label className="mt-4 flex items-start gap-3 rounded-xl bg-gray-50 dark:bg-gray-800 p-4 border border-gray-200 dark:border-gray-700 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+            <label className="mt-4 flex items-start gap-3 rounded-xl bg-primary/10 p-4 border border-primary/20 cursor-pointer hover:bg-primary/20 transition-colors">
               <input
                 type="checkbox"
                 checked={privacyAccepted}

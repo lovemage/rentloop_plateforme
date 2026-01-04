@@ -3,7 +3,7 @@
 import { useState, useTransition } from 'react';
 import { RentalCalendar } from '@/components/ui/rental-calendar';
 import { X, CheckCircle, AlertTriangle, Loader2 } from 'lucide-react';
-import { createRental } from '@/app/actions/rentals';
+import { createRental, blockDates } from '@/app/actions/rentals';
 import { format } from 'date-fns';
 import { zhTW } from 'date-fns/locale';
 
@@ -16,6 +16,8 @@ interface RentalCardProps {
     availableRange?: { from: Date | null; to: Date | null };
     isLoggedIn?: boolean;
     isOwner?: boolean;
+    discountRate3Days?: number;
+    discountRate7Days?: number;
 }
 
 export function RentalCard({
@@ -26,7 +28,9 @@ export function RentalCard({
     blockedDates = [],
     availableRange,
     isLoggedIn = false,
-    isOwner = false
+    isOwner = false,
+    discountRate3Days = 0,
+    discountRate7Days = 0
 }: RentalCardProps) {
     const [isMobileCalendarOpen, setIsMobileCalendarOpen] = useState(false);
     const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
@@ -58,18 +62,28 @@ export function RentalCard({
         if (!bookingData.start || !bookingData.end) return;
 
         startTransition(async () => {
-            const result = await createRental({
-                itemId,
-                startDate: format(bookingData.start!, 'yyyy-MM-dd'),
-                endDate: format(bookingData.end!, 'yyyy-MM-dd'),
-                totalDays: bookingData.days,
-                totalAmount: bookingData.total,
-            });
+            let result;
+
+            if (isOwner) {
+                result = await blockDates({
+                    itemId,
+                    startDate: format(bookingData.start!, 'yyyy-MM-dd'),
+                    endDate: format(bookingData.end!, 'yyyy-MM-dd'),
+                });
+            } else {
+                result = await createRental({
+                    itemId,
+                    startDate: format(bookingData.start!, 'yyyy-MM-dd'),
+                    endDate: format(bookingData.end!, 'yyyy-MM-dd'),
+                    totalDays: bookingData.days,
+                    totalAmount: bookingData.total,
+                });
+            }
 
             setIsConfirmModalOpen(false);
             setResultMessage({
                 success: result.success,
-                message: result.success ? result.message! : result.error!
+                message: result.message || result.error || (result.success ? '成功' : '失敗')
             });
             setIsResultModalOpen(true);
 
@@ -186,17 +200,9 @@ export function RentalCard({
         </div>
     );
 
-    // Disabled state for owner
-    if (isOwner) {
-        return (
-            <div className="hidden lg:block sticky top-24 bg-white border border-gray-200 rounded-xl shadow-[0_6px_16px_rgba(0,0,0,0.12)] p-6 z-10">
-                <div className="text-center py-8">
-                    <p className="text-gray-500 font-medium">這是您的商品</p>
-                    <p className="text-sm text-gray-400 mt-2">您無法預約自己的商品</p>
-                </div>
-            </div>
-        );
-    }
+    // Disabled state for owner removed - now allows blocking logic
+    // But we need distinct UI for Owner
+
 
     // --- Desktop Sidebar View ---
     const DesktopView = (
@@ -219,6 +225,8 @@ export function RentalCard({
                         disabledDates={blockedDates}
                         availableRange={availableRange}
                         onDateChange={handleDateChange}
+                        discountRate3Days={discountRate3Days}
+                        discountRate7Days={discountRate7Days}
                     />
                 </div>
             </div>
@@ -226,12 +234,20 @@ export function RentalCard({
             <button
                 onClick={handleBookingClick}
                 disabled={bookingData.days === 0 || isPending}
-                className="w-full py-3.5 bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600 text-white font-bold rounded-lg shadow-lg disabled:opacity-50 disabled:shadow-none transition-all active:scale-[0.98]"
+                className={`w-full py-3.5 font-bold rounded-lg shadow-lg disabled:opacity-50 disabled:shadow-none transition-all active:scale-[0.98] ${isOwner
+                        ? "bg-gray-800 hover:bg-black text-white"
+                        : "bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600 text-white"
+                    }`}
             >
-                {!isLoggedIn ? '登入以預約' : bookingData.days > 0 ? `送出預約 · $${bookingData.total.toLocaleString()}` : '選擇日期'}
+                {isOwner
+                    ? (bookingData.days > 0 ? "保留此時段 (不開放)" : "選擇保留日期")
+                    : (!isLoggedIn ? '登入以預約' : bookingData.days > 0 ? `送出預約 · $${bookingData.total.toLocaleString()}` : '選擇日期')
+                }
             </button>
 
-            <p className="text-center text-xs text-gray-400 mt-4">預約後店家將審核您的申請</p>
+            <p className="text-center text-xs text-gray-400 mt-4">
+                {isOwner ? "選擇日期以設定不開放出租的時段" : "預約後店家將審核您的申請"}
+            </p>
         </div>
     );
 
@@ -285,6 +301,8 @@ export function RentalCard({
                                 disabledDates={blockedDates}
                                 availableRange={availableRange}
                                 onDateChange={handleDateChange}
+                                discountRate3Days={discountRate3Days}
+                                discountRate7Days={discountRate7Days}
                             />
                         </div>
 

@@ -23,17 +23,26 @@ import toast from 'react-hot-toast';
 
 interface RentalCalendarProps {
     pricePerDay: number;
-    disabledDates?: Date[]; // Array of dates that are booked
-    availableRange?: { from: Date | null; to: Date | null }; // New Prop
+    disabledDates?: Date[];
+    availableRange?: { from: Date | null; to: Date | null };
     onDateChange?: (startDate: Date | null, endDate: Date | null, days: number, total: number) => void;
+    discountRate3Days?: number;
+    discountRate7Days?: number;
 }
 
-export function RentalCalendar({ pricePerDay, disabledDates = [], availableRange, onDateChange }: RentalCalendarProps) {
+export function RentalCalendar({
+    pricePerDay,
+    disabledDates = [],
+    availableRange,
+    onDateChange,
+    discountRate3Days = 0,
+    discountRate7Days = 0
+}: RentalCalendarProps) {
     const [currentMonth, setCurrentMonth] = useState(new Date());
     const [startDate, setStartDate] = useState<Date | null>(null);
     const [endDate, setEndDate] = useState<Date | null>(null);
 
-    // Generate calendar days
+    // ... (calendar gen)
     const monthStart = startOfMonth(currentMonth);
     const monthEnd = endOfMonth(monthStart);
     const startDateCalendar = startOfWeek(monthStart);
@@ -48,15 +57,20 @@ export function RentalCalendar({ pricePerDay, disabledDates = [], availableRange
     const prevMonth = () => setCurrentMonth(subMonths(currentMonth, 1));
 
     const isDateDisabled = (date: Date) => {
-        // Disable past dates
         if (isBefore(date, addDays(new Date(), -1))) return true;
-
-        // Disable dates outside available range
         if (availableRange?.from && isBefore(date, availableRange.from)) return true;
         if (availableRange?.to && isAfter(date, availableRange.to)) return true;
-
-        // Disable booked dates
         return disabledDates.some(disabledDate => isSameDay(date, disabledDate));
+    };
+
+    const calculateTotal = (start: Date, end: Date) => {
+        const days = differenceInDays(end, start) + 1;
+        let rate = 0;
+        if (days >= 7 && discountRate7Days > 0) rate = discountRate7Days;
+        else if (days >= 3 && discountRate3Days > 0) rate = discountRate3Days;
+
+        const total = Math.round(days * pricePerDay * (1 - rate / 100));
+        return { total, rate };
     };
 
     const handleDateClick = (date: Date) => {
@@ -66,20 +80,15 @@ export function RentalCalendar({ pricePerDay, disabledDates = [], availableRange
         let newEnd = endDate;
 
         if (!startDate || (startDate && endDate)) {
-            // Start new selection
             newStart = date;
             newEnd = null;
         } else if (startDate && !endDate) {
             if (isBefore(date, startDate)) {
-                // If clicked date is before start date, restart selection
                 newStart = date;
                 newEnd = null;
             } else {
-                // Valid range end
-                // Check if any disabled dates are in between
                 const range = eachDayOfInterval({ start: startDate, end: date });
                 const hasDisabled = range.some(d => isDateDisabled(d));
-
                 if (hasDisabled) {
                     toast.error('選擇期間包含不可租用的日期，請重新選擇');
                     newStart = date;
@@ -93,10 +102,9 @@ export function RentalCalendar({ pricePerDay, disabledDates = [], availableRange
         setStartDate(newStart);
         setEndDate(newEnd);
 
-        // Calculate totals
         if (newStart && newEnd) {
-            const days = differenceInDays(newEnd, newStart) + 1; // Include start day
-            const total = days * pricePerDay;
+            const days = differenceInDays(newEnd, newStart) + 1;
+            const { total } = calculateTotal(newStart, newEnd);
             if (onDateChange) onDateChange(newStart, newEnd, days, total);
         } else if (onDateChange) {
             onDateChange(newStart, null, 0, 0);
@@ -106,7 +114,7 @@ export function RentalCalendar({ pricePerDay, disabledDates = [], availableRange
     // Helper styles
     const getDayClass = (date: Date) => {
         const disabled = isDateDisabled(date);
-        if (disabled) return "text-gray-300 cursor-not-allowed bg-gray-50";
+        if (disabled) return "text-gray-300 cursor-not-allowed bg-gray-50 bg-[url('/cross-hatch.png')]"; // Example pattern
 
         const isStart = startDate && isSameDay(date, startDate);
         const isEnd = endDate && isSameDay(date, endDate);
@@ -118,9 +126,9 @@ export function RentalCalendar({ pricePerDay, disabledDates = [], availableRange
         return "text-gray-700 hover:bg-green-50 hover:text-green-600";
     };
 
-    // Summary Calculation
+    // Summary
     const days = startDate && endDate ? differenceInDays(endDate, startDate) + 1 : 0;
-    const total = days * pricePerDay;
+    const { total, rate } = (startDate && endDate) ? calculateTotal(startDate, endDate) : { total: 0, rate: 0 };
 
     return (
         <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-4 w-full max-w-sm">
@@ -177,11 +185,19 @@ export function RentalCalendar({ pricePerDay, disabledDates = [], availableRange
                     </span>
                 </div>
 
-                <div className="mt-2 flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                    <span className="text-sm font-medium text-gray-600">總金額</span>
-                    <span className="text-lg font-bold text-green-600">
-                        ${total.toLocaleString()}
-                    </span>
+                <div className="mt-2 flex flex-col gap-1 p-3 bg-gray-50 rounded-lg">
+                    {rate > 0 && (
+                        <div className="flex justify-between text-xs text-green-600 mb-1">
+                            <span>長租優惠 ({rate}% off)</span>
+                            <span className="line-through text-gray-400">${(days * pricePerDay).toLocaleString()}</span>
+                        </div>
+                    )}
+                    <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium text-gray-600">總金額</span>
+                        <span className="text-lg font-bold text-green-600">
+                            ${total.toLocaleString()}
+                        </span>
+                    </div>
                 </div>
             </div>
         </div>

@@ -41,6 +41,8 @@ async function getProduct(id: string): Promise<{
     };
     notes: string[];
     condition: string;
+    discountRate3Days: number;
+    discountRate7Days: number;
 } | null> {
     try {
         const result = await db.select({
@@ -64,6 +66,10 @@ async function getProduct(id: string): Promise<{
             },
             pickupLocation: items.pickupLocation,
             createdAt: items.createdAt,
+            condition: items.condition,
+            notes: items.notes,
+            discountRate3Days: items.discountRate3Days,
+            discountRate7Days: items.discountRate7Days,
         })
             .from(items)
             .leftJoin(users, eq(items.ownerId, users.id))
@@ -75,6 +81,7 @@ async function getProduct(id: string): Promise<{
         const data = result[0];
 
         // Transform to UI format
+
         return {
             id: data.id,
             title: data.title,
@@ -83,7 +90,7 @@ async function getProduct(id: string): Promise<{
             deposit: data.deposit || 0,
             images: data.images ? (Array.isArray(data.images) ? data.images : [data.images]) : [],
             status: data.status,
-            ownerId: data.ownerId, // Pass through
+            ownerId: data.ownerId,
             availableFrom: data.availableFrom,
             availableTo: data.availableTo,
             location: {
@@ -101,12 +108,13 @@ async function getProduct(id: string): Promise<{
                 joinDate: data.owner?.joinDate ? new Date(data.owner.joinDate).getFullYear() + "年" : "2024年",
                 isVerified: data.owner?.role === 'verified' || data.owner?.role === 'admin'
             },
-            notes: [
+            notes: data.notes ? data.notes.split('\n') : [
                 "禁止用於非法用途",
-                "請愛惜使用，若有損壞需照價賠償",
-                "逾期歸還將加收罰金"
+                "請愛惜使用，若有損壞需照價賠償"
             ],
-            condition: "良好"
+            condition: data.condition || "良好",
+            discountRate3Days: data.discountRate3Days || 0,
+            discountRate7Days: data.discountRate7Days || 0,
         };
     } catch (err) {
         console.error("Error fetching product:", err);
@@ -157,7 +165,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
     }).from(rentals)
         .where(and(
             eq(rentals.itemId, id),
-            inArray(rentals.status, ['pending', 'approved', 'ongoing']),
+            inArray(rentals.status, ['pending', 'approved', 'ongoing', 'blocked']),
             gt(rentals.endDate, today)
         ));
 
@@ -326,6 +334,8 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
                                 availableRange={{ from: product.availableFrom, to: product.availableTo }}
                                 isLoggedIn={!!session?.user}
                                 isOwner={isOwner}
+                                discountRate3Days={product.discountRate3Days}
+                                discountRate7Days={product.discountRate7Days}
                             />
                         </div>
                     </div>

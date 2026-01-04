@@ -1,9 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { useSession, signIn } from "next-auth/react";
+import { signIn } from "next-auth/react";
 import Image from "next/image";
 
 const navItems = [
@@ -11,31 +10,31 @@ const navItems = [
   { href: "/products", label: "Products", subLabel: "商品總覽" },
 ];
 
+interface Category {
+  id: string;
+  name: string;
+  slug: string | null;
+  parentId: string | null;
+  level: number | null;
+}
+
 export function SiteHeader() {
-  const pathname = usePathname();
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const { data: session } = useSession();
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
 
+  // Fetch categories
   useEffect(() => {
-    document.body.style.overflow = mobileOpen ? "hidden" : "";
-    return () => {
-      document.body.style.overflow = "";
-    };
-  }, [mobileOpen]);
+    import("@/app/actions/categories").then(({ getCategories }) => {
+      getCategories().then((res) => {
+        if (res.success && res.data) {
+          setCategories(res.data);
+        }
+      });
+    });
+  }, []);
 
-  // Close mobile menu on route change (intentionally not including mobileOpen in deps
-  // since we only want to react to pathname changes, not re-close when mobileOpen changes)
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setMobileOpen(false);
-  }, [pathname]);
-
-  const isActive = (href: string) => {
-    if (href === "/") {
-      return pathname === "/";
-    }
-    return pathname === href || pathname.startsWith(`${href}/`);
-  };
+  const roots = categories.filter(c => !c.parentId);
+  const getChildren = (pid: string) => categories.filter(c => c.parentId === pid);
 
   return (
     <>
@@ -57,26 +56,52 @@ export function SiteHeader() {
             <Image src="/rentaloop_logo.png" alt="Rentaloop" width={140} height={32} priority />
           </Link>
           <nav className="hidden md:flex items-center gap-9">
-            {navItems.map((item) => (
+            <Link
+              href="/"
+              className={`flex flex-col leading-tight transition-colors ${isActive("/") ? "text-primary" : "text-text-main dark:text-white hover:text-primary"}`}
+            >
+              <span className="text-sm font-semibold">Home</span>
+              <span className={`text-[11px] ${isActive("/") ? "text-primary/70" : "text-text-sub dark:text-green-300"}`}>首頁</span>
+            </Link>
+
+            {/* Dynamic Categories Dropdown */}
+            <div
+              className="relative group h-full flex items-center"
+              onMouseEnter={() => setActiveDropdown('products')}
+              onMouseLeave={() => setActiveDropdown(null)}
+            >
               <Link
-                key={item.href}
-                href={item.href}
-                className={`flex flex-col leading-tight transition-colors ${isActive(item.href)
-                  ? "text-primary"
-                  : "text-text-main dark:text-white hover:text-primary"
-                  }`}
+                href="/products"
+                className={`flex flex-col leading-tight transition-colors ${isActive("/products") ? "text-primary" : "text-text-main dark:text-white group-hover:text-primary"}`}
               >
-                <span className="text-sm font-semibold">{item.label}</span>
-                <span
-                  className={`text-[11px] ${isActive(item.href)
-                    ? "text-primary/70"
-                    : "text-text-sub dark:text-green-300"
-                    }`}
-                >
-                  {item.subLabel}
+                <span className="text-sm font-semibold flex items-center gap-1">
+                  Products
+                  <span className="material-symbols-outlined text-[16px]">expand_more</span>
                 </span>
+                <span className={`text-[11px] ${isActive("/products") ? "text-primary/70" : "text-text-sub dark:text-green-300"}`}>商品總覽</span>
               </Link>
-            ))}
+
+              {/* Dropdown Content */}
+              <div className={`absolute top-full left-0 mt-2 w-[500px] bg-white dark:bg-surface-dark rounded-xl shadow-xl border border-gray-100 dark:border-gray-700 p-6 grid grid-cols-2 gap-6 transition-all duration-200 origin-top-left ${activeDropdown === 'products' ? 'opacity-100 scale-100 translate-y-0 visible' : 'opacity-0 scale-95 -translate-y-2 invisible'}`}>
+                <Link href="/products" className="col-span-2 text-primary hover:underline text-sm font-bold flex items-center gap-1 mb-2">
+                  查看所有商品 <span className="material-symbols-outlined text-sm">arrow_forward</span>
+                </Link>
+                {roots.map(root => (
+                  <div key={root.id}>
+                    <Link href={`/products?category=${root.slug || root.id}`} className="font-bold text-gray-900 dark:text-white hover:text-primary mb-2 block">
+                      {root.name}
+                    </Link>
+                    <div className="flex flex-col gap-1.5 ml-0">
+                      {getChildren(root.id).map(child => (
+                        <Link key={child.id} href={`/products?category=${child.slug || child.id}`} className="text-sm text-gray-500 hover:text-primary dark:text-gray-400">
+                          {child.name}
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           </nav>
         </div>
         <div className="flex flex-1 justify-end gap-4 md:gap-8">
@@ -152,8 +177,8 @@ export function SiteHeader() {
       </header>
 
       {mobileOpen ? (
-        <div className="fixed inset-0 z-[100] flex flex-col bg-background-light dark:bg-background-dark animate-fade-in">
-          <div className="flex items-center justify-between px-4 py-3 border-b border-[#e7f3eb] dark:border-border-dark">
+        <div className="fixed inset-0 z-[100] flex flex-col bg-background-light dark:bg-background-dark animate-fade-in overflow-y-auto">
+          <div className="flex items-center justify-between px-4 py-3 border-b border-[#e7f3eb] dark:border-border-dark sticky top-0 bg-inherit z-10">
             <Link href="/" className="flex items-center gap-3">
               <Image src="/rentaloop_logo.png" alt="Rentaloop" width={140} height={32} priority />
             </Link>
@@ -167,23 +192,39 @@ export function SiteHeader() {
             </button>
           </div>
           <nav className="flex flex-col p-6 gap-2">
-            {navItems.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className="flex items-center justify-between p-4 rounded-xl hover:bg-[#e7f3eb] dark:hover:bg-surface-dark text-text-main dark:text-white transition-all group"
-              >
-                <span className="flex flex-col leading-tight">
-                  <span className="text-lg font-bold">{item.label}</span>
-                  <span className="text-sm text-text-sub group-hover:text-primary">
-                    {item.subLabel}
-                  </span>
-                </span>
-                <span className="material-symbols-outlined text-text-sub group-hover:text-primary">
-                  arrow_forward_ios
-                </span>
-              </Link>
-            ))}
+            <Link
+              href="/"
+              className="flex items-center justify-between p-4 rounded-xl hover:bg-[#e7f3eb] dark:hover:bg-surface-dark text-text-main dark:text-white transition-all group"
+            >
+              <span className="flex flex-col leading-tight">
+                <span className="text-lg font-bold">Home</span>
+                <span className="text-sm text-text-sub group-hover:text-primary">首頁</span>
+              </span>
+            </Link>
+
+            {/* Mobile Categories Accordion-like */}
+            <div className="flex flex-col rounded-xl border border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-surface-dark/50 overflow-hidden">
+              <div className="p-4 font-bold text-lg flex items-center justify-between">
+                Products
+                <Link href="/products" className="text-primary text-sm">All</Link>
+              </div>
+              <div className="px-4 pb-4 flex flex-col gap-4">
+                {roots.map(root => (
+                  <div key={root.id}>
+                    <Link href={`/products?category=${root.slug || root.id}`} className="font-bold text-gray-800 dark:text-gray-200 block mb-1">
+                      {root.name}
+                    </Link>
+                    <div className="pl-4 border-l-2 border-gray-200 dark:border-gray-700 flex flex-col gap-2">
+                      {getChildren(root.id).map(child => (
+                        <Link key={child.id} href={`/products?category=${child.slug || child.id}`} className="text-sm text-gray-500 hover:text-primary">
+                          {child.name}
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
 
             <div className="h-px bg-[#e7f3eb] dark:bg-border-dark my-2" />
 

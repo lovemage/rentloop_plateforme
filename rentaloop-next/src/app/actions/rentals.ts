@@ -5,7 +5,6 @@ import { rentals, items, users } from "@/lib/schema";
 import { eq, desc, and, inArray, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
-import { getTodayDateString } from "@/lib/date-utils";
 
 // 預約狀態類型
 export type RentalStatus = 'pending' | 'approved' | 'rejected' | 'ongoing' | 'completed' | 'cancelled';
@@ -312,5 +311,63 @@ export async function getOwnerRentals() {
     } catch (error) {
         console.error("Failed to fetch owner rentals:", error);
         return { success: false, error: "Failed to fetch rentals" };
+    }
+}
+
+// 商家封鎖日期 (不接受預約)
+export async function blockDates(data: {
+    itemId: string;
+    startDate: string;
+    endDate: string;
+}) {
+    try {
+        const session = await auth();
+        if (!session?.user?.id) {
+            return { success: false, error: "請先登入" };
+        }
+
+        const userId = session.user.id;
+
+        // 取得物品資訊並確認擁有者
+        const item = await db.select({
+            ownerId: items.ownerId,
+            title: items.title,
+        }).from(items).where(eq(items.id, data.itemId)).limit(1);
+
+        if (item.length === 0) return { success: false, error: "找不到此商品" };
+        if (item[0].ownerId !== userId) return { success: false, error: "您無權操作此商品" };
+
+        // 檢查日期是否衝突
+        const conflictingRentals = await db.select({ id: rentals.id })
+            .from(rentals)
+            .where(and(
+                eq(rentals.itemId, data.itemId),
+                inArray(rentals.status, ['pending', 'approved', 'ongoing', 'blocked']),
+                sql`NOT (${rentals.endDate} < ${data.startDate} OR ${rentals.startDate} > ${data.endDate})`
+            ));
+
+        if (conflictingRentals.length > 0) {
+            return { success: false, error: "所選日期區間已經有預約或已被封鎖" };
+        }
+
+        // 建立封鎖紀錄 (Pseudo-rental)
+        // Set totalAmount = 0, renterId = ownerId
+        await db.insert(rentals).values({
+            itemId: data.itemId,
+            renterId: userId,
+            ownerId: userId,
+            startDate: data.startDate,
+            endDate: data.endDate,
+            totalDays: 0,
+            totalAmount: 0,
+            status: 'blocked',
+        });
+
+        revalidatePath(`/products/${data.itemId}`);
+        return { success: true, message: "已保留指定日期 (不開放出租)" };
+
+    } catch (error) {
+        console.error("Failed to block dates:", error);
+        return { success: false, error: "操作失敗" };
     }
 }
