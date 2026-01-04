@@ -51,6 +51,8 @@ export async function uploadAvatar(formData: FormData) {
                 if (error) {
                     console.error('Cloudinary Avatar Upload Error:', error);
                     reject(error);
+                } else if (!result) {
+                    reject(new Error('Upload failed: No result returned'));
                 } else {
                     resolve(result);
                 }

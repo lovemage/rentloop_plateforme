@@ -43,7 +43,7 @@ export const authConfig = {
             }
             return token;
         },
-        async session({ session, user, token }: { session: { user: { id: string; role?: string; email?: string | null } }; user?: User; token?: JWT }) {
+        async session({ session, user, token }) {
             // Note: In middleware (using JWT strategy by default if no adapter), 'user' might be undefined
             // When using adapter in auth.ts, 'user' is populated from DB.
             // When using middleware, we rely on JWT or simple checks.
@@ -53,7 +53,7 @@ export const authConfig = {
                 if (user) {
                     session.user.id = user.id;
                     // Handle other fields from DB user if available
-                    session.user.role = user.role || 'basic';
+                    session.user.role = (user as User & { role?: string }).role || 'basic';
                 } else if (token) {
                     session.user.id = token.sub as string;
                     session.user.role = (token.role as string) || session.user.role;

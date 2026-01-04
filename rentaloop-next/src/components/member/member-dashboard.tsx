@@ -12,14 +12,22 @@ import { AvatarUploader } from '@/components/member/avatar-uploader';
 type Tab = 'renter' | 'host';
 
 interface MemberProfile {
-    hostStatus?: string | null;
-    createdAt?: string | null;
-    updatedAt?: string | null;
-    hostRulesAcceptedAt?: string | null;
-    displayName?: string | null;
-    phone?: string | null;
-    address?: string | null;
-    userId?: string;
+    userId: string;
+    realName: string | null;
+    lineId: string | null;
+    phone: string | null;
+    city: string | null;
+    district: string | null;
+    address: string | null;
+    hostStatus: string | null;
+    hostCity: string | null;
+    hostDistrict: string | null;
+    kycIdFrontUrl: string | null;
+    kycIdBackUrl: string | null;
+    hostRulesAccepted: boolean | null;
+    hostRulesAcceptedAt: string | null;
+    createdAt: string | null;
+    updatedAt: string | null;
 }
 
 interface Stat {

@@ -46,6 +46,8 @@ export async function uploadImage(formData: FormData) {
                 if (error) {
                     console.error('Cloudinary Upload Error:', error);
                     reject(error);
+                } else if (!result) {
+                    reject(new Error('Upload failed: No result returned'));
                 } else {
                     resolve(result);
                 }

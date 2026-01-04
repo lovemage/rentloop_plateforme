@@ -18,7 +18,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     }),
     callbacks: {
         ...authConfig.callbacks,
-        async session({ session, user, token }: { session: { user: { id: string; role?: string; email?: string | null } }; user?: User; token?: JWT }) {
+        async session({ session, user, token }) {
             if (session.user) {
                 if (user) {
                     session.user.id = user.id;
@@ -26,7 +26,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
                     if (session.user.email && ADMIN_EMAILS.includes(session.user.email)) {
                         session.user.role = 'admin';
 
-                        if (user.role !== 'admin') {
+                        if ((user as User & { role?: string }).role !== 'admin') {
                             try {
                                 await db.update(users).set({ role: 'admin' }).where(eq(users.id, user.id));
                             } catch (e) {
@@ -34,7 +34,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
                             }
                         }
                     } else {
-                        session.user.role = user.role || 'basic';
+                        session.user.role = (user as User & { role?: string }).role || 'basic';
                     }
                 } else if (token) {
                     session.user.id = token.sub as string;
