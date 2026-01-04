@@ -72,6 +72,46 @@ export async function createRental(data: {
             status: 'pending',
         }).returning();
 
+        // 寄送通知信
+        try {
+            const { sendEmail } = await import("@/lib/email");
+            const owner = await db.query.users.findFirst({
+                where: eq(users.id, item[0].ownerId),
+                columns: { email: true, name: true }
+            });
+
+            // Email to Renter
+            if (session.user.email) {
+                await sendEmail({
+                    to: session.user.email,
+                    templateKey: "rental_booking_renter",
+                    data: {
+                        name: session.user.name || "Member",
+                        item: item[0].title,
+                        dates: `${data.startDate} ~ ${data.endDate}`,
+                        owner: owner?.name || "未知"
+                    }
+                });
+            }
+
+            // Email to Owner
+            if (owner?.email) {
+                await sendEmail({
+                    to: owner.email,
+                    templateKey: "rental_booking_owner",
+                    data: {
+                        name: owner.name || "Member",
+                        item: item[0].title,
+                        renter: session.user.name || "Guest",
+                        dates: `${data.startDate} ~ ${data.endDate}`
+                    }
+                });
+            }
+        } catch (mailError) {
+            console.error("Failed to send booking emails:", mailError);
+            // Don't fail the whole request
+        }
+
         revalidatePath(`/products/${data.itemId}`);
         revalidatePath('/member');
         revalidatePath('/admin/rentals');

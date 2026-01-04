@@ -10,6 +10,7 @@ import {
     LogOut,
     Calendar,
     BadgeCheck,
+    Mail,
 } from "lucide-react";
 
 const sidebarItems = [
@@ -42,6 +43,11 @@ const sidebarItems = [
         title: "分類管理",
         href: "/admin/categories",
         icon: FolderTree,
+    },
+    {
+        title: "信件模板 (Resend)",
+        href: "/admin/emails",
+        icon: Mail,
     },
 ];
 

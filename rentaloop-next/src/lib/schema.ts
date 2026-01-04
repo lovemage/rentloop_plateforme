@@ -195,3 +195,12 @@ export const usersRelations = relations(users, ({ one, many }) => ({
 export const userProfilesRelations = relations(userProfiles, ({ one }) => ({
     user: one(users, { fields: [userProfiles.userId], references: [users.id] }),
 }));
+
+export const emailTemplates = pgTable('email_templates', {
+    key: text('key').primaryKey(), // e.g., 'register_success'
+    subject: text('subject').notNull(),
+    body: text('body').notNull(), // HTML content
+    description: text('description'),
+    variables: text('variables'), // JSON string or comma-separated list of available variables
+    updatedAt: timestamp('updated_at').defaultNow(),
+});

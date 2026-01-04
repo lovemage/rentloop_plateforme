@@ -16,6 +16,23 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         sessionsTable: sessions,
         verificationTokensTable: verificationTokens,
     }),
+    events: {
+        async createUser({ user }) {
+            if (user.email) {
+                // Send Welcome Email
+                // We need to import sendEmail dynamically or ensure no circular dep issues? 
+                // sendEmail imports db and schema. auth imports db and schema. It's fine.
+                const { sendEmail } = await import("@/lib/email");
+                await sendEmail({
+                    to: user.email,
+                    templateKey: "register_success",
+                    data: {
+                        name: user.name || "Member",
+                    }
+                });
+            }
+        }
+    },
     callbacks: {
         ...authConfig.callbacks,
         async signIn({ user }) {

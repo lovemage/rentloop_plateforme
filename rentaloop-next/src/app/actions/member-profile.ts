@@ -111,6 +111,15 @@ export async function upsertMyProfile(input: unknown) {
       },
     });
 
+  if (data.hostStatus === 'pending' && session.user.email) {
+    const { sendEmail } = await import("@/lib/email");
+    await sendEmail({
+      to: session.user.email,
+      templateKey: "kyc_submitted",
+      data: { name: session.user.name || "Member" }
+    });
+  }
+
   const updated = await db
     .select()
     .from(userProfiles)

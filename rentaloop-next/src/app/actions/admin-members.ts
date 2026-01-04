@@ -93,14 +93,38 @@ export async function deleteMember(userId: string) {
     return { success: true };
 }
 
+import { sendEmail } from "@/lib/email";
+
 export async function updateKycStatus(userId: string, status: 'approved' | 'rejected' | 'pending') {
     const session = await auth();
     if (session?.user?.role !== 'admin') throw new Error("Unauthorized");
 
     await db.update(userProfiles).set({ hostStatus: status }).where(eq(userProfiles.userId, userId));
 
-    // If approved, verify the user role too if needed, or just keep 'basic' user with 'approved' host status. 
-    // The previous logic implies 'verified' role is for basic KYC, but 'hostStatus' is for Host.
+    // Send Email
+    const user = await db.query.users.findFirst({
+        where: eq(users.id, userId),
+        columns: { email: true, name: true }
+    });
+
+    if (user && user.email) {
+        if (status === 'approved') {
+            await sendEmail({
+                to: user.email,
+                templateKey: "kyc_approved",
+                data: { name: user.name || "Member" }
+            });
+
+            // Also update role to verified/custom if needed? 
+            // The request didn't specify changing 'role' column, but typically 'approved' host means they are verification passed.
+        } else if (status === 'rejected') {
+            await sendEmail({
+                to: user.email,
+                templateKey: "kyc_rejected",
+                data: { name: user.name || "Member" }
+            });
+        }
+    }
 
     revalidatePath("/admin/members");
     return { success: true };
