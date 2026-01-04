@@ -9,6 +9,7 @@ import {
     FolderTree,
     LogOut,
     Calendar,
+    BadgeCheck,
 } from "lucide-react";
 
 const sidebarItems = [
@@ -26,6 +27,11 @@ const sidebarItems = [
         title: "會員管理",
         href: "/admin/members",
         icon: Users,
+    },
+    {
+        title: "租貸會員審核",
+        href: "/admin/hosts",
+        icon: BadgeCheck,
     },
     {
         title: "商品管理",

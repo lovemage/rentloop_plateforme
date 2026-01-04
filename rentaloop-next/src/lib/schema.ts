@@ -19,6 +19,33 @@ export const users = pgTable("user", {
     createdAt: timestamp('created_at').defaultNow(),
 });
 
+export const userProfiles = pgTable('user_profiles', {
+    userId: text('user_id')
+        .primaryKey()
+        .references(() => users.id, { onDelete: 'cascade' }),
+
+    realName: text('real_name'),
+    lineId: text('line_id'),
+    phone: text('phone'),
+
+    city: text('city'),
+    district: text('district'),
+    address: text('address'),
+
+    hostStatus: text('host_status').default('none'),
+    hostCity: text('host_city'),
+    hostDistrict: text('host_district'),
+
+    kycIdFrontUrl: text('kyc_id_front_url'),
+    kycIdBackUrl: text('kyc_id_back_url'),
+
+    hostRulesAccepted: boolean('host_rules_accepted').default(false),
+    hostRulesAcceptedAt: timestamp('host_rules_accepted_at', { mode: 'date' }),
+
+    createdAt: timestamp('created_at').defaultNow(),
+    updatedAt: timestamp('updated_at').defaultNow(),
+});
+
 export const accounts = pgTable(
     "account",
     {
@@ -156,4 +183,13 @@ export const rentalsRelations = relations(rentals, ({ one, many }) => ({
 export const rentalMessagesRelations = relations(rentalMessages, ({ one }) => ({
     rental: one(rentals, { fields: [rentalMessages.rentalId], references: [rentals.id] }),
     sender: one(users, { fields: [rentalMessages.senderId], references: [users.id] }),
+}));
+
+export const usersRelations = relations(users, ({ one, many }) => ({
+    profile: one(userProfiles, { fields: [users.id], references: [userProfiles.userId] }),
+    items: many(items),
+}));
+
+export const userProfilesRelations = relations(userProfiles, ({ one }) => ({
+    user: one(users, { fields: [userProfiles.userId], references: [users.id] }),
 }));

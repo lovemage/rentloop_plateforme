@@ -111,7 +111,10 @@ export function SiteHeader() {
                     Admin
                   </Link>
                 )}
-                <Link href="/member" className="flex items-center gap-3 ml-2">
+                <Link
+                  href="/member"
+                  className="ml-2 flex items-center gap-3 rounded-xl h-10 px-4 bg-[#e7f3eb] dark:bg-surface-dark text-text-main dark:text-white font-bold hover:bg-[#d5eadd] dark:hover:bg-surface-dark/80 transition-colors border border-[#cfe7d7] dark:border-surface-dark/60"
+                >
                   {session.user.image ? (
                     <Image src={session.user.image} alt={session.user.name || "User"} width={32} height={32} className="rounded-full border border-gray-200" />
                   ) : (
@@ -119,9 +122,9 @@ export function SiteHeader() {
                       {session.user.name?.[0] || "U"}
                     </div>
                   )}
-                  <div className="flex flex-col">
-                    <span className="text-sm font-bold text-text-main hidden xl:inline">{session.user.name}</span>
-                    <span className="text-xs text-text-sub hidden xl:inline">歡迎回到 Rentaloop.net</span>
+                  <div className="flex flex-col leading-tight text-left">
+                    <span className="text-xs text-text-sub dark:text-green-300 font-medium uppercase tracking-wide">會員面板</span>
+                    <span className="text-sm font-bold text-text-main dark:text-white">{session.user.name || "Rentaloop 會員"}</span>
                   </div>
                 </Link>
               </div>
@@ -194,19 +197,21 @@ export function SiteHeader() {
             {session?.user ? (
               <Link
                 href="/member"
-                className="w-full flex items-center gap-3 p-4 rounded-xl bg-[#e7f3eb] dark:bg-surface-dark text-text-main dark:text-white font-bold hover:bg-[#d5eadd] dark:hover:bg-surface-dark/80 transition-colors"
+                className="w-full flex items-center gap-3 p-4 rounded-xl bg-[#e7f3eb] dark:bg-surface-dark text-text-main dark:text-white font-bold hover:bg-[#d5eadd] dark:hover:bg-surface-dark/80 transition-colors border border-[#cfe7d7]/80 dark:border-surface-dark"
               >
                 {session.user.image ? (
                   <Image src={session.user.image} alt={session.user.name || "User"} width={32} height={32} className="rounded-full border border-gray-200" />
                 ) : (
-                  <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold">
+                  <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-lg">
                     {session.user.name?.[0] || "U"}
                   </div>
                 )}
-                <div className="flex flex-col items-start">
-                  <span className="text-sm font-bold">{session.user.name}</span>
+                <div className="flex flex-col items-start leading-tight">
+                  <span className="text-xs uppercase tracking-[0.2em] text-primary font-semibold">會員面板</span>
+                  <span className="text-sm font-bold">{session.user.name || "Rentaloop 會員"}</span>
                   <span className="text-xs text-text-sub">歡迎回到 Rentaloop.net</span>
                 </div>
+                <span className="material-symbols-outlined text-primary ml-auto">arrow_forward</span>
               </Link>
             ) : (
               <Link

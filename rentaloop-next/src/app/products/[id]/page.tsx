@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { ProductGallery } from "@/components/products/product-gallery";
 import { RentalCard } from "@/components/products/rental-card";
 import { ProductQA, type Question } from "@/components/products/product-qa";
+import { FavoriteButton } from "@/components/products/favorite-button";
 import { MapPin, ShieldCheck, User, Star, AlertCircle } from "lucide-react";
 import { db } from "@/lib/db";
 import { items, users, itemQuestions, rentals } from "@/lib/schema";
@@ -9,6 +10,7 @@ import { eq, desc, and, inArray, gt } from "drizzle-orm";
 import { auth } from "@/auth";
 import { eachDayOfInterval } from "date-fns";
 import { getTodayDateString } from "@/lib/date-utils";
+import { getMyFavoriteProductIds, recordProductView } from "@/app/actions/tracking";
 
 async function getProduct(id: string): Promise<{
     id: string;
@@ -116,6 +118,13 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
     const product = await getProduct(id);
     const session = await auth();
 
+    if (session?.user?.id) {
+        await recordProductView(id);
+    }
+
+    const favoriteIdsResult = session?.user?.id ? await getMyFavoriteProductIds() : null;
+    const initialFavorited = favoriteIdsResult?.success ? favoriteIdsResult.itemIds.includes(id) : false;
+
     if (!product) {
         notFound();
     }
@@ -171,7 +180,16 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
 
                 {/* Title Section (Mobile: Below Image, Desktop: Top) */}
                 <div className="hidden lg:block mb-6">
-                    <h1 className="text-3xl font-bold text-gray-900 mb-2">{product.title}</h1>
+                    <div className="flex items-start justify-between gap-4">
+                        <h1 className="text-3xl font-bold text-gray-900 mb-2">{product.title}</h1>
+                        {session?.user?.id ? (
+                            <FavoriteButton itemId={id} initialFavorited={initialFavorited} />
+                        ) : (
+                            <a href="/auth" className="inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-bold border border-gray-200 bg-white hover:border-primary transition-colors">
+                                關注
+                            </a>
+                        )}
+                    </div>
                     <div className="flex items-center gap-4 text-sm text-gray-500">
                         <span className="flex items-center gap-1">
                             <Star className="w-4 h-4 fill-current text-yellow-400" />
@@ -193,7 +211,16 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
 
                         {/* Mobile Title Section (Visible only on mobile) */}
                         <div className="lg:hidden space-y-3">
-                            <h1 className="text-2xl font-bold text-gray-900">{product.title}</h1>
+                            <div className="flex items-start justify-between gap-3">
+                                <h1 className="text-2xl font-bold text-gray-900">{product.title}</h1>
+                                {session?.user?.id ? (
+                                    <FavoriteButton itemId={id} initialFavorited={initialFavorited} />
+                                ) : (
+                                    <a href="/auth" className="inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-bold border border-gray-200 bg-white hover:border-primary transition-colors">
+                                        關注
+                                    </a>
+                                )}
+                            </div>
                             <div className="flex items-center gap-1 text-sm text-gray-600">
                                 <Star className="w-4 h-4 fill-current text-yellow-400" />
                                 <span className="font-medium text-black">4.9</span> ·

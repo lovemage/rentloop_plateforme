@@ -1,11 +1,15 @@
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
-import { items } from "@/lib/schema";
-import { eq, desc } from "drizzle-orm";
+import { items, userProfiles } from "@/lib/schema";
+import { eq, desc, inArray } from "drizzle-orm";
 import Link from "next/link";
 import Image from "next/image";
 import { logout } from "@/app/actions/auth";
+import { MemberProfileForm } from "@/components/member/member-profile-form";
+import { MemberTrackingLists } from "@/components/member/member-tracking-lists";
+import { MemberHostOnboarding } from "@/components/member/member-host-onboarding";
+import { getMyFavoriteProductIds, getMyViewedProductIds } from "@/app/actions/tracking";
 
 // Keep some mocks for unimplemented features
 const stats = [
@@ -57,6 +61,59 @@ export default async function MemberPage() {
     redirect('/auth');
   }
   const user = session.user;
+
+  const profileRow = await db
+    .select()
+    .from(userProfiles)
+    .where(eq(userProfiles.userId, user.id))
+    .limit(1);
+
+  const profile = profileRow[0] ?? null;
+
+  const profileForClient = profile
+    ? {
+        ...profile,
+        createdAt: profile.createdAt ? profile.createdAt.toISOString() : null,
+        updatedAt: profile.updatedAt ? profile.updatedAt.toISOString() : null,
+        hostRulesAcceptedAt: profile.hostRulesAcceptedAt ? profile.hostRulesAcceptedAt.toISOString() : null,
+      }
+    : null;
+
+  const viewedResult = await getMyViewedProductIds();
+  const favoritesResult = await getMyFavoriteProductIds();
+
+  const viewedIds = viewedResult.success ? viewedResult.itemIds : [];
+  const favoriteIds = favoritesResult.success ? favoritesResult.itemIds : [];
+
+  const redisConfigured = Boolean(
+    viewedResult.success && favoritesResult.success && viewedResult.redisConfigured && favoritesResult.redisConfigured
+  );
+
+  const trackingIds = Array.from(new Set([...viewedIds, ...favoriteIds]));
+
+  const trackedItems = trackingIds.length
+    ? await db
+        .select({
+          id: items.id,
+          title: items.title,
+          images: items.images,
+          pickupLocation: items.pickupLocation,
+          pricePerDay: items.pricePerDay,
+          deposit: items.deposit,
+        })
+        .from(items)
+        .where(inArray(items.id, trackingIds as any))
+    : [];
+
+  const trackedById = new Map(trackedItems.map((i) => [i.id, i] as const));
+
+  const viewed = viewedIds
+    .map((id) => trackedById.get(id))
+    .filter(Boolean) as typeof trackedItems;
+
+  const favorites = favoriteIds
+    .map((id) => trackedById.get(id))
+    .filter(Boolean) as typeof trackedItems;
 
   // Fetch real inventory
   const myItems = await db.select().from(items)
@@ -144,6 +201,12 @@ export default async function MemberPage() {
             </div>
           ))}
         </section>
+
+        <div className="space-y-8">
+          <MemberProfileForm email={user.email} initialProfile={profileForClient as any} />
+          <MemberTrackingLists viewed={viewed as any} favorites={favorites as any} redisConfigured={redisConfigured} />
+          <MemberHostOnboarding initialProfile={profileForClient as any} />
+        </div>
 
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-4">
           <div className="lg:col-span-1">

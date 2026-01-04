@@ -1,11 +1,41 @@
 import { db } from "@/lib/db";
-import { categories } from "@/lib/schema";
+import { categories, userProfiles } from "@/lib/schema";
 import { ItemCreateForm } from "@/components/items/item-create-form";
 import Link from 'next/link';
+import { auth } from "@/auth";
+import { redirect } from "next/navigation";
+import { eq } from "drizzle-orm";
 
 // Note: This page is protected by middleware.ts, so we assume user is logged in.
 
 export default async function NewItemPage() {
+    const session = await auth();
+    if (!session?.user?.id) {
+        redirect('/auth');
+    }
+
+    const profileRow = await db
+        .select({
+            hostStatus: userProfiles.hostStatus,
+            hostRulesAccepted: userProfiles.hostRulesAccepted,
+            kycIdFrontUrl: userProfiles.kycIdFrontUrl,
+            kycIdBackUrl: userProfiles.kycIdBackUrl,
+        })
+        .from(userProfiles)
+        .where(eq(userProfiles.userId, session.user.id))
+        .limit(1);
+
+    const profile = profileRow[0] ?? null;
+    const canHost =
+        profile?.hostStatus === 'approved' &&
+        profile?.hostRulesAccepted &&
+        Boolean(profile?.kycIdFrontUrl) &&
+        Boolean(profile?.kycIdBackUrl);
+
+    if (!canHost) {
+        redirect('/member');
+    }
+
     const allCategories = await db.select().from(categories);
 
     return (
