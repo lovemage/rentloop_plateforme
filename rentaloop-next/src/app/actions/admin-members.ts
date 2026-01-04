@@ -5,6 +5,7 @@ import { users, userProfiles } from "@/lib/schema";
 import { count, eq, or, ilike, desc, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
+import { getSignedKycUrl } from "@/lib/supabase-s3";
 
 export async function getAdminMembers(
     page: number = 1,
@@ -26,7 +27,7 @@ export async function getAdminMembers(
         : undefined;
 
     // Fetch users with profiles
-    const data = await db
+    const rawData = await db
         .select({
             id: users.id,
             name: users.name,
@@ -37,8 +38,8 @@ export async function getAdminMembers(
             createdAt: users.createdAt,
             // Profile Data
             kycStatus: userProfiles.hostStatus,
-            kycFront: userProfiles.kycIdFrontUrl,
-            kycBack: userProfiles.kycIdBackUrl,
+            kycFrontKey: userProfiles.kycIdFrontUrl, // This is now an S3 key
+            kycBackKey: userProfiles.kycIdBackUrl,   // This is now an S3 key
             realName: userProfiles.realName,
             phone: userProfiles.phone,
             hostCity: userProfiles.hostCity,
@@ -49,6 +50,39 @@ export async function getAdminMembers(
         .limit(limit)
         .offset(offset)
         .orderBy(desc(users.createdAt));
+
+    // Generate signed URLs for KYC images
+    const data = await Promise.all(rawData.map(async (member) => {
+        let kycFront: string | null = null;
+        let kycBack: string | null = null;
+
+        try {
+            // Check if it's an S3 key (starts with 'kyc/') or already a URL
+            if (member.kycFrontKey) {
+                if (member.kycFrontKey.startsWith('kyc/')) {
+                    kycFront = await getSignedKycUrl(member.kycFrontKey);
+                } else {
+                    // Legacy URL (Cloudinary or old format)
+                    kycFront = member.kycFrontKey;
+                }
+            }
+            if (member.kycBackKey) {
+                if (member.kycBackKey.startsWith('kyc/')) {
+                    kycBack = await getSignedKycUrl(member.kycBackKey);
+                } else {
+                    kycBack = member.kycBackKey;
+                }
+            }
+        } catch (e) {
+            console.error("Failed to generate signed URL:", e);
+        }
+
+        return {
+            ...member,
+            kycFront,
+            kycBack,
+        };
+    }));
 
     // Get total count
     const [totalResult] = await db
