@@ -18,6 +18,32 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     }),
     callbacks: {
         ...authConfig.callbacks,
+        async signIn({ user }) {
+            try {
+                if (user.id) {
+                    // Fetch user from DB to check isBlocked
+                    // user object from param might be from provider profile, so better check DB
+                    const dbUser = await db.query.users.findFirst({
+                        where: eq(users.id, user.id),
+                    });
+                    if (dbUser?.isBlocked) {
+                        return false;
+                    }
+                } else if (user.email) {
+                    // Fallback for initial sign in or if id not present (e.g. magic link)
+                    const dbUser = await db.query.users.findFirst({
+                        where: eq(users.email, user.email),
+                    });
+                    if (dbUser?.isBlocked) {
+                        return false;
+                    }
+                }
+                return true;
+            } catch (error) {
+                console.error("SignIn Block Check Error:", error);
+                return true; // Fail open or closed? Better fail open if DB error to avoid lockout due to bug, but strict security says closed. Let's fail open but log.
+            }
+        },
         async session({ session, user, token }) {
             if (session.user) {
                 if (user) {

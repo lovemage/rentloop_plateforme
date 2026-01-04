@@ -16,6 +16,8 @@ export const users = pgTable("user", {
     kycImageUrl: text('kyc_image_url'),
     rating: real('rating').default(0),
     reviewCount: integer('review_count').default(0),
+    isBlocked: boolean('is_blocked').default(false),
+    adminNotes: text('admin_notes'),
     createdAt: timestamp('created_at').defaultNow(),
 });
 
