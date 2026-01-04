@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 const stats = [
   {
     title: "廢棄物減量",
@@ -111,9 +113,9 @@ export default function Home() {
               加入循環經濟的行列。租賃優質裝備，不僅能省下開銷，更能透過減少浪費為地球盡一份心力。
             </h2>
             <div className="flex flex-col sm:flex-row gap-3 mt-4">
-              <button className="flex items-center justify-center rounded-lg h-12 px-8 bg-primary hover:bg-primary-dark text-text-main text-base font-bold transition-all transform hover:scale-105 shadow-lg shadow-primary/30">
+              <Link href="/products" className="flex items-center justify-center rounded-lg h-12 px-8 bg-primary hover:bg-primary-dark text-text-main text-base font-bold transition-all transform hover:scale-105 shadow-lg shadow-primary/30">
                 立即開始租賃
-              </button>
+              </Link>
               <button className="flex items-center justify-center rounded-lg h-12 px-8 bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/30 text-white text-base font-bold transition-all">
                 了解運作方式
               </button>

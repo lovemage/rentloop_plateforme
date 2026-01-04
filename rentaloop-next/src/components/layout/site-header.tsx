@@ -3,18 +3,21 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
+import { useSession } from "next-auth/react";
+import Image from "next/image";
 
 const navItems = [
   { href: "/", label: "Home", subLabel: "首頁" },
   { href: "/products", label: "Products", subLabel: "商品總覽" },
   { href: "/contact", label: "Contact", subLabel: "聯絡我們" },
   { href: "/member", label: "Member", subLabel: "會員中心" },
-  { href: "/upload", label: "Upload", subLabel: "上架物品" },
+  { href: "/items/new", label: "Upload", subLabel: "上架物品" },
 ];
 
 export function SiteHeader() {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { data: session } = useSession();
 
   useEffect(() => {
     document.body.style.overflow = mobileOpen ? "hidden" : "";
@@ -63,19 +66,17 @@ export function SiteHeader() {
               <Link
                 key={item.href}
                 href={item.href}
-                className={`flex flex-col leading-tight transition-colors ${
-                  isActive(item.href)
-                    ? "text-primary"
-                    : "text-text-main dark:text-white hover:text-primary"
-                }`}
+                className={`flex flex-col leading-tight transition-colors ${isActive(item.href)
+                  ? "text-primary"
+                  : "text-text-main dark:text-white hover:text-primary"
+                  }`}
               >
                 <span className="text-sm font-semibold">{item.label}</span>
                 <span
-                  className={`text-[11px] ${
-                    isActive(item.href)
-                      ? "text-primary/70"
-                      : "text-text-sub dark:text-green-300"
-                  }`}
+                  className={`text-[11px] ${isActive(item.href)
+                    ? "text-primary/70"
+                    : "text-text-sub dark:text-green-300"
+                    }`}
                 >
                   {item.subLabel}
                 </span>
@@ -99,18 +100,39 @@ export function SiteHeader() {
             </div>
           </label>
           <div className="flex gap-2">
-            <button
-              type="button"
+            <Link
+              href="/products"
               className="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-primary hover:bg-primary-dark transition-colors text-text-main text-sm font-bold"
             >
               <span className="truncate">開始租賃</span>
-            </button>
-            <Link
-              href="/auth"
-              className="hidden sm:flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-[#e7f3eb] dark:bg-surface-dark hover:bg-[#d5eadd] dark:hover:bg-surface-dark/80 transition-colors text-text-main dark:text-white text-sm font-bold"
-            >
-              <span className="truncate">登入</span>
             </Link>
+            {session?.user ? (
+              <div className="flex items-center">
+                {session.user.role === 'admin' && (
+                  <Link href="/admin" className="hidden lg:flex items-center justify-center rounded-lg h-10 px-3 bg-gray-900 hover:bg-black transition-colors text-white text-xs font-bold mr-2 gap-1 shadow-sm">
+                    <span className="material-symbols-outlined text-sm">admin_panel_settings</span>
+                    Admin
+                  </Link>
+                )}
+                <Link href="/member" className="flex items-center gap-3 ml-2">
+                  {session.user.image ? (
+                    <Image src={session.user.image} alt={session.user.name || "User"} width={32} height={32} className="rounded-full border border-gray-200" />
+                  ) : (
+                    <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold">
+                      {session.user.name?.[0] || "U"}
+                    </div>
+                  )}
+                  <span className="text-sm font-bold text-text-main hidden xl:inline">{session.user.name}</span>
+                </Link>
+              </div>
+            ) : (
+              <Link
+                href="/auth"
+                className="hidden sm:flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-[#e7f3eb] dark:bg-surface-dark hover:bg-[#d5eadd] dark:hover:bg-surface-dark/80 transition-colors text-text-main dark:text-white text-sm font-bold"
+              >
+                <span className="truncate">登入</span>
+              </Link>
+            )}
           </div>
         </div>
       </header>

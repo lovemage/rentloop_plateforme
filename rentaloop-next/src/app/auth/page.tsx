@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { loginWithGoogle } from "@/app/actions/auth";
 
 type AuthTab = "login" | "register" | "reset";
 
@@ -36,9 +37,8 @@ export default function AuthPage() {
     }
   }, [activeTab]);
 
-  const handleGoogleAuth = () => {
-    console.info(`[AUTH] Google flow triggered, tab=${activeTab}`);
-    // TODO: Replace with Supabase Auth (signInWithOAuth({ provider: "google" }))
+  const handleGoogleAuth = async () => {
+    await loginWithGoogle();
   };
 
   const handleEmailSubmit = (event: React.FormEvent<HTMLFormElement>) => {
@@ -59,11 +59,10 @@ export default function AuthPage() {
                 key={tab.id}
                 type="button"
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex flex-col rounded-xl px-4 py-2 text-left transition-all ${
-                  activeTab === tab.id
-                    ? "bg-primary/10 text-primary shadow-inner"
-                    : "text-text-main dark:text-white hover:bg-background-light dark:hover:bg-background-dark/40"
-                }`}
+                className={`flex flex-col rounded-xl px-4 py-2 text-left transition-all ${activeTab === tab.id
+                  ? "bg-primary/10 text-primary shadow-inner"
+                  : "text-text-main dark:text-white hover:bg-background-light dark:hover:bg-background-dark/40"
+                  }`}
               >
                 <span className="text-sm font-bold">{tab.label}</span>
                 <span className="text-xs text-text-sub dark:text-green-400">{tab.description}</span>

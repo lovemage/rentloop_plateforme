@@ -3,6 +3,8 @@ import { Manrope, Noto_Sans_TC } from "next/font/google";
 import "./globals.css";
 import { SiteHeader } from "@/components/layout/site-header";
 import { SiteFooter } from "@/components/layout/site-footer";
+import { SessionProvider } from "@/components/providers/session-provider";
+import { auth } from "@/auth";
 
 const manrope = Manrope({
   subsets: ["latin"],
@@ -24,11 +26,12 @@ export const metadata: Metadata = {
     "Rentaloop 透過 Next.js 體驗永續租賃旅程。瀏覽商品、上架物品、管理會員資料，一站完成。",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const session = await auth();
   return (
     <html lang="zh-Hant" className={`${manrope.variable} ${notoSans.variable}`}>
       <head>
@@ -40,11 +43,13 @@ export default function RootLayout({
         />
       </head>
       <body className="bg-background-light dark:bg-background-dark text-text-main dark:text-white font-display">
-        <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden">
-          <SiteHeader />
-          <main className="flex-1 flex flex-col">{children}</main>
-          <SiteFooter />
-        </div>
+        <SessionProvider session={session}>
+          <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden">
+            <SiteHeader />
+            <main className="flex-1 flex flex-col">{children}</main>
+            <SiteFooter />
+          </div>
+        </SessionProvider>
       </body>
     </html>
   );

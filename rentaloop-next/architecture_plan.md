@@ -14,10 +14,12 @@
 *   **Framework**: Next.js 14+ (App Router)
 *   **Language**: TypeScript
 *   **Styling (Visuals)**:
-    *   **Tailwind CSS**: 用於排版與響應式設計。
-    *   **Shadcn UI**: 提供高品質的基礎元件 (Dialog, Select, Calendar, Tabs)。
+    *   **Tailwind CSS**: 專案核心樣式庫。
+    *   **Custom Admin UI**: 不使用外部 UI Component 庫，保持設計一致性與輕量化。
     *   **Framer Motion**: 使用於頁面轉場與微互動 (Micro-animations)，提升高級感。
-*   **Backend / DB**: Supabase (PostgreSQL, Auth, Storage, Realtime)
+*   **Database**: Railway PostgreSQL (遷移自 Supabase)
+*   **ORM**: Drizzle ORM
+*   **Backend**: Next.js Server Actions
 *   **Icons**: Lucide React
 
 ---
