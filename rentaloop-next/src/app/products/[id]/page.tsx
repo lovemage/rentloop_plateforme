@@ -142,7 +142,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
         });
     }
 
-    const isOwner = session?.user?.id === product.ownerId;
+    const isOwner = session?.user?.id === product!.ownerId;
 
     return (
         <div className="min-h-screen bg-white pb-24 lg:pb-12">
