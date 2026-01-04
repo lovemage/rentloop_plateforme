@@ -13,7 +13,35 @@ const MOCK_PRODUCT = {
     // ...
 };
 
-async function getProduct(id: string) {
+async function getProduct(id: string): Promise<{
+    id: string;
+    title: string;
+    description: string;
+    pricePerDay: number;
+    deposit: number;
+    images: string[];
+    status: string | null;
+    ownerId: string;
+    availableFrom: Date | null;
+    availableTo: Date | null;
+    location: {
+        city: string;
+        district: string;
+        address: string;
+        lat: number;
+        lng: number;
+    };
+    owner: {
+        name: string;
+        avatar: string | null | undefined;
+        rating: number;
+        responseRate: string;
+        joinDate: string;
+        isVerified: boolean;
+    };
+    notes: string[];
+    condition: string;
+} | null> {
     if (id === 'demo') return MOCK_PRODUCT;
 
     try {
