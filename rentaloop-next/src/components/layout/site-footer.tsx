@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export function SiteFooter() {
   return (
     <footer className="border-t border-[#e7f3eb] dark:border-border-dark bg-surface-light dark:bg-surface-dark py-12 px-4 md:px-10">
@@ -29,9 +31,9 @@ export function SiteFooter() {
             <a className="text-text-sub dark:text-gray-400 text-sm hover:text-primary transition-colors" href="#">
               常見問題
             </a>
-            <a className="text-text-sub dark:text-gray-400 text-sm hover:text-primary transition-colors" href="#">
-              聯絡客服
-            </a>
+            <Link className="text-text-sub dark:text-gray-400 text-sm hover:text-primary transition-colors" href="/contact">
+              聯絡我們
+            </Link>
             <a className="text-text-sub dark:text-gray-400 text-sm hover:text-primary transition-colors" href="#">
               隱私政策
             </a>
