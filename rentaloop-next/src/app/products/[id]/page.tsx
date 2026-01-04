@@ -128,14 +128,16 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
             .where(and(
                 eq(rentals.itemId, id),
                 inArray(rentals.status, ['pending', 'approved', 'ongoing', 'active']),
-                gt(rentals.endDate, new Date())
+                gt(rentals.endDate, new Date().toISOString().split('T')[0])
             ));
 
         blockedDates = rentalRecords.flatMap(r => {
             if (!r.startDate || !r.endDate) return [];
             try {
-                if (r.startDate > r.endDate) return [];
-                return eachDayOfInterval({ start: r.startDate, end: r.endDate });
+                const start = new Date(r.startDate);
+                const end = new Date(r.endDate);
+                if (start > end) return [];
+                return eachDayOfInterval({ start, end });
             } catch (e) { return []; }
         });
     }
