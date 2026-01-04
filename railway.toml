@@ -2,7 +2,7 @@
 builder = "NIXPACKS"
 
 [deploy]
-startCommand = "cd rentaloop-next && npm run start"
+startCommand = "cd rentaloop-next && AUTH_URL=https://rentaloop.net npm run start"
 healthcheckPath = "/"
 healthcheckTimeout = 100
 restartPolicyType = "ON_FAILURE"
