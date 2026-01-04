@@ -1,0 +1,11 @@
+{
+    "name": "rentloop-plateforme-root",
+    "version": "1.0.0",
+    "private": true,
+    "scripts": {
+        "install": "cd rentaloop-next && npm install",
+        "build": "cd rentaloop-next && npm run build",
+        "start": "cd rentaloop-next && npm run start",
+        "dev": "cd rentaloop-next && npm run dev"
+    }
+}
