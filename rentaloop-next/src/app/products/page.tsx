@@ -15,8 +15,6 @@ async function getAllCategories() {
 
 async function getProducts(categorySlug?: string) {
   try {
-    let query = db.select().from(items).orderBy(desc(items.createdAt));
-
     if (categorySlug) {
       const cat = await db.select().from(categories).where(eq(categories.slug, categorySlug)).limit(1);
 
@@ -29,11 +27,11 @@ async function getProducts(categorySlug?: string) {
         const ids = [targetCat.id, ...children.map(c => c.id)];
 
         // Filter items
-        query = db.select().from(items).where(inArray(items.categoryId, ids)).orderBy(desc(items.createdAt));
+        return await db.select().from(items).where(inArray(items.categoryId, ids)).orderBy(desc(items.createdAt));
       }
     }
 
-    return await query;
+    return await db.select().from(items).orderBy(desc(items.createdAt));
   } catch (err) {
     console.error(err);
     return [];

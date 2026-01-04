@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { signIn } from "next-auth/react";
+import { signIn, useSession } from "next-auth/react";
 import Image from "next/image";
+import { usePathname } from "next/navigation";
 
 const navItems = [
   { href: "/", label: "Home", subLabel: "首頁" },
@@ -21,6 +22,10 @@ interface Category {
 export function SiteHeader() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const { data: session } = useSession();
+  const pathname = usePathname();
+  const isActive = (href: string) => pathname === href;
 
   // Fetch categories
   useEffect(() => {
