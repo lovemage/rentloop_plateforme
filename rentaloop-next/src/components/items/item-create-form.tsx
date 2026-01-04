@@ -8,6 +8,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { z } from 'zod';
 import toast from 'react-hot-toast';
+import { getThumbnail } from '@/lib/cloudinary-utils';
 
 // Zod Schema for validation
 const itemFormSchema = z.object({
@@ -148,7 +149,7 @@ export function ItemCreateForm({ categories }: { categories: Category[] }) {
                     <div className="grid grid-cols-3 sm:grid-cols-4 gap-4">
                         {imageUrls.map((url, idx) => (
                             <div key={idx} className="relative aspect-square rounded-lg overflow-hidden bg-gray-100 border border-gray-200 group">
-                                <Image src={url} alt="Upload" fill className="object-cover" />
+                                <Image src={getThumbnail(url, 300)} alt="Upload" fill className="object-cover" />
                                 <button
                                     type="button"
                                     onClick={() => removeImage(idx)}

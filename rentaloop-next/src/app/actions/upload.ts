@@ -12,13 +12,28 @@ export async function uploadImage(formData: FormData) {
 
         const result = await new Promise<any>((resolve, reject) => {
             cloudinary.uploader.upload_stream({
-                folder: 'rentaloop/items', // Organized folder
+                folder: 'rentaloop/items',
                 resource_type: 'image',
-                format: 'webp',            // Auto convert to WebP
-                quality: 'auto:good',      // Smart compression
+                // 強制轉檔為 WebP
+                format: 'webp',
+                fetch_format: 'webp',
+                // 優化設置
+                quality: 'auto:good',      // 智能壓縮
+                flags: 'lossy',            // 使用有損壓縮以獲得更小的文件
+                // 轉換設置（強制 WebP）
                 transformation: [
-                    { width: 1600, crop: "limit" } // Max width to prevent massive 4K uploads
-                ]
+                    {
+                        width: 1600,
+                        crop: 'limit',
+                        fetch_format: 'webp',  // 強制輸出 WebP
+                        quality: 'auto:good',
+                        flags: 'progressive'    // 漸進式加載
+                    }
+                ],
+                // 額外優化
+                invalidate: true,          // 清除 CDN 緩存
+                unique_filename: true,     // 唯一文件名
+                overwrite: false           // 不覆蓋現有文件
             }, (error, result) => {
                 if (error) {
                     console.error('Cloudinary Upload Error:', error);

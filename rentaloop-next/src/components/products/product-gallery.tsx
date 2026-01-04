@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { ChevronLeft, ChevronRight, Image as ImageIcon } from 'lucide-react';
+import { getProductImage } from '@/lib/cloudinary-utils';
 
 interface ProductGalleryProps {
     images: string[];
@@ -45,7 +46,7 @@ export function ProductGallery({ images }: ProductGalleryProps) {
                         <div key={idx} className="w-full h-full flex-shrink-0 snap-center relative">
                             {/* 這裡使用一般的 img 標籤，生產環境建議用 next/image */}
                             <img
-                                src={src}
+                                src={getProductImage(src, 'card')}
                                 alt={`Product View ${idx + 1}`}
                                 className="w-full h-full object-cover"
                             />
@@ -56,7 +57,7 @@ export function ProductGallery({ images }: ProductGalleryProps) {
                 {/* Desktop View (Show Current Selected) */}
                 <div className="hidden md:block w-full h-full relative">
                     <img
-                        src={displayImages[currentIndex]}
+                        src={getProductImage(displayImages[currentIndex], 'detail')}
                         alt={`Product View ${currentIndex + 1}`}
                         className="w-full h-full object-cover transition-opacity duration-300"
                     />
@@ -100,7 +101,7 @@ export function ProductGallery({ images }: ProductGalleryProps) {
                             }`}
                     >
                         <img
-                            src={src}
+                            src={getProductImage(src, 'thumbnail')}
                             alt={`Thumbnail ${idx + 1}`}
                             className="w-full h-full object-cover"
                         />
