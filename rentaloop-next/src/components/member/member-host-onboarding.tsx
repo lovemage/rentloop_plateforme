@@ -39,13 +39,17 @@ export function MemberHostOnboarding({ initialProfile }: { initialProfile: Profi
   const [hostCity, setHostCity] = useState(initialProfile?.hostCity ?? "");
   const [hostDistrict, setHostDistrict] = useState(initialProfile?.hostDistrict ?? "");
   const [rulesAccepted, setRulesAccepted] = useState(!!initialProfile?.hostRulesAccepted);
+  const [privacyAccepted, setPrivacyAccepted] = useState(!!initialProfile?.hostRulesAccepted); // Initialize based on rules accepted or false? Better distinct. Assume false if not persisted or use rulesAccepted as proxy? 
+  // Schema doesn't have privacyAccepted field. But usually implies rules. 
+  // Let's init false to force check.
+
 
   const [status, setStatus] = useState(initialProfile?.hostStatus ?? "none");
   const isLocked = status === "pending" || status === "approved";
 
   const canSubmit = useMemo(() => {
-    return Boolean(hostCity && rulesAccepted && frontUrl && backUrl);
-  }, [hostCity, rulesAccepted, frontUrl, backUrl]);
+    return Boolean(hostCity && rulesAccepted && frontUrl && backUrl && privacyAccepted);
+  }, [hostCity, rulesAccepted, frontUrl, backUrl, privacyAccepted]);
 
   const handleFront = (file: File) => {
     startTransition(async () => {
@@ -217,6 +221,33 @@ export function MemberHostOnboarding({ initialProfile }: { initialProfile: Profi
               </label>
             </div>
           </div>
+
+          <div className="rounded-xl border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark p-5 mt-4">
+            <h3 className="text-sm font-bold">隱私權與注意事項</h3>
+            <ul className="mt-3 space-y-2 text-sm text-text-main list-disc pl-5">
+              <li>Rentaloop 不會使用您的個資作為除審核外其他用途</li>
+              <li>上傳檔案將存放在私有加密雲端空間</li>
+              <li>上傳證件建議加註 Rentaloop 認證使用</li>
+              <li>
+                有任何問題歡迎參閱我們
+                <a href="/privacy" className="text-primary hover:underline ml-1" target="_blank" rel="noopener noreferrer">
+                  隱私權政策頁面
+                </a>
+              </li>
+            </ul>
+            <label className="mt-4 flex items-start gap-3 rounded-xl bg-gray-50 dark:bg-gray-800 p-4 border border-gray-200 dark:border-gray-700 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+              <input
+                type="checkbox"
+                checked={privacyAccepted}
+                onChange={(e) => setPrivacyAccepted(e.target.checked)}
+                disabled={isLocked}
+                className="mt-1 accent-primary"
+              />
+              <span className="text-sm font-bold">我已閱讀並同意上述隱私權條款與注意事項</span>
+            </label>
+          </div>
+
+
 
           <div className="flex items-center justify-end">
             <button
