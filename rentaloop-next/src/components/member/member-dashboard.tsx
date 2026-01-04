@@ -105,7 +105,7 @@ export function MemberDashboard({
                                     {isHost && (
                                         <div className="flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-1 text-xs font-bold text-primary border border-primary/20">
                                             <span className="material-symbols-outlined text-sm icon-filled">verified</span>
-                                            Rental Member
+                                            已通過審核 (租賃會員)
                                         </div>
                                     )}
                                 </div>
@@ -114,7 +114,7 @@ export function MemberDashboard({
                                     {user.email}
                                 </div>
                                 <p className="mt-4 max-w-md text-center sm:text-left text-text-main/80 dark:text-white/80 leading-relaxed">
-                                    Welcome back! Manage your rentals and listings from your dashboard.
+                                    歡迎回來！在此管理您的租賃與商品。
                                 </p>
                             </div>
                         </div>
@@ -123,7 +123,7 @@ export function MemberDashboard({
                             <form action={logout}>
                                 <button type="submit" className="w-full flex items-center justify-center gap-2 rounded-xl border border-border-light dark:border-border-dark bg-white dark:bg-surface-dark px-6 py-3 text-sm font-bold shadow-sm hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors">
                                     <span className="material-symbols-outlined">logout</span>
-                                    Log out
+                                    登出
                                 </button>
                             </form>
                         </div>
@@ -141,7 +141,7 @@ export function MemberDashboard({
                                 }`}
                         >
                             <span className="material-symbols-outlined">shopping_bag</span>
-                            General Member
+                            一般會員
                         </button>
                         <button
                             onClick={() => setActiveTab('host')}
@@ -151,7 +151,7 @@ export function MemberDashboard({
                                 }`}
                         >
                             <span className="material-symbols-outlined">storefront</span>
-                            Rental Member
+                            租賃會員
                         </button>
                     </div>
                 </div>
@@ -164,23 +164,23 @@ export function MemberDashboard({
                             {/* Stats for Renter */}
                             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                                 <div className="bg-surface-light dark:bg-surface-dark p-6 rounded-2xl ring-1 ring-border-light dark:ring-border-dark shadow-sm">
-                                    <div className="text-text-sub text-sm font-medium mb-1">Borrowing</div>
-                                    <div className="text-3xl font-bold flex items-baseline gap-2">0 <span className="text-sm font-normal text-text-sub">items</span></div>
+                                    <div className="text-text-sub text-sm font-medium mb-1">租借中</div>
+                                    <div className="text-3xl font-bold flex items-baseline gap-2">0 <span className="text-sm font-normal text-text-sub">件商品</span></div>
                                 </div>
                                 <div className="bg-surface-light dark:bg-surface-dark p-6 rounded-2xl ring-1 ring-border-light dark:ring-border-dark shadow-sm">
-                                    <div className="text-text-sub text-sm font-medium mb-1">Reviews</div>
-                                    <div className="text-3xl font-bold flex items-baseline gap-2">0 <span className="text-sm font-normal text-text-sub">received</span></div>
+                                    <div className="text-text-sub text-sm font-medium mb-1">評價</div>
+                                    <div className="text-3xl font-bold flex items-baseline gap-2">0 <span className="text-sm font-normal text-text-sub">則收到</span></div>
                                 </div>
                                 <div className="bg-surface-light dark:bg-surface-dark p-6 rounded-2xl ring-1 ring-border-light dark:ring-border-dark shadow-sm">
-                                    <div className="text-text-sub text-sm font-medium mb-1">Saved</div>
-                                    <div className="text-3xl font-bold flex items-baseline gap-2">{favorites.length} <span className="text-sm font-normal text-text-sub">items</span></div>
+                                    <div className="text-text-sub text-sm font-medium mb-1">收藏</div>
+                                    <div className="text-3xl font-bold flex items-baseline gap-2">{favorites.length} <span className="text-sm font-normal text-text-sub">件商品</span></div>
                                 </div>
                             </div>
 
                             <MemberTrackingLists viewed={viewed} favorites={favorites} redisConfigured={redisConfigured} />
 
                             <div className="rounded-2xl bg-surface-light dark:bg-surface-dark p-6 shadow-sm ring-1 ring-border-light dark:ring-border-dark">
-                                <h3 className="text-xl font-bold mb-4">Account Settings</h3>
+                                <h3 className="text-xl font-bold mb-4">帳號設定</h3>
                                 <MemberProfileForm email={user.email} initialProfile={profile} />
                             </div>
                         </div>
@@ -196,8 +196,8 @@ export function MemberDashboard({
                                                 <span className="material-symbols-outlined text-2xl">rocket_launch</span>
                                             </div>
                                             <div>
-                                                <h3 className="text-lg font-bold">Become a Rental Member</h3>
-                                                <p className="text-text-main/80 mt-1">Unlock the ability to list your own items and earn money properly. We verify all hosts to ensure the safety of our community.</p>
+                                                <h3 className="text-lg font-bold">成為租賃會員</h3>
+                                                <p className="text-text-main/80 mt-1">解鎖上架功能，開始您的租賃事業。我們會驗證所有出租者的身分，確保社群安全。</p>
                                             </div>
                                         </div>
                                     </div>
@@ -205,6 +205,11 @@ export function MemberDashboard({
                                 </div>
                             ) : (
                                 <>
+                                    <div className="rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm font-bold text-green-700 flex items-center gap-2">
+                                        <span className="material-symbols-outlined text-lg">verified_user</span>
+                                        已通過審核，可以開始租賃業務
+                                    </div>
+
                                     <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
                                         {stats.map((stat) => (
                                             <div
@@ -232,10 +237,10 @@ export function MemberDashboard({
 
                                     <section className="space-y-6">
                                         <div className="flex items-center justify-between">
-                                            <h2 className="text-2xl font-bold">Your Inventory</h2>
+                                            <h2 className="text-2xl font-bold">您的庫存</h2>
                                             <Link href="/items/new" className="flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-bold text-text-main shadow-sm hover:bg-primary-dark transition-colors">
                                                 <span className="material-symbols-outlined">add</span>
-                                                Upload New Item
+                                                上架新商品
                                             </Link>
                                         </div>
 
@@ -256,7 +261,7 @@ export function MemberDashboard({
                                                                     className="object-cover transition-transform duration-300 group-hover:scale-105"
                                                                 />
                                                             ) : (
-                                                                <div className="flex items-center justify-center h-full text-gray-400">No Image</div>
+                                                                <div className="flex items-center justify-center h-full text-gray-400">無圖片</div>
                                                             )}
                                                             <div className="absolute top-3 right-3">
                                                                 <span className="px-2 py-1 bg-white/90 dark:bg-black/80 backdrop-blur-md rounded-lg text-xs font-bold shadow-sm">
@@ -269,7 +274,7 @@ export function MemberDashboard({
                                                                 {item.title}
                                                             </h3>
                                                             <div className="flex items-center justify-between mt-3">
-                                                                <span className="font-bold text-text-main">${item.pricePerDay}<span className="text-xs font-normal text-text-sub">/day</span></span>
+                                                                <span className="font-bold text-text-main">${item.pricePerDay}<span className="text-xs font-normal text-text-sub">/天</span></span>
                                                                 <span className="material-symbols-outlined text-text-sub hover:text-primary cursor-pointer">more_horiz</span>
                                                             </div>
                                                         </div>
@@ -281,10 +286,10 @@ export function MemberDashboard({
                                                 <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4 text-primary">
                                                     <span className="material-symbols-outlined text-3xl">inventory_2</span>
                                                 </div>
-                                                <h3 className="text-lg font-bold mb-2">No items listed yet</h3>
-                                                <p className="text-text-sub mb-6">Start earning by listing your idle items for others to rent.</p>
+                                                <h3 className="text-lg font-bold mb-2">尚未上架商品</h3>
+                                                <p className="text-text-sub mb-6">將閒置物品出租給需要的人，開始賺取額外收入。</p>
                                                 <Link href="/items/new" className="inline-flex items-center gap-2 font-bold text-primary hover:underline">
-                                                    List your first item <span className="material-symbols-outlined text-sm">arrow_forward</span>
+                                                    上架第一件商品 <span className="material-symbols-outlined text-sm">arrow_forward</span>
                                                 </Link>
                                             </div>
                                         )}

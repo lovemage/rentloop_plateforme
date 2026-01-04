@@ -1,15 +1,22 @@
 'use server'
 
 import { auth } from "@/auth";
-import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
-import sharp from "sharp";
+import cloudinary from "@/lib/cloudinary";
+
+interface CloudinaryUploadResult {
+  secure_url: string;
+  public_id: string;
+  format: string;
+  width: number;
+  height: number;
+}
 
 export async function uploadKycImage(formData: FormData) {
   const session = await auth();
   if (!session?.user?.id) return { success: false as const, error: "UNAUTHENTICATED" };
 
   const file = formData.get("file") as File;
-  const side = (formData.get("side") as string) || "unknown";
+  const side = (formData.get("side") as string) || "unknown"; // front or back
 
   if (!file) return { success: false as const, error: "NO_FILE" };
 
@@ -17,52 +24,37 @@ export async function uploadKycImage(formData: FormData) {
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
-    // Convert to WebP using sharp
-    const optimizedBuffer = await sharp(buffer)
-      .webp({ quality: 80 }) // Optimize quality as requested
-      .toBuffer();
-
-    // S3 Client Configuration
-    const s3Client = new S3Client({
-      region: process.env.SUPABASE_S3_REGION!,
-      endpoint: process.env.SUPABASE_S3_ENDPOINT!,
-      credentials: {
-        accessKeyId: process.env.SUPABASE_S3_ACCESS_KEY!,
-        secretAccessKey: process.env.SUPABASE_S3_SECRET_KEY!,
-      },
-      forcePathStyle: true, // Required for some S3-compatible providers like Supabase
+    const result = await new Promise<CloudinaryUploadResult>((resolve, reject) => {
+      cloudinary.uploader.upload_stream({
+        folder: `rentaloop/kyc/${session.user.id}`, // Organize by user
+        resource_type: 'image',
+        format: 'webp',
+        fetch_format: 'webp',
+        quality: 'auto:good',
+        // Add tags for searching if needed
+        tags: ['kyc', side, session.user.id],
+        // Private is better for KYC but for MVP we use public with obscure URLs or restricted via policies if possible.
+        // Cloudinary "authenticated" access mode requires signed URLs for viewing.
+        // For now, let's keep it 'private' (which means original is not publicly available without signature, but derived might be?)
+        // Actually, keep it standard 'upload' which is public by default in Cloudinary unless configured otherwise.
+        // Given the previous code was generating public URLs, I will stick to standard upload for now to ensure it works with the frontend <img> tags.
+        // Ideally should be type: 'authenticated'
+      }, (error, result) => {
+        if (error) {
+          console.error('Cloudinary KYC Upload Error:', error);
+          reject(error);
+        } else if (!result) {
+          reject(new Error('Upload failed: No result returned'));
+        } else {
+          resolve(result);
+        }
+      }).end(buffer);
     });
-
-    const timestamp = Date.now();
-    const filename = `kyc/${session.user.id}/${side}-${timestamp}.webp`;
-
-    const command = new PutObjectCommand({
-      Bucket: process.env.SUPABASE_S3_BUCKET_NAME!,
-      Key: filename,
-      Body: optimizedBuffer,
-      ContentType: "image/webp",
-      // ACL: "private", // Supabase Storage controls access via policies, ACL might not be supported or needed depending on bucket config
-    });
-
-    await s3Client.send(command);
-
-    // Construct URL - Assuming typical Supabase Storage URL structure
-    // Note: The visibility depends on your Supabase Storage Bucket Policies (RLS)
-    // If the bucket is private, you would typically generate a signed URL here or on retrieval.
-    // For now, returning the path for reference.
-    // Ideally, for KYC, this should definitely be private and accessed via signed URLs.
-
-    // Constructing the full URL for reference, though for private buckets this won't be publicly accessible without a token.
-    // Extract project ID from endpoint for URL construction if needed, or just return the key.
-    // Endpoint: https://<project_id>.storage.supabase.co/storage/v1/s3
-    const endpointUrl = new URL(process.env.SUPABASE_S3_ENDPOINT!);
-    const projectId = endpointUrl.hostname.split('.')[0];
-    const publicUrl = `https://${projectId}.supabase.co/storage/v1/object/public/${process.env.SUPABASE_S3_BUCKET_NAME}/${filename}`;
 
     return {
       success: true as const,
-      url: publicUrl, // Or just return the 'filename' (key) if you plan to sign URLs on retrieval
-      key: filename
+      url: result.secure_url,
+      key: result.public_id
     };
 
   } catch (error) {
