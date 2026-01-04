@@ -119,7 +119,10 @@ export function SiteHeader() {
                       {session.user.name?.[0] || "U"}
                     </div>
                   )}
-                  <span className="text-sm font-bold text-text-main hidden xl:inline">{session.user.name}</span>
+                  <div className="flex flex-col">
+                    <span className="text-sm font-bold text-text-main hidden xl:inline">{session.user.name}</span>
+                    <span className="text-xs text-text-sub hidden xl:inline">歡迎回到 Rentaloop.net</span>
+                  </div>
                 </Link>
               </div>
             ) : (
@@ -188,13 +191,32 @@ export function SiteHeader() {
 
             <div className="h-px bg-[#e7f3eb] dark:bg-border-dark my-2" />
 
-            <Link
-              href="/auth"
-              className="w-full flex items-center justify-center gap-2 p-4 rounded-xl bg-[#e7f3eb] dark:bg-surface-dark text-text-main dark:text-white font-bold hover:bg-[#d5eadd] dark:hover:bg-surface-dark/80 transition-colors"
-            >
-              <span className="material-symbols-outlined">login</span>
-              登入
-            </Link>
+            {session?.user ? (
+              <Link
+                href="/member"
+                className="w-full flex items-center gap-3 p-4 rounded-xl bg-[#e7f3eb] dark:bg-surface-dark text-text-main dark:text-white font-bold hover:bg-[#d5eadd] dark:hover:bg-surface-dark/80 transition-colors"
+              >
+                {session.user.image ? (
+                  <Image src={session.user.image} alt={session.user.name || "User"} width={32} height={32} className="rounded-full border border-gray-200" />
+                ) : (
+                  <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold">
+                    {session.user.name?.[0] || "U"}
+                  </div>
+                )}
+                <div className="flex flex-col items-start">
+                  <span className="text-sm font-bold">{session.user.name}</span>
+                  <span className="text-xs text-text-sub">歡迎回到 Rentaloop.net</span>
+                </div>
+              </Link>
+            ) : (
+              <Link
+                href="/auth"
+                className="w-full flex items-center justify-center gap-2 p-4 rounded-xl bg-[#e7f3eb] dark:bg-surface-dark text-text-main dark:text-white font-bold hover:bg-[#d5eadd] dark:hover:bg-surface-dark/80 transition-colors"
+              >
+                <span className="material-symbols-outlined">login</span>
+                登入
+              </Link>
+            )}
           </nav>
         </div>
       ) : null}

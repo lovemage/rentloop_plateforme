@@ -3,12 +3,11 @@
 import { useMemo, useState } from "react";
 import { loginWithGoogle } from "@/app/actions/auth";
 
-type AuthTab = "login" | "register" | "reset";
+type AuthTab = "login" | "register";
 
 const tabs: { id: AuthTab; label: string; description: string }[] = [
-  { id: "login", label: "登入", description: "使用 Google 或電子郵件登入帳戶" },
-  { id: "register", label: "註冊", description: "建立新帳戶以開始出租 / 租借" },
-  { id: "reset", label: "忘記密碼", description: "寄送重設密碼連結至電子郵件" },
+  { id: "login", label: "登入", description: "使用 Google 登入帳戶" },
+  { id: "register", label: "註冊", description: "使用 Google 建立新帳戶" },
 ];
 
 export default function AuthPage() {
@@ -28,12 +27,6 @@ export default function AuthPage() {
           subheading: "建立帳戶即可開始上架、出租裝備",
           ctaLabel: "建立帳戶",
         };
-      case "reset":
-        return {
-          heading: "重設密碼",
-          subheading: "輸入電子郵件，我們將寄送重設連結",
-          ctaLabel: "寄送重設連結",
-        };
     }
   }, [activeTab]);
 
@@ -41,13 +34,6 @@ export default function AuthPage() {
     await loginWithGoogle();
   };
 
-  const handleEmailSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const formData = new FormData(event.currentTarget);
-    const payload = Object.fromEntries(formData.entries());
-    console.info(`[AUTH] Email submit (${activeTab})`, payload);
-    // TODO: Wire up Supabase Auth email/password handlers
-  };
 
   return (
     <main className="min-h-screen bg-background-light dark:bg-background-dark px-4 py-10 lg:py-16">
@@ -81,7 +67,7 @@ export default function AuthPage() {
               <button
                 type="button"
                 onClick={handleGoogleAuth}
-                className="gsi-material-button"
+                className="gsi-material-button w-full"
               >
                 <div className="gsi-material-button-state"></div>
                 <div className="gsi-material-button-content-wrapper">
@@ -94,95 +80,12 @@ export default function AuthPage() {
                       <path fill="none" d="M0 0h48v48H0z"></path>
                     </svg>
                   </div>
-                  <span className="gsi-material-button-contents">Continue with Google</span>
+                  <span className="gsi-material-button-contents">
+                    {activeTab === "login" ? "登入" : "註冊"} Rentaloop.net
+                  </span>
                   <span style={{ display: 'none' }}>Continue with Google</span>
                 </div>
               </button>
-
-              <div className="flex items-center gap-4 text-xs text-text-sub">
-                <span className="flex-1 border-t border-dashed border-border-light dark:border-border-dark" />
-                或使用電子郵件
-                <span className="flex-1 border-t border-dashed border-border-light dark:border-border-dark" />
-              </div>
-
-              <form className="space-y-4" onSubmit={handleEmailSubmit}>
-                {activeTab === "register" && (
-                  <label className="flex flex-col gap-2">
-                    <span className="text-sm font-medium text-text-main dark:text-white">顯示名稱</span>
-                    <input
-                      required
-                      name="displayName"
-                      className="h-12 rounded-xl border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark px-4 text-sm text-text-main dark:text-white focus:border-primary focus:ring-1 focus:ring-primary/50"
-                      placeholder="例如：陳小綠"
-                    />
-                  </label>
-                )}
-
-                <label className="flex flex-col gap-2">
-                  <span className="text-sm font-medium text-text-main dark:text-white">電子郵件</span>
-                  <input
-                    required
-                    name="email"
-                    type="email"
-                    className="h-12 rounded-xl border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark px-4 text-sm text-text-main dark:text-white focus:border-primary focus:ring-1 focus:ring-primary/50"
-                    placeholder="you@example.com"
-                  />
-                </label>
-
-                {activeTab !== "reset" && (
-                  <label className="flex flex-col gap-2">
-                    <span className="text-sm font-medium text-text-main dark:text-white">密碼</span>
-                    <input
-                      required
-                      name="password"
-                      type="password"
-                      className="h-12 rounded-xl border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark px-4 text-sm text-text-main dark:text-white focus:border-primary focus:ring-1 focus:ring-primary/50"
-                      placeholder="至少 8 碼，含英數字"
-                    />
-                  </label>
-                )}
-
-                {activeTab === "register" && (
-                  <label className="flex flex-col gap-2">
-                    <span className="text-sm font-medium text-text-main dark:text-white">確認密碼</span>
-                    <input
-                      required
-                      name="confirmPassword"
-                      type="password"
-                      className="h-12 rounded-xl border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark px-4 text-sm text-text-main dark:text-white focus:border-primary focus:ring-1 focus:ring-primary/50"
-                      placeholder="再次輸入密碼"
-                    />
-                  </label>
-                )}
-
-                <button
-                  type="submit"
-                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-3 text-sm font-bold text-text-main shadow-lg shadow-primary/20 transition-colors hover:bg-primary-dark"
-                >
-                  <span className="material-symbols-outlined text-base">lock</span>
-                  {tabCopy.ctaLabel}
-                </button>
-
-                {activeTab === "login" && (
-                  <div className="flex justify-between text-xs text-text-sub">
-                    <label className="inline-flex items-center gap-2">
-                      <input
-                        name="remember"
-                        type="checkbox"
-                        className="rounded border-border-light text-primary focus:ring-primary/40"
-                      />
-                      記住我
-                    </label>
-                    <button
-                      type="button"
-                      onClick={() => setActiveTab("reset")}
-                      className="font-bold text-primary hover:text-primary-dark"
-                    >
-                      忘記密碼？
-                    </button>
-                  </div>
-                )}
-              </form>
             </div>
           </div>
         </section>
