@@ -6,6 +6,14 @@ import { users } from '@/lib/schema';
 import { eq } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 
+interface CloudinaryUploadResult {
+    secure_url: string;
+    public_id: string;
+    format: string;
+    width: number;
+    height: number;
+}
+
 export async function uploadAvatar(formData: FormData) {
     const session = await auth();
     if (!session?.user?.id) {
@@ -19,7 +27,7 @@ export async function uploadAvatar(formData: FormData) {
         const arrayBuffer = await file.arrayBuffer();
         const buffer = Buffer.from(arrayBuffer);
 
-        const uploadResult = await new Promise<any>((resolve, reject) => {
+        const uploadResult = await new Promise<CloudinaryUploadResult>((resolve, reject) => {
             cloudinary.uploader.upload_stream({
                 folder: 'rentaloop/avatars',
                 resource_type: 'image',

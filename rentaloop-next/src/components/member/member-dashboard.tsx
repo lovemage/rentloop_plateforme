@@ -11,6 +11,44 @@ import { AvatarUploader } from '@/components/member/avatar-uploader';
 
 type Tab = 'renter' | 'host';
 
+interface MemberProfile {
+    hostStatus?: string | null;
+    createdAt?: string | null;
+    updatedAt?: string | null;
+    hostRulesAcceptedAt?: string | null;
+    displayName?: string | null;
+    phone?: string | null;
+    address?: string | null;
+    userId?: string;
+}
+
+interface Stat {
+    title: string;
+    value: string;
+    delta?: string;
+    subtitle?: string;
+    icon: string;
+    accent: string;
+}
+
+interface TrackedItem {
+    id: string;
+    title: string;
+    images: string[] | null;
+    pickupLocation: string | null;
+    pricePerDay: number | null;
+    deposit: number | null;
+}
+
+interface MyItem {
+    id: string;
+    title: string;
+    images: string[] | null;
+    status: string | null;
+    pricePerDay: number | null;
+    createdAt: Date | null;
+}
+
 interface DashboardProps {
     user: {
         id: string;
@@ -19,11 +57,11 @@ interface DashboardProps {
         image?: string | null;
         role?: string;
     };
-    profile: any;
-    stats: any[];
-    myItems: any[];
-    viewed: any[];
-    favorites: any[];
+    profile: MemberProfile | null;
+    stats: Stat[];
+    myItems: MyItem[];
+    viewed: TrackedItem[];
+    favorites: TrackedItem[];
     redisConfigured: boolean;
 }
 
@@ -39,7 +77,6 @@ export function MemberDashboard({
     const [activeTab, setActiveTab] = useState<Tab>('renter');
 
     const isHost = profile?.hostStatus === 'approved';
-    const kycStatus = profile?.hostStatus || 'none';
 
     return (
         <div className="bg-background-light dark:bg-background-dark text-text-main dark:text-white min-h-screen pb-20">

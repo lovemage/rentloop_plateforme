@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from 'react';
-import { ChevronLeft, ChevronRight, Image as ImageIcon } from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { getProductImage } from '@/lib/cloudinary-utils';
 
 interface ProductGalleryProps {

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import {
     Calendar,
     User,
@@ -9,12 +9,12 @@ import {
     Clock,
     CheckCircle,
     XCircle,
-    AlertCircle,
     Eye,
     ChevronDown,
     Search,
     Filter,
-    Loader2
+    Loader2,
+    type LucideIcon
 } from 'lucide-react';
 import { getAllRentals, updateRentalStatus, type RentalStatus } from '@/app/actions/rentals';
 import { format } from 'date-fns';
@@ -38,7 +38,7 @@ type RentalData = {
     renter: { id: string; name: string | null; email: string; image: string | null };
 };
 
-const statusConfig: Record<string, { label: string; color: string; bgColor: string; icon: any }> = {
+const statusConfig: Record<string, { label: string; color: string; bgColor: string; icon: LucideIcon }> = {
     pending: { label: '待審核', color: 'text-yellow-700', bgColor: 'bg-yellow-50 border-yellow-200', icon: Clock },
     approved: { label: '已確認', color: 'text-blue-700', bgColor: 'bg-blue-50 border-blue-200', icon: CheckCircle },
     rejected: { label: '已拒絕', color: 'text-red-700', bgColor: 'bg-red-50 border-red-200', icon: XCircle },
@@ -217,17 +217,27 @@ function RentalDetailModal({ rental, onClose, onStatusChange }: {
 
 export default function AdminRentalsPage() {
     const [rentals, setRentals] = useState<RentalData[]>([]);
-    const [filteredRentals, setFilteredRentals] = useState<RentalData[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [selectedRental, setSelectedRental] = useState<RentalData | null>(null);
     const [searchQuery, setSearchQuery] = useState('');
     const [statusFilter, setStatusFilter] = useState<string>('all');
 
-    useEffect(() => {
-        loadRentals();
+    const loadRentals = useCallback(async () => {
+        setIsLoading(true);
+        const result = await getAllRentals();
+        if (result.success && result.data) {
+            setRentals(result.data as RentalData[]);
+        }
+        setIsLoading(false);
     }, []);
 
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        loadRentals();
+    }, [loadRentals]);
+
+    // Use useMemo for derived state instead of useEffect + setState
+    const filteredRentals = useMemo(() => {
         let filtered = rentals;
 
         // Apply status filter
@@ -248,17 +258,8 @@ export default function AdminRentalsPage() {
             );
         }
 
-        setFilteredRentals(filtered);
+        return filtered;
     }, [rentals, searchQuery, statusFilter]);
-
-    const loadRentals = async () => {
-        setIsLoading(true);
-        const result = await getAllRentals();
-        if (result.success && result.data) {
-            setRentals(result.data as RentalData[]);
-        }
-        setIsLoading(false);
-    };
 
     const handleStatusChange = async (id: string, status: RentalStatus) => {
         const result = await updateRentalStatus(id, status);

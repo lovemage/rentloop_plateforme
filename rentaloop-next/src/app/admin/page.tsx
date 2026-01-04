@@ -1,13 +1,22 @@
-import { Users, Package, FileText, CheckCircle, Calendar, Clock, ArrowRight } from "lucide-react";
+import { Users, Package, Calendar, Clock, ArrowRight, type LucideIcon } from "lucide-react";
 import Link from "next/link";
 import { db } from "@/lib/db";
 import { users, items, rentals } from "@/lib/schema";
-import { count, eq, inArray, and, gte, desc } from "drizzle-orm";
+import { count, eq, inArray, desc } from "drizzle-orm";
 import { format } from "date-fns";
 import { zhTW } from "date-fns/locale";
 
+interface StatCardProps {
+    title: string;
+    value: string;
+    subtext?: string;
+    icon: LucideIcon;
+    colorClass: string;
+    href?: string;
+}
+
 // Simple Card Component
-function StatCard({ title, value, subtext, icon: Icon, colorClass, href }: any) {
+function StatCard({ title, value, subtext, icon: Icon, colorClass, href }: StatCardProps) {
     const content = (
         <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm flex items-start justify-between hover:shadow-md hover:border-gray-200 transition-all group">
             <div>
@@ -181,9 +190,9 @@ export default async function AdminDashboard() {
                                         </div>
                                         <div className="text-right">
                                             <span className={`inline-block px-2 py-1 text-xs font-medium rounded-full ${rental.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
-                                                    rental.status === 'approved' ? 'bg-blue-100 text-blue-700' :
-                                                        rental.status === 'ongoing' ? 'bg-purple-100 text-purple-700' :
-                                                            'bg-gray-100 text-gray-700'
+                                                rental.status === 'approved' ? 'bg-blue-100 text-blue-700' :
+                                                    rental.status === 'ongoing' ? 'bg-purple-100 text-purple-700' :
+                                                        'bg-gray-100 text-gray-700'
                                                 }`}>
                                                 {statusConfig.label}
                                             </span>

@@ -18,8 +18,7 @@ import {
     differenceInDays,
     isWithinInterval
 } from 'date-fns';
-import { ChevronLeft, ChevronRight, Calendar as CalendarIcon } from 'lucide-react';
-import { zhTW } from 'date-fns/locale';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 interface RentalCalendarProps {

@@ -1,4 +1,5 @@
-import NextAuth from "next-auth"
+import NextAuth, { type User } from "next-auth"
+import type { JWT } from "next-auth/jwt"
 import { DrizzleAdapter } from "@auth/drizzle-adapter"
 import { db } from "@/lib/db"
 import { accounts, sessions, users, verificationTokens } from "@/lib/schema"
@@ -17,7 +18,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     }),
     callbacks: {
         ...authConfig.callbacks,
-        async session({ session, user, token }) {
+        async session({ session, user, token }: { session: { user: { id: string; role?: string; email?: string | null } }; user?: User; token?: JWT }) {
             if (session.user) {
                 if (user) {
                     session.user.id = user.id;
@@ -25,7 +26,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
                     if (session.user.email && ADMIN_EMAILS.includes(session.user.email)) {
                         session.user.role = 'admin';
 
-                        if ((user as any).role !== 'admin') {
+                        if (user.role !== 'admin') {
                             try {
                                 await db.update(users).set({ role: 'admin' }).where(eq(users.id, user.id));
                             } catch (e) {
@@ -33,11 +34,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
                             }
                         }
                     } else {
-                        session.user.role = (user as any).role || 'basic';
+                        session.user.role = user.role || 'basic';
                     }
                 } else if (token) {
                     session.user.id = token.sub as string;
-                    session.user.role = (token as any).role || session.user.role;
+                    session.user.role = (token.role as string) || session.user.role;
 
                     if (session.user.email && ADMIN_EMAILS.includes(session.user.email)) {
                         session.user.role = 'admin';

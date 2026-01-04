@@ -61,8 +61,8 @@ function CategoryItem({
 
                 {/* Level Indicator Badge */}
                 <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded border ${level === 0 ? 'bg-blue-50 text-blue-600 border-blue-100' :
-                        level === 1 ? 'bg-purple-50 text-purple-600 border-purple-100' :
-                            'bg-gray-100 text-gray-600 border-gray-200'
+                    level === 1 ? 'bg-purple-50 text-purple-600 border-purple-100' :
+                        'bg-gray-100 text-gray-600 border-gray-200'
                     }`}>
                     L{level + 1}
                 </span>
@@ -168,6 +168,7 @@ export default function CategoriesPage() {
     };
 
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         loadData();
     }, []);
 

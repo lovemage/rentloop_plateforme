@@ -23,7 +23,10 @@ export function SiteHeader() {
     };
   }, [mobileOpen]);
 
+  // Close mobile menu on route change (intentionally not including mobileOpen in deps
+  // since we only want to react to pathname changes, not re-close when mobileOpen changes)
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMobileOpen(false);
   }, [pathname]);
 

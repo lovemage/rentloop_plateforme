@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react';
 import { RentalCalendar } from '@/components/ui/rental-calendar';
-import { Calendar, X, CheckCircle, AlertTriangle, Loader2 } from 'lucide-react';
+import { X, CheckCircle, AlertTriangle, Loader2 } from 'lucide-react';
 import { createRental } from '@/app/actions/rentals';
 import { format } from 'date-fns';
 import { zhTW } from 'date-fns/locale';

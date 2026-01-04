@@ -3,20 +3,14 @@ import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import { items, userProfiles } from "@/lib/schema";
 import { eq, desc, inArray } from "drizzle-orm";
-import Link from "next/link";
-import Image from "next/image";
-import { logout } from "@/app/actions/auth";
-import { MemberProfileForm } from "@/components/member/member-profile-form";
-import { MemberTrackingLists } from "@/components/member/member-tracking-lists";
-import { MemberHostOnboarding } from "@/components/member/member-host-onboarding";
 import { getMyFavoriteProductIds, getMyViewedProductIds } from "@/app/actions/tracking";
 import { MemberDashboard } from "@/components/member/member-dashboard";
 
 // Keep some mocks for unimplemented features
-const stats = [
+const getStats = (itemCount: number) => [
   {
     title: "Items Shared",
-    value: "0", // Will update dynamically
+    value: itemCount.toString(),
     delta: "+0 this month",
     icon: "inventory_2",
     accent: "text-blue-600 bg-blue-100 dark:bg-blue-900/30",
@@ -42,18 +36,6 @@ const stats = [
     icon: "forest",
     accent: "text-emerald-600 bg-primary/20",
   },
-];
-
-const reviewsMock = [
-  {
-    name: "System",
-    subtitle: "Welcome",
-    badge: "Official",
-    badgeColor: "bg-primary/10 text-primary",
-    quote: "歡迎加入 Rentaloop！開始上架您的第一件閒置物品吧。",
-    date: "Just now",
-    avatar: null,
-  }
 ];
 
 export default async function MemberPage() {
@@ -103,7 +85,7 @@ export default async function MemberPage() {
         deposit: items.deposit,
       })
       .from(items)
-      .where(inArray(items.id, trackingIds as any))
+      .where(inArray(items.id, trackingIds as string[]))
     : [];
 
   const trackedById = new Map(trackedItems.map((i) => [i.id, i] as const));
@@ -122,8 +104,8 @@ export default async function MemberPage() {
     .where(eq(items.ownerId, user.id))
     .orderBy(desc(items.createdAt));
 
-  // Update stats slightly
-  stats[0].value = myItems.length.toString();
+  // Generate stats with actual item count
+  const stats = getStats(myItems.length);
 
   return (
     <MemberDashboard

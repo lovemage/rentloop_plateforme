@@ -67,7 +67,8 @@ export function ItemCreateForm({ categories }: { categories: Category[] }) {
                 setImageUrls(prev => [...prev, result.url]);
                 // Clear image error if exists
                 setErrors(prev => {
-                    const { images, ...rest } = prev;
+                    const { images: _, ...rest } = prev;
+                    void _; // Mark as intentionally unused
                     return rest;
                 });
             } else {
@@ -130,7 +131,7 @@ export function ItemCreateForm({ categories }: { categories: Category[] }) {
                 toast.success('商品上架成功！');
                 // Redirect will be handled by server action
             }
-        } catch (error) {
+        } catch {
             toast.error('發生錯誤，請稍後再試');
             setIsSubmitting(false);
         }

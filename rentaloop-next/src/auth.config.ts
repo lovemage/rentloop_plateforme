@@ -1,4 +1,5 @@
-import type { NextAuthConfig } from "next-auth"
+import type { NextAuthConfig, User } from "next-auth"
+import type { JWT } from "next-auth/jwt"
 import Google from "next-auth/providers/google"
 
 const ADMIN_EMAILS = ['rexliaobusiness@gmail.com', 'aistorm0910@gmail.com'];
@@ -31,18 +32,18 @@ export const authConfig = {
             }
             return true;
         },
-        async jwt({ token, user }) {
+        async jwt({ token, user }: { token: JWT; user?: User }) {
             if (user) {
                 token.sub = user.id;
-                token.role = (user as any).role || 'basic';
+                token.role = user.role || 'basic';
 
-                if ((user as any).email && ADMIN_EMAILS.includes((user as any).email)) {
+                if (user.email && ADMIN_EMAILS.includes(user.email)) {
                     token.role = 'admin';
                 }
             }
             return token;
         },
-        async session({ session, user, token }) {
+        async session({ session, user, token }: { session: { user: { id: string; role?: string; email?: string | null } }; user?: User; token?: JWT }) {
             // Note: In middleware (using JWT strategy by default if no adapter), 'user' might be undefined
             // When using adapter in auth.ts, 'user' is populated from DB.
             // When using middleware, we rely on JWT or simple checks.
@@ -52,10 +53,10 @@ export const authConfig = {
                 if (user) {
                     session.user.id = user.id;
                     // Handle other fields from DB user if available
-                    session.user.role = (user as any).role || 'basic';
+                    session.user.role = user.role || 'basic';
                 } else if (token) {
                     session.user.id = token.sub as string;
-                    session.user.role = (token as any).role || session.user.role;
+                    session.user.role = (token.role as string) || session.user.role;
                     // If we are using JWT strategy, role should be improved via jwt callback
                 }
 

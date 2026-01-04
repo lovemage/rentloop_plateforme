@@ -1,25 +1,37 @@
 'use client'
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { getItems, updateItemStatus } from '@/app/actions/items';
-import { Search, Filter, MoreHorizontal, Ban, CheckCircle, Trash2, Eye } from 'lucide-react';
+import { Search, Filter, Ban, CheckCircle, Eye } from 'lucide-react';
+
+interface ItemData {
+    id: string;
+    title: string;
+    images: string[] | null;
+    status: string | null;
+    categoryName: string | null;
+    ownerName: string | null;
+    ownerEmail: string | null;
+    price: number | null;
+}
 
 export default function ItemsPage() {
-    const [items, setItems] = useState<any[]>([]);
+    const [items, setItems] = useState<ItemData[]>([]);
     const [loading, setLoading] = useState(true);
 
-    const loadData = async () => {
+    const loadData = useCallback(async () => {
         setLoading(true);
         const result = await getItems();
         if (result.success && result.data) {
-            setItems(result.data);
+            setItems(result.data as ItemData[]);
         }
         setLoading(false);
-    };
+    }, []);
 
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         loadData();
-    }, []);
+    }, [loadData]);
 
     const handleStatusChange = async (id: string, newStatus: string) => {
         if (confirm(`確定要將此商品狀態變更為 ${newStatus} 嗎？`)) {

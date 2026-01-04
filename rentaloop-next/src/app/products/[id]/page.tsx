@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import Image from "next/image";
 import { ProductGallery } from "@/components/products/product-gallery";
 import { RentalCard } from "@/components/products/rental-card";
 import { ProductQA, type Question } from "@/components/products/product-qa";
@@ -167,7 +168,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
             const end = new Date(r.endDate);
             if (start > end) return [];
             return eachDayOfInterval({ start, end });
-        } catch (e) { return []; }
+        } catch { return []; }
     });
 
     const isOwner = session?.user?.id === product!.ownerId;
@@ -243,7 +244,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
                             <div className="relative">
                                 <div className="w-14 h-14 rounded-full bg-gray-200 overflow-hidden">
                                     {product.owner.avatar ? (
-                                        <img src={product.owner.avatar} alt={product.owner.name} />
+                                        <Image src={product.owner.avatar} alt={product.owner.name} width={56} height={56} className="object-cover" />
                                     ) : (
                                         <div className="w-full h-full flex items-center justify-center bg-gray-100 text-gray-400">
                                             <User className="w-8 h-8" />

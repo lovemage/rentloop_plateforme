@@ -1,6 +1,14 @@
 'use server'
 import cloudinary from '@/lib/cloudinary';
 
+interface CloudinaryUploadResult {
+    secure_url: string;
+    public_id: string;
+    format: string;
+    width: number;
+    height: number;
+}
+
 export async function uploadImage(formData: FormData) {
     const file = formData.get('file') as File;
     if (!file) return { error: 'No file provided' };
@@ -10,7 +18,7 @@ export async function uploadImage(formData: FormData) {
         const arrayBuffer = await file.arrayBuffer();
         const buffer = Buffer.from(arrayBuffer);
 
-        const result = await new Promise<any>((resolve, reject) => {
+        const result = await new Promise<CloudinaryUploadResult>((resolve, reject) => {
             cloudinary.uploader.upload_stream({
                 folder: 'rentaloop/items',
                 resource_type: 'image',

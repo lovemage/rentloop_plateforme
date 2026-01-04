@@ -15,7 +15,7 @@ const categoryLinks = [
 
 async function getProducts(categorySlug?: string) {
   try {
-    let query = db.select().from(items).orderBy(desc(items.createdAt));
+    const query = db.select().from(items).orderBy(desc(items.createdAt));
 
     // 如果有分類篩選，需要 Join categories
     if (categorySlug) {
@@ -76,8 +76,8 @@ export default async function ProductsPage({
                     <Link
                       href={cat.slug ? `/products?category=${cat.slug}` : '/products'}
                       className={`flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors ${isActive
-                          ? "bg-green-100 text-green-800 font-bold"
-                          : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+                        ? "bg-green-100 text-green-800 font-bold"
+                        : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
                         }`}
                     >
                       <span className="material-symbols-outlined text-[20px]">
