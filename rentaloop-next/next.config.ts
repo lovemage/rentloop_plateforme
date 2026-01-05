@@ -1,6 +1,12 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  experimental: {
+    serverActions: {
+      bodySizeLimit: '10mb',
+      allowedOrigins: ['rentaloop.net', 'www.rentaloop.net', 'localhost:3000'],
+    },
+  },
   images: {
     remotePatterns: [
       {
