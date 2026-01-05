@@ -56,25 +56,33 @@ export async function getAdminMembers(
         let kycFront: string | null = null;
         let kycBack: string | null = null;
 
-        try {
-            // Check if it's an S3 key (starts with 'kyc/') or already a URL
-            if (member.kycFrontKey) {
-                if (member.kycFrontKey.startsWith('kyc/')) {
+        // Handle kycFrontKey with individual error handling
+        if (member.kycFrontKey) {
+            if (member.kycFrontKey.startsWith('kyc/')) {
+                try {
                     kycFront = await getSignedKycUrl(member.kycFrontKey);
-                } else {
-                    // Legacy URL (Cloudinary or old format)
-                    kycFront = member.kycFrontKey;
+                } catch (e) {
+                    console.warn(`Failed to sign front KYC URL for user ${member.id}:`, e);
+                    kycFront = null; // Fallback to null instead of crashing
                 }
+            } else {
+                // Legacy URL (Cloudinary or old format)
+                kycFront = member.kycFrontKey;
             }
-            if (member.kycBackKey) {
-                if (member.kycBackKey.startsWith('kyc/')) {
+        }
+
+        // Handle kycBackKey with individual error handling
+        if (member.kycBackKey) {
+            if (member.kycBackKey.startsWith('kyc/')) {
+                try {
                     kycBack = await getSignedKycUrl(member.kycBackKey);
-                } else {
-                    kycBack = member.kycBackKey;
+                } catch (e) {
+                    console.warn(`Failed to sign back KYC URL for user ${member.id}:`, e);
+                    kycBack = null; // Fallback to null instead of crashing
                 }
+            } else {
+                kycBack = member.kycBackKey;
             }
-        } catch (e) {
-            console.error("Failed to generate signed URL:", e);
         }
 
         return {

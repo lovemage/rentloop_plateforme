@@ -60,6 +60,41 @@ interface MyItem {
     createdAt: Date | null;
 }
 
+// Rental related types
+interface UserInfo {
+    id: string;
+    name: string | null;
+    email: string | null;
+    image: string | null;
+}
+
+interface RentalItem {
+    id: string;
+    startDate: string;
+    endDate: string;
+    totalDays: number;
+    totalAmount: number;
+    status: string | null;
+    createdAt: Date | null;
+    itemId: string;
+    itemTitle: string | null;
+    itemImages: string[] | null;
+    ownerId?: string;
+    renterId?: string;
+    owner?: UserInfo;
+    renter?: UserInfo;
+}
+
+interface PendingQuestion {
+    id: string;
+    content: string;
+    createdAt: Date | null;
+    itemTitle: string | null;
+    itemId: string;
+    askerName: string | null;
+    askerImage: string | null;
+}
+
 interface DashboardProps {
     user: {
         id: string;
@@ -74,12 +109,9 @@ interface DashboardProps {
     viewed: TrackedItem[];
     favorites: TrackedItem[];
     redisConfigured: boolean;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    userRentals?: any[];
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    incomingRentals?: any[];
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    pendingQuestions?: any[];
+    userRentals?: RentalItem[];
+    incomingRentals?: RentalItem[];
+    pendingQuestions?: PendingQuestion[];
 }
 
 export function MemberDashboard({
@@ -94,9 +126,9 @@ export function MemberDashboard({
     incomingRentals = [],
     pendingQuestions = [],
 }: DashboardProps) {
-    const [activeTab, setActiveTab] = useState<Tab>('renter');
-
+    // 如果是已審核通過的 Host，預設顯示租賃會員 Tab
     const isHost = profile?.hostStatus === 'approved';
+    const [activeTab, setActiveTab] = useState<Tab>(isHost ? 'host' : 'renter');
 
     return (
         <div className="bg-background-light dark:bg-background-dark text-text-main dark:text-white min-h-screen pb-20">
@@ -303,8 +335,8 @@ export function MemberDashboard({
                                                             )}
                                                             <div className="absolute top-3 left-3">
                                                                 <span className={`px-2 py-1 backdrop-blur-md rounded-lg text-xs font-bold shadow-sm ${item.status === 'active'
-                                                                        ? 'bg-green-500/90 text-white'
-                                                                        : 'bg-gray-500/90 text-white'
+                                                                    ? 'bg-green-500/90 text-white'
+                                                                    : 'bg-gray-500/90 text-white'
                                                                     }`}>
                                                                     {item.status === 'active' ? '上架中' : '已下架'}
                                                                 </span>
