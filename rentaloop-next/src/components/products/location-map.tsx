@@ -44,66 +44,83 @@ export function LocationMap({ locations, apiKey }: LocationMapProps) {
         const loadMap = () => {
             if (!window.google?.maps) return;
 
-            if (typeof window.google.maps.Map !== 'function') {
-                setError("地圖初始化失敗 (Google Maps API 載入異常)");
-                setIsLoading(false);
-                return;
-            }
+            // Robust check: ensure Map constructor exists
+            const checkInterval = setInterval(() => {
+                if (typeof window.google?.maps?.Map === 'function') {
+                    clearInterval(checkInterval);
+                    
+                    // Initialize Map
+                    try {
+                        // Calculate center
+                        const center = locations[0]; // Default to first location
 
-            // Calculate center
-            const center = locations[0]; // Default to first location
+                        // Create Map
+                        const map = new window.google.maps.Map(mapRef.current!, {
+                            center: { lat: center.lat, lng: center.lng },
+                            zoom: 14,
+                            mapTypeControl: false,
+                            streetViewControl: false,
+                            fullscreenControl: true,
+                            styles: [
+                                {
+                                    featureType: "poi",
+                                    elementType: "labels",
+                                    stylers: [{ visibility: "off" }]
+                                }
+                            ]
+                        });
 
-            // Create Map
-            const map = new window.google.maps.Map(mapRef.current!, {
-                center: { lat: center.lat, lng: center.lng },
-                zoom: 14,
-                mapTypeControl: false,
-                streetViewControl: false,
-                fullscreenControl: true,
-                styles: [
-                    {
-                        featureType: "poi",
-                        elementType: "labels",
-                        stylers: [{ visibility: "off" }]
+                        // Add Markers
+                        const bounds = new window.google.maps.LatLngBounds();
+
+                        locations.forEach((loc) => {
+                            const marker = new window.google.maps.Marker({
+                                position: { lat: loc.lat, lng: loc.lng },
+                                map: map,
+                                title: loc.name || loc.address,
+                            });
+
+                            if (loc.name || loc.address) {
+                                const infoWindow = new window.google.maps.InfoWindow({
+                                    content: `
+                                        <div style="padding: 8px;">
+                                            <h3 style="font-weight: bold; margin-bottom: 4px;">${loc.name || '面交地點'}</h3>
+                                            <p style="font-size: 12px; color: #666;">${loc.address || ''}</p>
+                                        </div>
+                                    `
+                                });
+                                marker.addListener("click", () => {
+                                    infoWindow.open(map, marker);
+                                });
+                            }
+
+                            bounds.extend({ lat: loc.lat, lng: loc.lng });
+                        });
+
+                        // Adjust view if multiple locations
+                        if (locations.length > 1) {
+                            map.fitBounds(bounds);
+                        }
+
+                        setIsLoading(false);
+                    } catch (err) {
+                        console.error("Error initializing map:", err);
+                        setError("地圖載入發生錯誤");
+                        setIsLoading(false);
                     }
-                ]
-            });
-
-            // Add Markers
-            const bounds = new window.google.maps.LatLngBounds();
-
-            locations.forEach((loc) => {
-                const marker = new window.google.maps.Marker({
-                    position: { lat: loc.lat, lng: loc.lng },
-                    map: map,
-                    title: loc.name || loc.address,
-                    // Use standard pin but maybe colored green?
-                    // icon: 'http://maps.google.com/mapfiles/ms/icons/green-dot.png'
-                });
-
-                if (loc.name || loc.address) {
-                    const infoWindow = new window.google.maps.InfoWindow({
-                        content: `
-                            <div style="padding: 8px;">
-                                <h3 style="font-weight: bold; margin-bottom: 4px;">${loc.name || '面交地點'}</h3>
-                                <p style="font-size: 12px; color: #666;">${loc.address || ''}</p>
-                            </div>
-                        `
-                    });
-                    marker.addListener("click", () => {
-                        infoWindow.open(map, marker);
-                    });
                 }
+            }, 100);
 
-                bounds.extend({ lat: loc.lat, lng: loc.lng });
-            });
-
-            // Adjust view if multiple locations
-            if (locations.length > 1) {
-                map.fitBounds(bounds);
-            }
-
-            setIsLoading(false);
+            // Timeout after 10 seconds
+            setTimeout(() => {
+                if (isLoading) {
+                    clearInterval(checkInterval);
+                    if (!window.google?.maps?.Map) {
+                        setError("地圖連線逾時");
+                        setIsLoading(false);
+                    }
+                }
+            }, 10000);
         };
 
         // Check if script already loaded

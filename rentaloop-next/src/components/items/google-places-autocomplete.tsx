@@ -118,17 +118,13 @@ export function GooglePlacesAutocomplete({
         if (existingScript) {
             scriptLoadedRef.current = true;
             // Wait for it to load
-            if (window.google?.maps?.places) {
-                setIsLoading(false);
-            } else {
-                // Poll for it
-                const interval = setInterval(() => {
-                    if (window.google?.maps?.places) {
-                        setIsLoading(false);
-                        clearInterval(interval);
-                    }
-                }, 100);
-            }
+            // Poll for it
+            const interval = setInterval(() => {
+                if (window.google?.maps?.places) {
+                    setIsLoading(false);
+                    clearInterval(interval);
+                }
+            }, 100);
             return;
         }
 
