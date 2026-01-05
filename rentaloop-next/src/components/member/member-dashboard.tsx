@@ -9,6 +9,8 @@ import { MemberTrackingLists } from '@/components/member/member-tracking-lists';
 import { MemberHostOnboarding } from '@/components/member/member-host-onboarding';
 import { AvatarUploader } from '@/components/member/avatar-uploader';
 import { MemberRentalList } from '@/components/member/member-rental-list';
+import { MemberQAList } from '@/components/member/member-qa-list';
+import { ItemActionMenu } from '@/components/member/item-action-menu';
 
 type Tab = 'renter' | 'host';
 
@@ -76,6 +78,8 @@ interface DashboardProps {
     userRentals?: any[];
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     incomingRentals?: any[];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    pendingQuestions?: any[];
 }
 
 export function MemberDashboard({
@@ -88,6 +92,7 @@ export function MemberDashboard({
     redisConfigured,
     userRentals = [],
     incomingRentals = [],
+    pendingQuestions = [],
 }: DashboardProps) {
     const [activeTab, setActiveTab] = useState<Tab>('renter');
 
@@ -159,6 +164,9 @@ export function MemberDashboard({
                         >
                             <span className="material-symbols-outlined">storefront</span>
                             租賃會員
+                            {(incomingRentals.length > 0 || pendingQuestions.length > 0) && (
+                                <span className="ml-1 flex h-2 w-2 rounded-full bg-red-500"></span>
+                            )}
                         </button>
                     </div>
                 </div>
@@ -255,7 +263,18 @@ export function MemberDashboard({
                                         <MemberRentalList rentals={incomingRentals} type="owner" />
                                     </div>
 
-                                    <section className="space-y-6 pt-4 border-t border-gray-100">
+                                    {/* Pending QA */}
+                                    {pendingQuestions.length > 0 && (
+                                        <div className="space-y-4 pt-4 border-t border-gray-100 dark:border-gray-800">
+                                            <div className="flex items-center justify-between">
+                                                <h3 className="text-xl font-bold text-orange-600">待回覆問答</h3>
+                                                <span className="px-2 py-0.5 rounded-full bg-orange-100 text-orange-700 text-xs font-bold">{pendingQuestions.length} 則未讀</span>
+                                            </div>
+                                            <MemberQAList questions={pendingQuestions} />
+                                        </div>
+                                    )}
+
+                                    <section className="space-y-6 pt-4 border-t border-gray-100 dark:border-gray-800">
                                         <div className="flex items-center justify-between">
                                             <h2 className="text-2xl font-bold">您的庫存</h2>
                                             <Link href="/items/new" className="flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-bold text-text-main shadow-sm hover:bg-primary-dark transition-colors">
@@ -267,38 +286,47 @@ export function MemberDashboard({
                                         {myItems.length > 0 ? (
                                             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
                                                 {myItems.map((item) => (
-                                                    <Link
-                                                        href={`/products/${item.id}`}
+                                                    <div
                                                         key={item.id}
-                                                        className="group relative overflow-hidden rounded-2xl bg-surface-light dark:bg-surface-dark shadow-sm ring-1 ring-border-light dark:ring-border-dark hover:shadow-md hover:ring-primary/50 transition-all"
+                                                        className="group relative overflow-hidden rounded-2xl bg-surface-light dark:bg-surface-dark shadow-sm ring-1 ring-border-light dark:ring-border-dark hover:shadow-md transition-all"
                                                     >
-                                                        <div className="aspect-[4/3] w-full bg-gray-100 relative overflow-hidden">
+                                                        <Link href={`/products/${item.id}`} className="block relative aspect-[4/3] w-full bg-gray-100 overflow-hidden">
                                                             {item.images && item.images.length > 0 ? (
                                                                 <Image
                                                                     src={item.images[0]!}
                                                                     alt={item.title}
                                                                     fill
-                                                                    className="object-cover transition-transform duration-300 group-hover:scale-105"
+                                                                    className={`object-cover transition-transform duration-300 group-hover:scale-105 ${item.status !== 'active' ? 'grayscale opacity-70' : ''}`}
                                                                 />
                                                             ) : (
                                                                 <div className="flex items-center justify-center h-full text-gray-400">無圖片</div>
                                                             )}
-                                                            <div className="absolute top-3 right-3">
-                                                                <span className="px-2 py-1 bg-white/90 dark:bg-black/80 backdrop-blur-md rounded-lg text-xs font-bold shadow-sm">
-                                                                    {item.status}
+                                                            <div className="absolute top-3 left-3">
+                                                                <span className={`px-2 py-1 backdrop-blur-md rounded-lg text-xs font-bold shadow-sm ${item.status === 'active'
+                                                                        ? 'bg-green-500/90 text-white'
+                                                                        : 'bg-gray-500/90 text-white'
+                                                                    }`}>
+                                                                    {item.status === 'active' ? '上架中' : '已下架'}
                                                                 </span>
                                                             </div>
+                                                        </Link>
+
+                                                        {/* Action Menu - separated from Link */}
+                                                        <div className="absolute top-3 right-3 z-10">
+                                                            <ItemActionMenu itemId={item.id} currentStatus={item.status || 'active'} />
                                                         </div>
+
                                                         <div className="p-4">
-                                                            <h3 className="font-bold text-lg leading-tight mb-1 group-hover:text-primary transition-colors truncate">
-                                                                {item.title}
-                                                            </h3>
+                                                            <Link href={`/products/${item.id}`}>
+                                                                <h3 className="font-bold text-lg leading-tight mb-1 group-hover:text-primary transition-colors truncate">
+                                                                    {item.title}
+                                                                </h3>
+                                                            </Link>
                                                             <div className="flex items-center justify-between mt-3">
                                                                 <span className="font-bold text-text-main">${item.pricePerDay}<span className="text-xs font-normal text-text-sub">/天</span></span>
-                                                                <span className="material-symbols-outlined text-text-sub hover:text-primary cursor-pointer">more_horiz</span>
                                                             </div>
                                                         </div>
-                                                    </Link>
+                                                    </div>
                                                 ))}
                                             </div>
                                         ) : (

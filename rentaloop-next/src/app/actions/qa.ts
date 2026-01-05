@@ -1,10 +1,10 @@
 'use server'
 
 import { db } from "@/lib/db";
-import { itemQuestions, items } from "@/lib/schema";
+import { itemQuestions, items, users } from "@/lib/schema";
 import { auth } from "@/auth";
 import { revalidatePath } from "next/cache";
-import { eq, and } from "drizzle-orm";
+import { eq, and, isNull, desc } from "drizzle-orm";
 
 /**
  * 正規化字串：將全形字元轉換為半形，移除零寬字元等
@@ -110,5 +110,35 @@ export async function replyQuestion(itemId: string, questionId: string, replyCon
     } catch (e) {
         console.error("Reply Question Error:", e);
         return { error: "回覆失敗" };
+    }
+}
+
+export async function getPendingQuestions() {
+    const session = await auth();
+    if (!session?.user?.id) return { success: false, error: "Unauthorized" };
+
+    try {
+        const questions = await db.select({
+            id: itemQuestions.id,
+            content: itemQuestions.content,
+            createdAt: itemQuestions.createdAt,
+            itemTitle: items.title,
+            itemId: items.id,
+            askerName: users.name,
+            askerImage: users.image,
+        })
+            .from(itemQuestions)
+            .leftJoin(items, eq(itemQuestions.itemId, items.id))
+            .leftJoin(users, eq(itemQuestions.userId, users.id))
+            .where(and(
+                eq(items.ownerId, session.user.id),
+                isNull(itemQuestions.reply)
+            ))
+            .orderBy(desc(itemQuestions.createdAt));
+
+        return { success: true, data: questions };
+    } catch (e) {
+        console.error("Fetch Pending QA Error:", e);
+        return { success: false, error: "Failed to fetch questions" };
     }
 }

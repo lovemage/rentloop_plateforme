@@ -5,6 +5,7 @@ import { items, userProfiles } from "@/lib/schema";
 import { eq, desc, inArray } from "drizzle-orm";
 import { getMyFavoriteProductIds, getMyViewedProductIds } from "@/app/actions/tracking";
 import { getUserRentals, getOwnerRentals } from "@/app/actions/rentals";
+import { getPendingQuestions } from "@/app/actions/qa";
 import { MemberDashboard } from "@/components/member/member-dashboard";
 
 // Keep some mocks for unimplemented features
@@ -107,12 +108,19 @@ export default async function MemberPage() {
     .where(eq(items.ownerId, user.id))
     .orderBy(desc(items.createdAt));
 
+
+
   // Fetch rentals
   const userRentalsRes = await getUserRentals();
   const userRentals = userRentalsRes.success && userRentalsRes.data ? userRentalsRes.data : [];
 
   const ownerRentalsRes = await getOwnerRentals();
   const incomingRentals = ownerRentalsRes.success && ownerRentalsRes.data ? ownerRentalsRes.data : [];
+
+  // Fetch pending questions
+  const qaRes = await getPendingQuestions();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const pendingQuestions = qaRes.success && qaRes.data ? qaRes.data as any[] : [];
 
   // Generate stats with actual item count
   const stats = getStats(myItems.length);
@@ -128,6 +136,7 @@ export default async function MemberPage() {
       redisConfigured={redisConfigured}
       userRentals={userRentals}
       incomingRentals={incomingRentals}
+      pendingQuestions={pendingQuestions}
     />
   );
 }

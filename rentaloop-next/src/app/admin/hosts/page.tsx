@@ -8,17 +8,48 @@ function statusCopy(status: string | null) {
   return { label: "未申請", cls: "bg-gray-100 text-gray-600 border-gray-200" };
 }
 
-export default async function HostApplicationsPage() {
+export default async function HostApplicationsPage(props: { searchParams?: Promise<{ status?: string }> }) {
+  const searchParams = await props.searchParams;
+  const statusFilter = searchParams?.status || 'all';
+
   const result = await listHostApplications();
-  const rows = result.success ? result.data : [];
+  let rows = result.success ? result.data : [];
+
+  // Filter rows based on status
+  if (statusFilter !== 'all') {
+    rows = rows.filter(r => r.hostStatus === statusFilter);
+  }
+
+  const tabs = [
+    { key: 'all', label: '全部' },
+    { key: 'pending', label: '待審核' },
+    { key: 'approved', label: '已通過' },
+    { key: 'rejected', label: '已退回' },
+  ];
 
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-xl font-bold text-gray-900">租貸會員審核</h2>
-          <p className="text-sm text-gray-500 mt-1">審核租貸會員申請（pending → approved / rejected）</p>
+          <p className="text-sm text-gray-500 mt-1">審核管理租貸會員申請</p>
         </div>
+      </div>
+
+      {/* Tabs */}
+      <div className="flex border-b border-gray-200">
+        {tabs.map(tab => (
+          <Link
+            key={tab.key}
+            href={`/admin/hosts?status=${tab.key}`}
+            className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${statusFilter === tab.key
+                ? 'border-primary text-primary'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+          >
+            {tab.label}
+          </Link>
+        ))}
       </div>
 
       <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
@@ -70,7 +101,7 @@ export default async function HostApplicationsPage() {
               {rows.length === 0 ? (
                 <tr>
                   <td className="px-6 py-10 text-center text-gray-400" colSpan={6}>
-                    目前沒有租貸會員申請。
+                    在此狀態下沒有租貸會員申請。
                   </td>
                 </tr>
               ) : null}
