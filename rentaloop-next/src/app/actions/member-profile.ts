@@ -18,8 +18,12 @@ const profileSchema = z.object({
   hostCity: z.string().trim().min(1).max(50).optional().or(z.literal("")),
   hostDistrict: z.string().trim().min(1).max(50).optional().or(z.literal("")),
 
-  kycIdFrontUrl: z.string().trim().url().optional().or(z.literal("")),
-  kycIdBackUrl: z.string().trim().url().optional().or(z.literal("")),
+  /**
+   * Accept either a full URL or an internal storage key (e.g. kyc/{userId}/front.webp).
+   * Using min(1) keeps empty strings invalid while still allowing non-URL keys.
+   */
+  kycIdFrontUrl: z.string().trim().min(1).optional().or(z.literal("")),
+  kycIdBackUrl: z.string().trim().min(1).optional().or(z.literal("")),
 
   hostRulesAccepted: z.coerce.boolean().optional(),
 });
