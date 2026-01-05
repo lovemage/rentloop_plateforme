@@ -111,6 +111,27 @@ export function GooglePlacesAutocomplete({
 
         if (scriptLoadedRef.current) return;
 
+        // Check if script with ID already exists
+        const scriptId = 'google-maps-script';
+        const existingScript = document.getElementById(scriptId);
+
+        if (existingScript) {
+            scriptLoadedRef.current = true;
+            // Wait for it to load
+            if (window.google?.maps?.places) {
+                setIsLoading(false);
+            } else {
+                // Poll for it
+                const interval = setInterval(() => {
+                    if (window.google?.maps?.places) {
+                        setIsLoading(false);
+                        clearInterval(interval);
+                    }
+                }, 100);
+            }
+            return;
+        }
+
         // Load Google Places API script
         const apiKey = process.env.NEXT_PUBLIC_GOOGLE_PLACES_API_KEY;
         if (!apiKey) {
@@ -122,7 +143,8 @@ export function GooglePlacesAutocomplete({
         scriptLoadedRef.current = true;
 
         const script = document.createElement('script');
-        script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places&language=zh-TW`;
+        script.id = scriptId;
+        script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places&language=zh-TW&loading=async`;
         script.async = true;
         script.defer = true;
 

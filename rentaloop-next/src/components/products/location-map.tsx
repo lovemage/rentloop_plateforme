@@ -111,7 +111,7 @@ export function LocationMap({ locations, apiKey }: LocationMapProps) {
         if (!document.getElementById(scriptId)) {
             const script = document.createElement("script");
             script.id = scriptId;
-            script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}`;
+            script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&loading=async`;
             script.async = true;
             script.defer = true;
             script.onload = loadMap;

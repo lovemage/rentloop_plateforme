@@ -312,9 +312,6 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
                             <div className="prose prose-gray max-w-none text-gray-600 whitespace-pre-line leading-relaxed">
                                 {product.description}
                             </div>
-                            <div className="prose prose-gray max-w-none text-gray-600 whitespace-pre-line leading-relaxed">
-                                {product.description}
-                            </div>
                         </div>
 
                         <div className="h-px bg-gray-200" />
