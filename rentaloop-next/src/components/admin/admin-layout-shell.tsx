@@ -27,7 +27,7 @@ const sidebarItems = [
         icon: Calendar,
     },
     {
-        title: "會員管理",
+        title: "一般會員管理",
         href: "/admin/members",
         icon: Users,
     },
@@ -37,12 +37,12 @@ const sidebarItems = [
         icon: BadgeCheck,
     },
     {
-        title: "商品管理",
+        title: "上架物品管理",
         href: "/admin/items",
         icon: Package,
     },
     {
-        title: "分類管理",
+        title: "物品分類管理",
         href: "/admin/categories",
         icon: FolderTree,
     },
@@ -62,7 +62,7 @@ const sidebarItems = [
         icon: Globe,
     },
     {
-        title: "首頁設定",
+        title: "首頁組件設定",
         href: "/admin/settings/homepage",
         icon: LayoutDashboard,
     },

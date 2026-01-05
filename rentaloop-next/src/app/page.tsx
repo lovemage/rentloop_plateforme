@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { getBannerSetting, type BannerSetting } from "@/app/actions/admin-banners";
 import { getHomepageStats, getHomepageFeatures, getHomepageArticles } from "@/app/actions/homepage";
+import { ArticleSlider } from "@/components/home/article-slider";
 
 export const dynamic = "force-dynamic";
 
@@ -185,33 +186,8 @@ export default async function Home() {
               Rentaloop 的核心使命與聯合國永續發展目標 (SDGs) 高度一致，我們致力於創造一個負責任的未來。
             </p>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {articles.map((article: any) => (
-              <div key={article.id} className="group flex flex-col gap-4">
-                {/* Inject JSON-LD for this article */}
-                {article.seoSchema && (
-                  <script
-                    type="application/ld+json"
-                    dangerouslySetInnerHTML={{ __html: JSON.stringify(article.seoSchema) }}
-                  />
-                )}
-                <div
-                  className="w-full aspect-video bg-cover bg-center rounded-xl overflow-hidden shadow-sm"
-                  style={{ backgroundImage: `url("${article.image}")` }}
-                  data-alt={article.title}
-                >
-                  <div className="w-full h-full bg-black/10 group-hover:bg-black/0 transition-colors" />
-                </div>
-                <div>
-                  <p className="text-text-main dark:text-white text-lg font-bold leading-normal mb-1">
-                    {article.title}
-                  </p>
-                  <p className="text-text-sub dark:text-gray-400 text-sm font-normal leading-relaxed">
-                    {article.excerpt}
-                  </p>
-                </div>
-              </div>
-            ))}
+          <div className="mt-8">
+            <ArticleSlider articles={articles} />
           </div>
         </div>
       </section>
