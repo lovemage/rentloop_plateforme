@@ -11,7 +11,7 @@ import { eq, desc, and, inArray, gt } from "drizzle-orm";
 import { auth } from "@/auth";
 import { eachDayOfInterval } from "date-fns";
 import { getTodayDateString } from "@/lib/date-utils";
-import { getMyFavoriteProductIds, recordProductView } from "@/app/actions/tracking";
+import { getMyFavoriteProductIds, recordProductView, getFavoriteCount } from "@/app/actions/tracking";
 
 import { LocationMap } from "@/components/products/location-map";
 
@@ -159,6 +159,8 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
 
     const favoriteIdsResult = session?.user?.id ? await getMyFavoriteProductIds() : null;
     const initialFavorited = favoriteIdsResult?.success ? favoriteIdsResult.itemIds.includes(id) : false;
+    const favoriteCountRes = await getFavoriteCount(id);
+    const initialFavoriteCount = favoriteCountRes.success ? favoriteCountRes.count : 0;
 
     if (!product) {
         notFound();
@@ -218,10 +220,10 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
                     <div className="flex items-start justify-between gap-4">
                         <h1 className="text-3xl font-bold text-gray-900 mb-2">{product.title}</h1>
                         {session?.user?.id ? (
-                            <FavoriteButton itemId={id} initialFavorited={initialFavorited} />
+                            <FavoriteButton itemId={id} initialFavorited={initialFavorited} initialCount={initialFavoriteCount} />
                         ) : (
                             <a href="/auth" className="inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-bold border border-gray-200 bg-white hover:border-primary transition-colors">
-                                關注
+                                <Star className="h-4 w-4" /> 關注 {initialFavoriteCount > 0 && <span className="opacity-60 text-xs">({initialFavoriteCount})</span>}
                             </a>
                         )}
                     </div>
@@ -249,10 +251,10 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
                             <div className="flex items-start justify-between gap-3">
                                 <h1 className="text-2xl font-bold text-gray-900">{product.title}</h1>
                                 {session?.user?.id ? (
-                                    <FavoriteButton itemId={id} initialFavorited={initialFavorited} />
+                                    <FavoriteButton itemId={id} initialFavorited={initialFavorited} initialCount={initialFavoriteCount} />
                                 ) : (
                                     <a href="/auth" className="inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-bold border border-gray-200 bg-white hover:border-primary transition-colors">
-                                        關注
+                                        <Star className="h-4 w-4" /> 關注 {initialFavoriteCount > 0 && <span className="opacity-60 text-xs">({initialFavoriteCount})</span>}
                                     </a>
                                 )}
                             </div>

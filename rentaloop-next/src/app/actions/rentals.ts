@@ -1,7 +1,7 @@
 'use server'
 
 import { db } from "@/lib/db";
-import { rentals, items, users } from "@/lib/schema";
+import { rentals, items, users, userProfiles } from "@/lib/schema";
 import { eq, desc, and, inArray, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
@@ -25,6 +25,17 @@ export async function createRental(data: {
         }
 
         const renterId = session.user.id;
+
+        // Check Profile Completion
+        const profile = await db.select().from(userProfiles).where(eq(userProfiles.userId, renterId)).limit(1);
+
+        if (profile.length === 0 || !profile[0].phone || !profile[0].address) {
+            return {
+                success: false,
+                error: "PROFILE_INCOMPLETE", // Frontend should handle this specific code
+                message: "為了保障雙方權益，請先完善個人資料（電話與地址）再進行預約。"
+            };
+        }
 
         // 取得物品資訊以獲取 ownerId
         const item = await db.select({
@@ -68,16 +79,19 @@ export async function createRental(data: {
             endDate: data.endDate,
             totalDays: data.totalDays,
             totalAmount: data.totalAmount,
-            status: 'pending',
+            status: 'approved', // Auto-approve as requested
         }).returning();
 
         // 寄送通知信
         try {
             const { sendEmail } = await import("@/lib/email");
-            const owner = await db.query.users.findFirst({
-                where: eq(users.id, item[0].ownerId),
-                columns: { email: true, name: true }
-            });
+
+            // Safer fetch using db.select
+            const ownerResult = await db.select({
+                email: users.email,
+                name: users.name
+            }).from(users).where(eq(users.id, item[0].ownerId)).limit(1);
+            const owner = ownerResult[0];
 
             // Email to Renter
             if (session.user.email) {

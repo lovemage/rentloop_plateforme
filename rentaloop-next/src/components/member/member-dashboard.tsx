@@ -8,6 +8,7 @@ import { MemberProfileForm } from '@/components/member/member-profile-form';
 import { MemberTrackingLists } from '@/components/member/member-tracking-lists';
 import { MemberHostOnboarding } from '@/components/member/member-host-onboarding';
 import { AvatarUploader } from '@/components/member/avatar-uploader';
+import { MemberRentalList } from '@/components/member/member-rental-list';
 
 type Tab = 'renter' | 'host';
 
@@ -71,6 +72,10 @@ interface DashboardProps {
     viewed: TrackedItem[];
     favorites: TrackedItem[];
     redisConfigured: boolean;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    userRentals?: any[];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    incomingRentals?: any[];
 }
 
 export function MemberDashboard({
@@ -81,6 +86,8 @@ export function MemberDashboard({
     viewed,
     favorites,
     redisConfigured,
+    userRentals = [],
+    incomingRentals = [],
 }: DashboardProps) {
     const [activeTab, setActiveTab] = useState<Tab>('renter');
 
@@ -165,7 +172,7 @@ export function MemberDashboard({
                             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                                 <div className="bg-surface-light dark:bg-surface-dark p-6 rounded-2xl ring-1 ring-border-light dark:ring-border-dark shadow-sm">
                                     <div className="text-text-sub text-sm font-medium mb-1">租借中</div>
-                                    <div className="text-3xl font-bold flex items-baseline gap-2">0 <span className="text-sm font-normal text-text-sub">件商品</span></div>
+                                    <div className="text-3xl font-bold flex items-baseline gap-2">{userRentals.filter(r => r.status === 'ongoing').length} <span className="text-sm font-normal text-text-sub">件商品</span></div>
                                 </div>
                                 <div className="bg-surface-light dark:bg-surface-dark p-6 rounded-2xl ring-1 ring-border-light dark:ring-border-dark shadow-sm">
                                     <div className="text-text-sub text-sm font-medium mb-1">評價</div>
@@ -177,12 +184,16 @@ export function MemberDashboard({
                                 </div>
                             </div>
 
+                            {/* Rentals List */}
+                            <div className="space-y-4">
+                                <h3 className="text-xl font-bold">我的租賃預約</h3>
+                                <MemberRentalList rentals={userRentals} type="renter" />
+                            </div>
+
                             <MemberTrackingLists viewed={viewed} favorites={favorites} redisConfigured={redisConfigured} />
 
-                            <div className="rounded-2xl bg-surface-light dark:bg-surface-dark p-6 shadow-sm ring-1 ring-border-light dark:ring-border-dark">
-                                <h3 className="text-xl font-bold mb-4">帳號設定</h3>
-                                <MemberProfileForm email={user.email} initialProfile={profile} />
-                            </div>
+                            {/* Self-contained profile form with accordion */}
+                            <MemberProfileForm email={user.email} initialProfile={profile} />
                         </div>
                     )}
 
@@ -235,7 +246,16 @@ export function MemberDashboard({
                                         ))}
                                     </section>
 
-                                    <section className="space-y-6">
+                                    {/* Incoming Rentals */}
+                                    <div className="space-y-4 pt-4">
+                                        <div className="flex items-center justify-between">
+                                            <h3 className="text-xl font-bold">收到的預約</h3>
+                                            <span className="text-sm text-text-sub">共 {incomingRentals.length} 筆</span>
+                                        </div>
+                                        <MemberRentalList rentals={incomingRentals} type="owner" />
+                                    </div>
+
+                                    <section className="space-y-6 pt-4 border-t border-gray-100">
                                         <div className="flex items-center justify-between">
                                             <h2 className="text-2xl font-bold">您的庫存</h2>
                                             <Link href="/items/new" className="flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-bold text-text-main shadow-sm hover:bg-primary-dark transition-colors">

@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { items, userProfiles } from "@/lib/schema";
 import { eq, desc, inArray } from "drizzle-orm";
 import { getMyFavoriteProductIds, getMyViewedProductIds } from "@/app/actions/tracking";
+import { getUserRentals, getOwnerRentals } from "@/app/actions/rentals";
 import { MemberDashboard } from "@/components/member/member-dashboard";
 
 // Keep some mocks for unimplemented features
@@ -99,10 +100,19 @@ export default async function MemberPage() {
     .filter(Boolean) as typeof trackedItems;
 
 
+
+
   // Fetch real inventory
   const myItems = await db.select().from(items)
     .where(eq(items.ownerId, user.id))
     .orderBy(desc(items.createdAt));
+
+  // Fetch rentals
+  const userRentalsRes = await getUserRentals();
+  const userRentals = userRentalsRes.success && userRentalsRes.data ? userRentalsRes.data : [];
+
+  const ownerRentalsRes = await getOwnerRentals();
+  const incomingRentals = ownerRentalsRes.success && ownerRentalsRes.data ? ownerRentalsRes.data : [];
 
   // Generate stats with actual item count
   const stats = getStats(myItems.length);
@@ -116,6 +126,8 @@ export default async function MemberPage() {
       viewed={viewed}
       favorites={favorites}
       redisConfigured={redisConfigured}
+      userRentals={userRentals}
+      incomingRentals={incomingRentals}
     />
   );
 }
