@@ -36,13 +36,14 @@ interface GoogleAutocomplete {
     getPlace: () => GooglePlace;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-declare const google: any;
+// No global declarations needed if we handle window carefully or assume @types/google.maps
+// But to fix the build error "All declarations... must have identical modifiers", we remove the conflicting ones.
+// We will access window.google directly.
 
 declare global {
     interface Window {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        google?: any;
+        google: any;
     }
 }
 

@@ -114,7 +114,7 @@ export function RentalCalendar({
     // Helper styles
     const getDayClass = (date: Date) => {
         const disabled = isDateDisabled(date);
-        if (disabled) return "text-gray-300 cursor-not-allowed bg-gray-50 bg-[url('/cross-hatch.png')]"; // Example pattern
+        if (disabled) return "text-gray-300 cursor-not-allowed bg-gray-50 opacity-50"; // Simplified disabled state
 
         const isStart = startDate && isSameDay(date, startDate);
         const isEnd = endDate && isSameDay(date, endDate);

@@ -13,6 +13,8 @@ import { eachDayOfInterval } from "date-fns";
 import { getTodayDateString } from "@/lib/date-utils";
 import { getMyFavoriteProductIds, recordProductView } from "@/app/actions/tracking";
 
+import { LocationMap } from "@/components/products/location-map";
+
 async function getProduct(id: string): Promise<{
     id: string;
     title: string;
@@ -24,12 +26,17 @@ async function getProduct(id: string): Promise<{
     ownerId: string;
     availableFrom: Date | null;
     availableTo: Date | null;
-    location: {
-        city: string;
-        district: string;
+    locations: {
+        placeId?: string;
+        name?: string;
         address: string;
         lat: number;
         lng: number;
+    }[];
+    locationText: {
+        city: string;
+        district: string;
+        address: string;
     };
     owner: {
         name: string;
@@ -53,7 +60,7 @@ async function getProduct(id: string): Promise<{
             deposit: items.deposit,
             images: items.images,
             status: items.status,
-            ownerId: items.ownerId, // Added ownerId
+            ownerId: items.ownerId,
             availableFrom: items.availableFrom,
             availableTo: items.availableTo,
             owner: {
@@ -65,6 +72,7 @@ async function getProduct(id: string): Promise<{
                 role: users.role,
             },
             pickupLocation: items.pickupLocation,
+            pickupLocations: items.pickupLocations, // Add this
             createdAt: items.createdAt,
             condition: items.condition,
             notes: items.notes,
@@ -80,7 +88,26 @@ async function getProduct(id: string): Promise<{
 
         const data = result[0];
 
-        // Transform to UI format
+        // Parse locations
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let locations: any[] = [];
+        if (data.pickupLocations && Array.isArray(data.pickupLocations) && data.pickupLocations.length > 0) {
+            locations = data.pickupLocations;
+        } else if (data.pickupLocation) {
+            // Legacy single string location
+            // We use a default coordinate (Taipei) but show address
+            locations = [{
+                address: data.pickupLocation,
+                name: '面交地點',
+                lat: 25.0330,
+                lng: 121.5654
+            }];
+        }
+
+        // Parse legacy breakdown for UI text (optional)
+        const primaryAddress = locations[0]?.address || data.pickupLocation || "";
+        const city = primaryAddress.length >= 3 ? primaryAddress.substring(0, 3) : "台灣";
+        const district = primaryAddress.length >= 6 ? primaryAddress.substring(3, 6) : "地區";
 
         return {
             id: data.id,
@@ -93,12 +120,11 @@ async function getProduct(id: string): Promise<{
             ownerId: data.ownerId,
             availableFrom: data.availableFrom,
             availableTo: data.availableTo,
-            location: {
-                city: data.pickupLocation?.substring(0, 3) || "台灣",
-                district: data.pickupLocation?.substring(3, 6) || "地區",
-                address: data.pickupLocation || "詳細地址於預約後提供",
-                lat: 0,
-                lng: 0,
+            locations,
+            locationText: {
+                city,
+                district,
+                address: primaryAddress || "詳細地址於預約後提供",
             },
             owner: {
                 name: data.owner?.name || "Unknown User",
@@ -113,8 +139,8 @@ async function getProduct(id: string): Promise<{
                 "請愛惜使用，若有損壞需照價賠償"
             ],
             condition: data.condition || "良好",
-            discountRate3Days: data.discountRate3Days || 0,
-            discountRate7Days: data.discountRate7Days || 0,
+            discountRate3Days: Number(data.discountRate3Days || 0),
+            discountRate7Days: Number(data.discountRate7Days || 0),
         };
     } catch (err) {
         console.error("Error fetching product:", err);
@@ -206,7 +232,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
                         </span>
                         <span>·</span>
                         <span className="flex items-center gap-1 text-gray-700 underline decoration-gray-300 underline-offset-2">
-                            {product.location.city}, {product.location.district}
+                            {product.locationText.city}, {product.locationText.district}
                         </span>
                     </div>
                 </div>
@@ -233,7 +259,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
                             <div className="flex items-center gap-1 text-sm text-gray-600">
                                 <Star className="w-4 h-4 fill-current text-yellow-400" />
                                 <span className="font-medium text-black">4.9</span> ·
-                                <span className="underline">{product.location.city}, {product.location.district}</span>
+                                <span className="underline">{product.locationText.city}, {product.locationText.district}</span>
                             </div>
                         </div>
 
@@ -299,12 +325,18 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
                         {/* Location */}
                         <div className="space-y-4">
                             <h3 className="text-xl font-bold text-gray-900">面交地點</h3>
-                            <div className="bg-gray-100 rounded-xl h-64 flex items-center justify-center relative overflow-hidden group">
-                                {/* Google Map Mock */}
-                                <div className="text-gray-400 font-medium">Map / Location Placeholder</div>
-                                <div className="absolute bottom-4 left-4 bg-white px-4 py-2 rounded-lg shadow-sm font-medium text-sm flex items-center gap-2">
-                                    <MapPin className="w-4 h-4 text-green-600" />
-                                    {product.location.address}
+                            <div className="rounded-xl overflow-hidden shadow-sm border border-gray-100">
+                                <LocationMap
+                                    locations={product.locations}
+                                    apiKey={process.env.NEXT_PUBLIC_GOOGLE_PLACES_API_KEY}
+                                />
+                                <div className="p-4 bg-white">
+                                    {product.locations.map((loc, idx) => (
+                                        <div key={idx} className="flex items-center gap-2 mb-2 last:mb-0">
+                                            <MapPin className="w-4 h-4 text-green-600" />
+                                            <span className="text-sm font-medium">{loc.address} {loc.name ? `(${loc.name})` : ''}</span>
+                                        </div>
+                                    ))}
                                 </div>
                             </div>
                             <p className="text-sm text-gray-500">詳細地址將於預約確認後提供。</p>
