@@ -113,11 +113,12 @@ export function LocationMap({ locations, apiKey }: LocationMapProps) {
         }
 
         // Load script
-        const scriptId = 'google-maps-script-map';
+        const scriptId = 'google-maps-script';
         if (!document.getElementById(scriptId)) {
             const script = document.createElement("script");
             script.id = scriptId;
-            script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&v=weekly&loading=async`;
+            // Unified script URL with libraries=places to share with autocomplete
+            script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places&language=zh-TW&loading=async`;
             script.async = true;
             script.defer = true;
             script.onload = loadMap;
