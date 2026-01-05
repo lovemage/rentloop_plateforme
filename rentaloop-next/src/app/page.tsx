@@ -12,13 +12,13 @@ export default async function Home() {
   const homeBanner = homeBannerRes.success ? homeBannerRes.data : null;
 
   const statsRes = await getHomepageStats();
-  const stats = statsRes.success ? statsRes.data : [];
+  const stats = (statsRes.success ? statsRes.data : []) ?? [];
 
   const featuresRes = await getHomepageFeatures();
-  const features = featuresRes.success ? featuresRes.data : [];
+  const features = (featuresRes.success ? featuresRes.data : []) ?? [];
 
   const articlesRes = await getHomepageArticles();
-  const articles = articlesRes.success ? articlesRes.data : [];
+  const articles = (articlesRes.success ? articlesRes.data : []) ?? [];
 
   const bgImage = homeBanner?.imageUrl || DEFAULT_BANNER_IMAGE;
   const title = homeBanner?.title || "擁抱體驗，\n何必佔有";

@@ -17,8 +17,8 @@ export default async function HomepageSettingsPage() {
             </div>
 
             <HomepageSettingsForm
-                initialStats={stats}
-                initialFeatures={features}
+                initialStats={stats ?? []}
+                initialFeatures={features ?? []}
             />
         </div>
     );
