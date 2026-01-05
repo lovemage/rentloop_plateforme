@@ -12,6 +12,7 @@ import { auth } from "@/auth";
 import { eachDayOfInterval } from "date-fns";
 import { getTodayDateString } from "@/lib/date-utils";
 import { getMyFavoriteProductIds, recordProductView, getFavoriteCount } from "@/app/actions/tracking";
+import { getItemReviews } from "@/app/actions/rentals";
 
 import { LocationMap } from "@/components/products/location-map";
 
@@ -207,7 +208,15 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
         } catch { return []; }
     });
 
+
     const isOwner = session?.user?.id === product!.ownerId;
+
+    // Fetch Reviews
+    const reviewsRes = await getItemReviews(id);
+    const reviews = reviewsRes.success ? reviewsRes.data : [];
+    const averageRating = reviews.length > 0
+        ? (reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length).toFixed(1)
+        : product.owner.rating.toFixed(1); // Fallback to owner rating if no item reviews yet
 
     return (
         <div className="min-h-screen bg-white pb-24 lg:pb-12">
@@ -230,7 +239,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
                     <div className="flex items-center gap-4 text-sm text-gray-500">
                         <span className="flex items-center gap-1">
                             <Star className="w-4 h-4 fill-current text-yellow-400" />
-                            <span className="font-medium text-gray-900">4.9</span> (12 則評價)
+                            <span className="font-medium text-gray-900">{averageRating}</span> ({reviews.length} 則評價)
                         </span>
                         <span>·</span>
                         <span className="flex items-center gap-1 text-gray-700 underline decoration-gray-300 underline-offset-2">
@@ -303,6 +312,61 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
                             <div className="prose prose-gray max-w-none text-gray-600 whitespace-pre-line leading-relaxed">
                                 {product.description}
                             </div>
+                            <div className="prose prose-gray max-w-none text-gray-600 whitespace-pre-line leading-relaxed">
+                                {product.description}
+                            </div>
+                        </div>
+
+                        <div className="h-px bg-gray-200" />
+
+                        {/* Reviews Section */}
+                        <div className="space-y-6">
+                            <h3 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+                                評價
+                                <span className="text-sm font-normal text-gray-500">({reviews.length})</span>
+                            </h3>
+
+                            {reviews.length > 0 ? (
+                                <div className="grid gap-6">
+                                    {reviews.map((review) => (
+                                        <div key={review.id} className="border-b border-gray-100 last:border-0 pb-6 last:pb-0">
+                                            <div className="flex items-center justify-between mb-2">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="relative w-10 h-10 rounded-full bg-gray-100 overflow-hidden">
+                                                        {review.reviewerImage ? (
+                                                            <Image src={review.reviewerImage} alt={review.reviewerName || 'User'} fill className="object-cover" />
+                                                        ) : (
+                                                            <div className="w-full h-full flex items-center justify-center text-gray-400">
+                                                                <User className="w-5 h-5" />
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                    <div>
+                                                        <div className="font-bold text-gray-900">{review.reviewerName || 'Unknown'}</div>
+                                                        <div className="text-xs text-gray-500">
+                                                            {review.createdAt ? new Date(review.createdAt).toLocaleDateString() : ''}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div className="flex text-yellow-400">
+                                                    {[...Array(5)].map((_, i) => (
+                                                        <Star key={i} className={`w-4 h-4 ${i < review.rating ? 'fill-current' : 'text-gray-200'}`} />
+                                                    ))}
+                                                </div>
+                                            </div>
+                                            {review.comment && (
+                                                <p className="text-gray-600 leading-relaxed text-sm pl-[52px]">
+                                                    {review.comment}
+                                                </p>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="text-gray-500 text-sm py-4 bg-gray-50 rounded-xl text-center">
+                                    尚無評價，成為第一個評價的人吧！
+                                </div>
+                            )}
                         </div>
 
                         <div className="h-px bg-gray-200" />

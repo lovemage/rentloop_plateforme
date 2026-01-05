@@ -42,6 +42,12 @@ export const DEFAULT_TEMPLATES = {
         description: "出租者收到預約通知",
         variables: "name, item, dates, renter"
     },
+    rental_rejected: {
+        subject: "預約結果通知：{{item}}",
+        body: `<p>親愛的 {{name}}，</p><p>您對 {{item}} 的預約未能成立。</p><p>原因：{{reason}}</p><p>歡迎您瀏覽其他商品。</p>`,
+        description: "預約被拒絕/取消通知",
+        variables: "name, item, reason"
+    },
     review_invite: {
         subject: "邀請評價：{{item_title}}",
         body: `<p>親愛的 {{name}}，</p><p>感謝您租用 {{item_title}}。希望您有愉快的體驗。</p><p>請花一點時間為此次租賃留下評價：</p><p><a href="{{link}}">前往評價</a></p>`,

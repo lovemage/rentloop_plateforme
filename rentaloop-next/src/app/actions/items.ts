@@ -1,8 +1,8 @@
 'use server'
 
 import { db } from "@/lib/db";
-import { items, categories, users } from "@/lib/schema";
-import { eq, desc, ilike } from "drizzle-orm";
+import { items, categories, users, rentals, itemQuestions, reviews, rentalMessages } from "@/lib/schema";
+import { eq, desc, ilike, inArray, or, and } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
 
@@ -70,9 +70,49 @@ export async function deleteItem(id: string) {
     if (!item.length) return { success: false, error: "Item not found" };
     if (item[0].ownerId !== session.user.id) return { success: false, error: "Forbidden" };
 
-    await db.delete(items).where(eq(items.id, id));
-    revalidatePath('/member');
-    revalidatePath('/products');
+    // Check for active rentals
+    const activeRentals = await db.select().from(rentals).where(
+        and(
+            or(
+                eq(rentals.status, 'ongoing'),
+                eq(rentals.status, 'approved')
+            ),
+            eq(rentals.itemId, id)
+        )
+    );
 
-    return { success: true };
+    if (activeRentals.length > 0) {
+        return { success: false, error: "無法刪除：尚有進行中或已核准的租賃訂單" };
+    }
+
+    try {
+        await db.transaction(async (tx) => {
+            // 1. Get all rental IDs to delete messages and reviews
+            const itemRentals = await tx.select({ id: rentals.id }).from(rentals).where(eq(rentals.itemId, id));
+            const rentalIds = itemRentals.map(r => r.id);
+
+            if (rentalIds.length > 0) {
+                // Delete rental messages
+                await tx.delete(rentalMessages).where(inArray(rentalMessages.rentalId, rentalIds));
+                // Delete reviews
+                await tx.delete(reviews).where(inArray(reviews.rentalId, rentalIds));
+                // Delete rentals
+                await tx.delete(rentals).where(eq(rentals.itemId, id));
+            }
+
+            // 2. Delete item questions
+            await tx.delete(itemQuestions).where(eq(itemQuestions.itemId, id));
+
+            // 3. Delete item
+            await tx.delete(items).where(eq(items.id, id));
+        });
+
+        revalidatePath('/member');
+        revalidatePath('/products');
+
+        return { success: true };
+    } catch (e) {
+        console.error("Delete item failed:", e);
+        return { success: false, error: "刪除失敗：資料庫錯誤" };
+    }
 }

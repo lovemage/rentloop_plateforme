@@ -1,13 +1,81 @@
 'use server'
 
 import { db } from "@/lib/db";
-import { rentals, items, users, userProfiles } from "@/lib/schema";
-import { eq, desc, and, inArray, sql } from "drizzle-orm";
+import { rentals, items, users, userProfiles, emailTemplates, reviews } from "@/lib/schema";
+import { eq, desc, and, inArray, sql, lt } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
 
 // 預約狀態類型
 export type RentalStatus = 'pending' | 'approved' | 'rejected' | 'ongoing' | 'completed' | 'cancelled';
+
+// 自動取消逾期預約 (3天未回覆)
+export async function checkAndCancelOverdueRentals() {
+    try {
+        const threeDaysAgo = new Date();
+        threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
+
+        const overdueRentals = await db.select({
+            id: rentals.id,
+            renterId: rentals.renterId,
+            itemId: rentals.itemId,
+            itemTitle: items.title,
+        })
+            .from(rentals)
+            .leftJoin(items, eq(rentals.itemId, items.id))
+            .where(
+                and(
+                    eq(rentals.status, 'pending'),
+                    lt(rentals.createdAt, threeDaysAgo)
+                )
+            );
+
+        if (overdueRentals.length > 0) {
+            const rentalIds = overdueRentals.map(r => r.id);
+
+            // Update status
+            await db.update(rentals)
+                .set({ status: 'cancelled' })
+                .where(inArray(rentals.id, rentalIds));
+
+            // Send emails
+            try {
+                const { sendEmail } = await import("@/lib/email");
+
+                // Get renter emails
+                const renters = await db.select({
+                    id: users.id,
+                    email: users.email,
+                    name: users.name
+                }).from(users).where(inArray(users.id, overdueRentals.map(r => r.renterId)));
+
+                const renterMap = new Map(renters.map(r => [r.id, r]));
+
+                await Promise.all(overdueRentals.map(async (rental) => {
+                    const renter = renterMap.get(rental.renterId);
+                    if (renter?.email) {
+                        await sendEmail({
+                            to: renter.email,
+                            templateKey: "rental_rejected", // Re-use rejected or create specific template
+                            data: {
+                                name: renter.name || "Member",
+                                item: rental.itemTitle || "Item",
+                                reason: "超過3日店家未回覆，系統自動取消"
+                            }
+                        });
+                    }
+                }));
+            } catch (e) {
+                console.error("Failed to send auto-cancel emails:", e);
+            }
+        }
+
+        return { success: true, count: overdueRentals.length };
+    } catch (e) {
+        console.error("Auto cancel failed:", e);
+        return { success: false, error: "Auto cancel failed" };
+    }
+}
 
 // 建立預約
 export async function createRental(data: {
@@ -191,7 +259,95 @@ export async function getAllRentals() {
     }
 }
 
-// 更新預約狀態
+// 批准預約 (開始出租)
+export async function approveRental(rentalId: string) {
+    const session = await auth();
+    if (!session?.user?.id) return { success: false, error: "Unauthorized" };
+
+    try {
+        await db.update(rentals)
+            .set({ status: 'approved' }) // Host approved, waiting for start date to become ongoing? Or directly ongoing? Assuming approved means "Accepted"
+            .where(eq(rentals.id, rentalId));
+
+        // TODO: Send email to renter
+
+        revalidatePath('/member');
+        return { success: true };
+    } catch (e) {
+        console.error(e);
+        return { success: false, error: "操作失敗" };
+    }
+}
+
+// 拒絕預約
+export async function rejectRental(rentalId: string, reason: string) {
+    const session = await auth();
+    if (!session?.user?.id) return { success: false, error: "Unauthorized" };
+
+    try {
+        // Update status and reason
+        await db.update(rentals)
+            .set({ status: 'rejected', rejectionReason: reason })
+            .where(eq(rentals.id, rentalId));
+
+        // Get rental details for email
+        const rental = await db.select({
+            id: rentals.id,
+            renterId: rentals.renterId,
+            itemTitle: items.title
+        })
+            .from(rentals)
+            .leftJoin(items, eq(rentals.itemId, items.id))
+            .where(eq(rentals.id, rentalId))
+            .limit(1);
+
+        if (rental.length > 0) {
+            const renter = await db.select({ email: users.email, name: users.name })
+                .from(users)
+                .where(eq(users.id, rental[0].renterId))
+                .limit(1);
+
+            if (renter.length > 0 && renter[0].email) {
+                const { sendEmail } = await import("@/lib/email");
+                await sendEmail({
+                    to: renter[0].email,
+                    templateKey: "rental_rejected",
+                    data: {
+                        name: renter[0].name || "Member",
+                        item: rental[0].itemTitle || "Item",
+                        reason: reason
+                    }
+                });
+            }
+        }
+
+        revalidatePath('/member');
+        return { success: true };
+    } catch (e) {
+        console.error(e);
+        return { success: false, error: "操作失敗" };
+    }
+}
+
+// 完成出租
+export async function completeRental(rentalId: string) {
+    const session = await auth();
+    if (!session?.user?.id) return { success: false, error: "Unauthorized" };
+
+    try {
+        await db.update(rentals)
+            .set({ status: 'completed' })
+            .where(eq(rentals.id, rentalId));
+
+        revalidatePath('/member');
+        return { success: true };
+    } catch (e) {
+        console.error(e);
+        return { success: false, error: "操作失敗" };
+    }
+}
+
+// 更新預約狀態 (Admin 或通用更新)
 export async function updateRentalStatus(id: string, status: RentalStatus) {
     try {
         const session = await auth();
@@ -221,13 +377,16 @@ export async function updateRentalStatus(id: string, status: RentalStatus) {
     }
 }
 
-// 取得用戶的預約訂單
+// 取得用戶的預約訂單 (包含 Line ID)
 export async function getUserRentals() {
     try {
         const session = await auth();
         if (!session?.user?.id) {
             return { success: false, error: "請先登入" };
         }
+
+        // Trigger auto-cancel check
+        checkAndCancelOverdueRentals().catch(console.error);
 
         const userId = session.user.id;
 
@@ -250,7 +409,7 @@ export async function getUserRentals() {
             .where(eq(rentals.renterId, userId))
             .orderBy(desc(rentals.createdAt));
 
-        // 取得所有 Owner 資訊
+        // 取得所有 Owner 資訊 (包含 Line ID from profile)
         const ownerIds = [...new Set(myRentals.map(r => r.ownerId))];
         const ownersData = ownerIds.length > 0
             ? await db.select({
@@ -258,14 +417,18 @@ export async function getUserRentals() {
                 name: users.name,
                 email: users.email,
                 image: users.image,
-            }).from(users).where(inArray(users.id, ownerIds))
+                lineId: userProfiles.lineId
+            })
+                .from(users)
+                .leftJoin(userProfiles, eq(users.id, userProfiles.userId))
+                .where(inArray(users.id, ownerIds))
             : [];
 
         const ownerMap = new Map(ownersData.map(u => [u.id, u]));
 
         const enrichedRentals = myRentals.map(rental => ({
             ...rental,
-            owner: ownerMap.get(rental.ownerId) || { id: rental.ownerId, name: 'Unknown', email: '', image: null },
+            owner: ownerMap.get(rental.ownerId) || { id: rental.ownerId, name: 'Unknown', email: '', image: null, lineId: null },
         }));
 
         return { success: true, data: enrichedRentals };
@@ -275,13 +438,16 @@ export async function getUserRentals() {
     }
 }
 
-// 取得商家收到的預約訂單
+// 取得商家收到的預約訂單 (包含 Line ID)
 export async function getOwnerRentals() {
     try {
         const session = await auth();
         if (!session?.user?.id) {
             return { success: false, error: "請先登入" };
         }
+
+        // Trigger auto-cancel check
+        checkAndCancelOverdueRentals().catch(console.error);
 
         const userId = session.user.id;
 
@@ -303,7 +469,7 @@ export async function getOwnerRentals() {
             .where(eq(rentals.ownerId, userId))
             .orderBy(desc(rentals.createdAt));
 
-        // 取得所有 Renter 資訊
+        // 取得所有 Renter 資訊 (包含 Line ID)
         const renterIds = [...new Set(receivedRentals.map(r => r.renterId))];
         const rentersData = renterIds.length > 0
             ? await db.select({
@@ -311,20 +477,95 @@ export async function getOwnerRentals() {
                 name: users.name,
                 email: users.email,
                 image: users.image,
-            }).from(users).where(inArray(users.id, renterIds))
+                lineId: userProfiles.lineId
+            })
+                .from(users)
+                .leftJoin(userProfiles, eq(users.id, userProfiles.userId))
+                .where(inArray(users.id, renterIds))
             : [];
 
         const renterMap = new Map(rentersData.map(u => [u.id, u]));
 
         const enrichedRentals = receivedRentals.map(rental => ({
             ...rental,
-            renter: renterMap.get(rental.renterId) || { id: rental.renterId, name: 'Unknown', email: '', image: null },
+            renter: renterMap.get(rental.renterId) || { id: rental.renterId, name: 'Unknown', email: '', image: null, lineId: null },
         }));
 
         return { success: true, data: enrichedRentals };
     } catch (error) {
         console.error("Failed to fetch owner rentals:", error);
         return { success: false, error: "Failed to fetch rentals" };
+    }
+}
+
+// 提交評價
+export async function submitReview(data: {
+    rentalId: string;
+    rating: number;
+    comment?: string;
+}) {
+    const session = await auth();
+    if (!session?.user?.id) return { success: false, error: "Unauthorized" };
+
+    try {
+        const rental = await db.select().from(rentals).where(eq(rentals.id, data.rentalId)).limit(1);
+        if (rental.length === 0) return { success: false, error: "Rental not found" };
+
+        // Determine reviewer and reviewee
+        // Currently only renter reviews owner/item? Requirement says "Renter can review".
+        // Renter -> Review Owner (and technically item)
+        if (rental[0].renterId !== session.user.id) {
+            return { success: false, error: "You can only review your own rentals" };
+        }
+
+        // Check if already reviewed
+        const existing = await db.select().from(reviews).where(eq(reviews.rentalId, data.rentalId)).limit(1);
+        if (existing.length > 0) return { success: false, error: "Already reviewed" };
+
+        await db.insert(reviews).values({
+            rentalId: data.rentalId,
+            reviewerId: session.user.id,
+            revieweeId: rental[0].ownerId, // Renter reviewing Owner
+            rating: data.rating,
+            comment: data.comment || '', // Optional comment
+            isVisible: true,
+        });
+
+        revalidatePath(`/products/${rental[0].itemId}`);
+        return { success: true };
+    } catch (e) {
+        console.error(e);
+        return { success: false, error: "評價失敗" };
+    }
+}
+
+// 取得商品的評價
+export async function getItemReviews(itemId: string) {
+    try {
+        // reviews -> rentals -> itemId
+        const itemReviews = await db.select({
+            id: reviews.id,
+            rating: reviews.rating,
+            comment: reviews.comment,
+            createdAt: reviews.createdAt,
+            reviewerName: users.name,
+            reviewerImage: users.image,
+        })
+            .from(reviews)
+            .innerJoin(rentals, eq(reviews.rentalId, rentals.id))
+            .innerJoin(users, eq(reviews.reviewerId, users.id))
+            .where(
+                and(
+                    eq(rentals.itemId, itemId),
+                    eq(reviews.isVisible, true)
+                )
+            )
+            .orderBy(desc(reviews.createdAt));
+
+        return { success: true, data: itemReviews };
+    } catch (e) {
+        console.error(e);
+        return { success: false, data: [] };
     }
 }
 

@@ -140,6 +140,7 @@ export const rentals = pgTable('rentals', {
     totalDays: integer('total_days').notNull(),
     totalAmount: integer('total_amount').notNull(),
     status: text('status').default('pending'),
+    rejectionReason: text('rejection_reason'),
     createdAt: timestamp('created_at').defaultNow(),
 });
 
