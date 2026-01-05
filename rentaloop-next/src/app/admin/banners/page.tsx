@@ -21,7 +21,6 @@ import {
     Layout,
 } from "lucide-react";
 import { getAllBannerSettings, upsertBannerSetting, type BannerSetting } from "@/app/actions/admin-banners";
-import { uploadImage } from "@/app/actions/upload";
 import toast from "react-hot-toast";
 
 const BANNER_KEYS = [
@@ -87,6 +86,38 @@ export default function AdminBannersPage() {
     const [banners, setBanners] = useState<Record<string, BannerForm>>({});
     const [isLoading, setIsLoading] = useState(true);
     const [savingKey, setSavingKey] = useState<string | null>(null);
+
+    async function uploadBannerImage(file: File): Promise<string> {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 30_000);
+
+        try {
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('folder', 'banners');
+
+            const res = await fetch('/api/upload', {
+                method: 'POST',
+                body: formData,
+                signal: controller.signal,
+            });
+
+            const json = await res.json().catch(() => null);
+
+            if (!res.ok) {
+                const msg = json?.error ? String(json.error) : `Upload failed (${res.status})`;
+                throw new Error(msg);
+            }
+
+            if (!json?.success || !json?.url) {
+                throw new Error('Upload failed');
+            }
+
+            return String(json.url);
+        } finally {
+            clearTimeout(timeoutId);
+        }
+    }
 
     useEffect(() => {
         loadBanners();
@@ -182,14 +213,10 @@ export default function AdminBannersPage() {
 
             // Upload new image if selected
             if (banner.imageFile) {
-                const formData = new FormData();
-                formData.append("file", banner.imageFile);
-                formData.append("folder", "banners");
-
-                const uploadResult = await uploadImage(formData);
-                if (uploadResult.success && uploadResult.url) {
-                    imageUrl = uploadResult.url;
-                } else {
+                try {
+                    imageUrl = await uploadBannerImage(banner.imageFile);
+                } catch (e) {
+                    console.error('Banner image upload failed:', e);
                     toast.error("圖片上傳失敗");
                     setSavingKey(null);
                     return;
