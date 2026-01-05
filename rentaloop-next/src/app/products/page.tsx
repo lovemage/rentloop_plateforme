@@ -65,6 +65,31 @@ export default async function ProductsPage({
 
   const styles = productBanner?.styles || {};
 
+
+  // Resolve alignment classes
+  let alignClass = "items-start text-left"; // Default distinct from home page? Or keep left for products default.
+  if (styles.textAlign === 'center') alignClass = "items-center text-center";
+  if (styles.textAlign === 'right') alignClass = "items-end text-right";
+  // Default for products page is usually left aligned if styles are empty? 
+  // But let's respect styles. If styles is empty object, default logic check.
+  // Actually, if styles is empty, let's default to Left for specific "Products" feel or Center?
+  // Let's stick to using the style object: if style.textAlign is undefined, it defaults to undefined.
+  // Admin form defaults to 'center'.
+  // However, older data might be empty. Let's look at getBannerSetting source.
+  // Just use logic:
+  if (!styles.textAlign) alignClass = "items-start text-left"; // Default to left if no setting
+
+  let justifyClass = "justify-center";
+  if (styles.verticalAlign === 'start') justifyClass = "justify-start";
+  if (styles.verticalAlign === 'end') justifyClass = "justify-end";
+
+  // Resolve font sizes
+  const titleSize = typeof styles.titleSize === 'number' ? `${styles.titleSize}px` : undefined;
+  const titleClass = typeof styles.titleSize === 'string' ? styles.titleSize : 'text-3xl md:text-4xl';
+
+  const subtitleSize = typeof styles.subtitleSize === 'number' ? `${styles.subtitleSize}px` : undefined;
+  const subtitleClass = typeof styles.subtitleSize === 'string' ? styles.subtitleSize : 'text-sm md:text-base';
+
   return (
     <div className="flex min-h-screen flex-col bg-gray-50 text-gray-900">
       <main className="mx-auto flex w-full max-w-[1440px] flex-1 flex-col gap-8 px-4 py-8 sm:px-6 lg:flex-row lg:px-8">
@@ -141,13 +166,13 @@ export default async function ProductsPage({
         {/* Main Content */}
         <section className="flex-1 flex flex-col gap-6">
           {/* Banner */}
-          <div className="relative overflow-hidden rounded-2xl bg-black px-8 py-10 md:py-14 shadow-lg isolate min-h-[300px] flex items-center">
+          <div className={`relative overflow-hidden rounded-2xl bg-black px-8 py-10 md:py-14 shadow-lg isolate min-h-[300px] flex flex-col ${justifyClass}`}>
             <div
               className="absolute inset-0 -z-10 bg-cover bg-center opacity-40 transition-opacity"
               style={{ backgroundImage: `url('${bgImage}')` }}
             />
             <div className="absolute inset-0 -z-10 bg-gradient-to-r from-gray-900/90 to-transparent" />
-            <div className="flex max-w-lg flex-col gap-4">
+            <div className={`flex w-full flex-col gap-4 ${alignClass}`}>
               {finalTagText && (
                 <div
                   className="inline-flex w-fit items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold backdrop-blur-md border"
@@ -164,8 +189,8 @@ export default async function ProductsPage({
 
               {title ? (
                 <h1
-                  style={{ color: styles.titleColor }}
-                  className={`${styles.titleSize || 'text-3xl md:text-4xl'} font-extrabold tracking-tight drop-shadow-sm`}
+                  style={{ color: styles.titleColor, fontSize: titleSize }}
+                  className={`${titleClass} font-extrabold tracking-tight drop-shadow-sm`}
                 >
                   {title}
                 </h1>
@@ -176,8 +201,8 @@ export default async function ProductsPage({
               )}
 
               <p
-                style={{ color: styles.subtitleColor }}
-                className={`${styles.subtitleSize || 'text-sm md:text-base'} text-gray-200 leading-relaxed`}
+                style={{ color: styles.subtitleColor, fontSize: subtitleSize }}
+                className={`${subtitleClass} text-gray-200 leading-relaxed max-w-xl`}
               >
                 {subtitle}
               </p>

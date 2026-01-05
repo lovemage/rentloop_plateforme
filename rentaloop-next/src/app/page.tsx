@@ -80,11 +80,27 @@ export default async function Home() {
   const tagText = homeBanner?.tagText;
   const styles = homeBanner?.styles || {};
 
+  // Resolve alignment classes
+  let alignClass = "items-center text-center";
+  if (styles.textAlign === 'left') alignClass = "items-start text-left";
+  if (styles.textAlign === 'right') alignClass = "items-end text-right";
+
+  let justifyClass = "justify-center";
+  if (styles.verticalAlign === 'start') justifyClass = "justify-start";
+  if (styles.verticalAlign === 'end') justifyClass = "justify-end";
+
+  // Resolve font sizes (if number use px, if string use class - backward compat)
+  const titleSize = typeof styles.titleSize === 'number' ? `${styles.titleSize}px` : undefined;
+  const titleClass = typeof styles.titleSize === 'string' ? styles.titleSize : 'text-4xl md:text-6xl';
+
+  const subtitleSize = typeof styles.subtitleSize === 'number' ? `${styles.subtitleSize}px` : undefined;
+  const subtitleClass = typeof styles.subtitleSize === 'string' ? styles.subtitleSize : 'text-base md:text-xl';
+
   return (
     <div className="flex flex-col items-center">
       <section className="w-full max-w-[1280px] px-4 md:px-10 py-5">
         <div
-          className="w-full rounded-2xl overflow-hidden relative min-h-[560px] flex items-center justify-center text-center p-6 md:p-12 group"
+          className={`w-full rounded-2xl overflow-hidden relative min-h-[560px] flex flex-col ${justifyClass} p-6 md:p-12 group`}
           style={{
             backgroundImage: `linear-gradient(rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.6) 100%), url("${bgImage}")`,
             backgroundSize: "cover",
@@ -92,7 +108,7 @@ export default async function Home() {
           }}
           data-alt="Banner Image"
         >
-          <div className="relative z-10 flex flex-col gap-6 max-w-3xl items-center">
+          <div className={`relative z-10 flex flex-col gap-6 max-w-3xl w-full ${alignClass} mx-auto`}>
             {tagText && (
               <span
                 style={{
@@ -105,14 +121,14 @@ export default async function Home() {
               </span>
             )}
             <h1
-              style={{ color: styles.titleColor }}
-              className={`whitespace-pre-line ${styles.titleSize || 'text-4xl md:text-6xl'} font-black leading-tight tracking-tight drop-shadow-sm`}
+              style={{ color: styles.titleColor, fontSize: titleSize }}
+              className={`whitespace-pre-line ${titleClass} font-black leading-tight tracking-tight drop-shadow-sm`}
             >
               {title}
             </h1>
             <h2
-              style={{ color: styles.subtitleColor }}
-              className={`${styles.subtitleSize || 'text-base md:text-xl'} font-medium leading-relaxed max-w-2xl drop-shadow-md`}
+              style={{ color: styles.subtitleColor, fontSize: subtitleSize }}
+              className={`${subtitleClass} font-medium leading-relaxed max-w-2xl drop-shadow-md`}
             >
               {subtitle}
             </h2>
