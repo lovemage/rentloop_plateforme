@@ -1,7 +1,7 @@
 'use server'
 
 import { db } from "@/lib/db";
-import { items, users } from "@/lib/schema";
+import { items } from "@/lib/schema";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
@@ -27,6 +27,18 @@ export async function createItem(formData: FormData) {
     const imagesJson = formData.get('images') as string;
     const images = JSON.parse(imagesJson || '[]');
 
+    // Pickup locations (new Google Places format)
+    const pickupLocationsJson = formData.get('pickupLocations') as string;
+    let pickupLocations = null;
+    try {
+        pickupLocations = JSON.parse(pickupLocationsJson || '[]');
+        if (!Array.isArray(pickupLocations) || pickupLocations.length === 0) {
+            pickupLocations = null;
+        }
+    } catch {
+        pickupLocations = null;
+    }
+
     const ownerId = session.user.id;
 
     const availableFromStr = formData.get('availableFrom') as string;
@@ -40,14 +52,15 @@ export async function createItem(formData: FormData) {
     const discountRate7Days = parseInt(formData.get('discountRate7Days') as string) || 0;
 
     try {
-        const [newItem] = await db.insert(items).values({
+        await db.insert(items).values({
             ownerId,
             categoryId: categoryId || null,
             title,
             description,
             pricePerDay: price,
             deposit,
-            pickupLocation: location,
+            pickupLocation: location, // Legacy fallback
+            pickupLocations, // New JSON array of locations
             images,
             availableFrom,
             availableTo,
@@ -56,7 +69,7 @@ export async function createItem(formData: FormData) {
             notes,
             discountRate3Days,
             discountRate7Days
-        }).returning({ id: items.id });
+        });
 
         revalidatePath('/products');
         revalidatePath('/admin/items');
@@ -67,3 +80,4 @@ export async function createItem(formData: FormData) {
 
     redirect('/products');
 }
+

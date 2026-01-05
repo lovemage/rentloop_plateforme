@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
+import { getBannerSetting, type BannerSetting } from "@/app/actions/admin-banners";
 
 const stats = [
   {
@@ -67,28 +68,53 @@ const sdgs = [
   },
 ];
 
-export default function Home() {
+const DEFAULT_BANNER_IMAGE = 'https://lh3.googleusercontent.com/aida-public/AB6AXuDTBPvJJQMMJ_r6epTr33NaItdolKC0lJ2vtXkCgBRVHKf5ibNgR9fGm7YvRATfVAiSCXG2R6erxAeH-AIMGNYHyv9PaUBHor69DF3JAKls2QUhOSvk3IzkoXoSHszd_hNrExcM4EkRFzcqryorEGDY8QflTqBSqMzGggmMLDMU_CR_jQXzKgjU-piZmfz75A_ogiMouI9YRGebhSM9S7b6aDAtbCpB-xLNheKgcXUYH-n2NBZpfT5-pxBE6cDHQcTQO8nZHbIR';
+
+export default async function Home() {
+  const homeBannerRes = await getBannerSetting('home_banner');
+  const homeBanner = homeBannerRes.success ? homeBannerRes.data : null;
+
+  const bgImage = homeBanner?.imageUrl || DEFAULT_BANNER_IMAGE;
+  const title = homeBanner?.title || "擁抱體驗，\n何必佔有";
+  const subtitle = homeBanner?.subtitle || "加入循環經濟的行列。租賃優質裝備，不僅能省下開銷，更能透過減少浪費為地球盡一份心力。";
+  const tagText = homeBanner?.tagText;
+  const styles = homeBanner?.styles || {};
+
   return (
     <div className="flex flex-col items-center">
       <section className="w-full max-w-[1280px] px-4 md:px-10 py-5">
         <div
           className="w-full rounded-2xl overflow-hidden relative min-h-[560px] flex items-center justify-center text-center p-6 md:p-12 group"
           style={{
-            backgroundImage:
-              'linear-gradient(rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.6) 100%), url("https://lh3.googleusercontent.com/aida-public/AB6AXuDTBPvJJQMMJ_r6epTr33NaItdolKC0lJ2vtXkCgBRVHKf5ibNgR9fGm7YvRATfVAiSCXG2R6erxAeH-AIMGNYHyv9PaUBHor69DF3JAKls2QUhOSvk3IzkoXoSHszd_hNrExcM4EkRFzcqryorEGDY8QflTqBSqMzGggmMLDMU_CR_jQXzKgjU-piZmfz75A_ogiMouI9YRGebhSM9S7b6aDAtbCpB-xLNheKgcXUYH-n2NBZpfT5-pxBE6cDHQcTQO8nZHbIR")',
+            backgroundImage: `linear-gradient(rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.6) 100%), url("${bgImage}")`,
             backgroundSize: "cover",
             backgroundPosition: "center",
           }}
-          data-alt="Happy people camping outdoors with rented gear, sunlight filtering through trees"
+          data-alt="Banner Image"
         >
           <div className="relative z-10 flex flex-col gap-6 max-w-3xl items-center">
-            <h1 className="text-white text-4xl md:text-6xl font-black leading-tight tracking-tight drop-shadow-sm">
-              擁抱體驗，
-              <br className="md:hidden" />
-              何必佔有
+            {tagText && (
+              <span
+                style={{
+                  color: styles.tagColor,
+                  backgroundColor: styles.tagBgColor,
+                }}
+                className="px-4 py-1.5 rounded-full text-base font-bold backdrop-blur-sm shadow-sm"
+              >
+                {tagText}
+              </span>
+            )}
+            <h1
+              style={{ color: styles.titleColor }}
+              className={`whitespace-pre-line ${styles.titleSize || 'text-4xl md:text-6xl'} font-black leading-tight tracking-tight drop-shadow-sm`}
+            >
+              {title}
             </h1>
-            <h2 className="text-white/90 text-base md:text-xl font-medium leading-relaxed max-w-2xl drop-shadow-md">
-              加入循環經濟的行列。租賃優質裝備，不僅能省下開銷，更能透過減少浪費為地球盡一份心力。
+            <h2
+              style={{ color: styles.subtitleColor }}
+              className={`${styles.subtitleSize || 'text-base md:text-xl'} font-medium leading-relaxed max-w-2xl drop-shadow-md`}
+            >
+              {subtitle}
             </h2>
             <div className="flex flex-col sm:flex-row gap-3 mt-4">
               <Link href="/products" className="flex items-center justify-center rounded-lg h-12 px-8 bg-primary hover:bg-primary-dark text-text-main text-base font-bold transition-all transform hover:scale-105 shadow-lg shadow-primary/30">

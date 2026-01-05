@@ -3,12 +3,37 @@
 import { useState, useRef } from 'react';
 import { uploadImage } from '@/app/actions/upload';
 import { createItem } from '@/app/actions/item-create';
-import { ImagePlus, X, Loader2, MapPin } from 'lucide-react';
+import { ImagePlus, X, Loader2, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { z } from 'zod';
 import toast from 'react-hot-toast';
 import { getThumbnail } from '@/lib/cloudinary-utils';
+import { GooglePlacesAutocomplete, type PickupLocation } from './google-places-autocomplete';
+
+// Preset rental rules for quick selection
+const PRESET_RULES = [
+    "請勿在雨天使用",
+    "請勿在沙灘或水邊使用",
+    "歸還前請簡單清潔",
+    "請小心輕放避免碰撞",
+    "請勿拆解或改裝",
+    "禁止轉租給第三方",
+    "請準時歸還",
+    "如需延長租期請提前告知",
+    "遺失配件需照價賠償",
+    "損壞需負擔維修費用",
+    "使用後請充電/充滿電歸還",
+    "請保持原廠包裝完整",
+    "禁止用於商業拍攝",
+    "限本人使用",
+    "請妥善保管",
+    "禁止攜帶出國",
+    "室內使用限定",
+    "請先試用確認功能正常",
+    "歸還時請附上所有配件",
+    "請依說明書正確操作",
+];
 
 // Zod Schema for validation
 const itemFormSchema = z.object({
@@ -17,7 +42,7 @@ const itemFormSchema = z.object({
     description: z.string().min(10, '描述至少10字').max(2000, '描述過長，最多2000字'),
     price: z.number().min(1, '租金必須大於0'),
     deposit: z.number().min(0, '押金不可為負數'),
-    location: z.string().min(1, '請輸入面交地點'),
+    location: z.string().min(1, '請選擇至少一個面交地點'),
     images: z.array(z.string().url()).min(1, '請至少上傳一張照片'),
     availableFrom: z.string().optional(),
     availableTo: z.string().optional(),
@@ -37,9 +62,17 @@ interface Category {
 export function ItemCreateForm({ categories }: { categories: Category[] }) {
     const [uploading, setUploading] = useState(false);
     const [imageUrls, setImageUrls] = useState<string[]>([]);
+    const [uploadError, setUploadError] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [errors, setErrors] = useState<Record<string, string>>({});
+
+    // Notes/rules state
+    const [notes, setNotes] = useState('');
+    const [showPresetRules, setShowPresetRules] = useState(false);
+
+    // Pickup locations state
+    const [pickupLocations, setPickupLocations] = useState<PickupLocation[]>([]);
 
     // Group categories
     const parentCategories = categories.filter(c => !c.parentId);
@@ -49,6 +82,7 @@ export function ItemCreateForm({ categories }: { categories: Category[] }) {
         if (!e.target.files?.length) return;
 
         setUploading(true);
+        setUploadError(null);
         const files = Array.from(e.target.files);
 
         for (const file of files) {
@@ -66,16 +100,22 @@ export function ItemCreateForm({ categories }: { categories: Category[] }) {
             const formData = new FormData();
             formData.append('file', file);
 
-            const result = await uploadImage(formData);
-            if (result.success && result.url) {
-                setImageUrls(prev => [...prev, result.url]);
-                // Clear image error if exists
-                setErrors(prev => {
-                    const { images: _, ...rest } = prev;
-                    void _; // Mark as intentionally unused
-                    return rest;
-                });
-            } else {
+            try {
+                const result = await uploadImage(formData);
+                if (result.success && result.url) {
+                    setImageUrls(prev => [...prev, result.url]);
+                    // Clear image error if exists
+                    setErrors(prev => {
+                        const { images: _, ...rest } = prev;
+                        void _; // Mark as intentionally unused
+                        return rest;
+                    });
+                    setUploadError(null);
+                } else {
+                    throw new Error('Upload failed');
+                }
+            } catch {
+                setUploadError('圖片上傳失敗，請重新整理頁面後再試');
                 toast.error('上傳失敗，請稍後再試');
             }
         }
@@ -87,19 +127,33 @@ export function ItemCreateForm({ categories }: { categories: Category[] }) {
         setImageUrls(prev => prev.filter((_, i) => i !== index));
     };
 
+    const togglePresetRule = (rule: string) => {
+        if (notes.includes(rule)) {
+            // Remove rule
+            setNotes(prev => prev.replace(rule, '').replace(/\n+/g, '\n').trim());
+        } else {
+            // Add rule
+            setNotes(prev => (prev ? prev + '\n' + rule : rule));
+        }
+    };
+
     const validateForm = (formData: FormData): boolean => {
+        const locationValue = pickupLocations.length > 0
+            ? pickupLocations.map(l => l.name).join(', ')
+            : formData.get('location') as string;
+
         const data = {
             title: formData.get('title') as string,
             categoryId: formData.get('categoryId') as string,
             description: formData.get('description') as string,
             price: Number(formData.get('price')),
             deposit: Number(formData.get('deposit')),
-            location: formData.get('location') as string,
+            location: locationValue,
             images: imageUrls,
             availableFrom: formData.get('availableFrom') as string,
             availableTo: formData.get('availableTo') as string,
             condition: formData.get('condition') as string,
-            notes: formData.get('notes') as string,
+            notes: notes,
             discountRate3Days: Number(formData.get('discountRate3Days') || 0),
             discountRate7Days: Number(formData.get('discountRate7Days') || 0),
         };
@@ -129,6 +183,8 @@ export function ItemCreateForm({ categories }: { categories: Category[] }) {
 
         setIsSubmitting(true);
         formData.append('images', JSON.stringify(imageUrls));
+        formData.set('notes', notes);
+        formData.set('pickupLocations', JSON.stringify(pickupLocations));
 
         try {
             const result = await createItem(formData);
@@ -198,6 +254,20 @@ export function ItemCreateForm({ categories }: { categories: Category[] }) {
                         className="hidden"
                         onChange={handleFileChange}
                     />
+
+                    {/* Upload error message */}
+                    {uploadError && (
+                        <div className="mt-3 flex items-start gap-2 p-3 bg-amber-50 border border-amber-200 rounded-lg text-amber-700">
+                            <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                            <div className="text-xs">
+                                <p className="font-medium">{uploadError}</p>
+                                <p className="text-amber-600 mt-1">
+                                    如果問題持續發生，請<button type="button" onClick={() => window.location.reload()} className="underline hover:no-underline">重新整理頁面</button>後再試。
+                                </p>
+                            </div>
+                        </div>
+                    )}
+
                     <p className={`text-xs mt-2 ${errors.images ? 'text-red-500' : 'text-gray-500'}`}>
                         {errors.images || '建議至少上傳一張照片。支援 JPG, PNG, WebP (最大 5MB)'}
                     </p>
@@ -326,14 +396,58 @@ export function ItemCreateForm({ categories }: { categories: Category[] }) {
                     </div>
                 </div>
 
+                {/* Notes with Preset Rules */}
                 <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">注意事項 / 租賃補充規則</label>
+                    <div className="flex items-center justify-between mb-2">
+                        <label className="block text-sm font-medium text-gray-700">
+                            注意事項 / 租賃補充規則
+                        </label>
+                        <button
+                            type="button"
+                            onClick={() => setShowPresetRules(!showPresetRules)}
+                            className="text-xs font-medium text-green-600 hover:text-green-700 transition-colors"
+                        >
+                            {showPresetRules ? '隱藏預設規則' : '📋 選擇預設規則'}
+                        </button>
+                    </div>
+
+                    {/* Preset Rules Tags */}
+                    {showPresetRules && (
+                        <div className="mb-3 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                            <p className="text-xs text-gray-500 mb-3">點擊標籤快速新增規則：</p>
+                            <div className="flex flex-wrap gap-2">
+                                {PRESET_RULES.map((rule) => {
+                                    const isSelected = notes.includes(rule);
+                                    return (
+                                        <button
+                                            key={rule}
+                                            type="button"
+                                            onClick={() => togglePresetRule(rule)}
+                                            className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${isSelected
+                                                    ? 'bg-green-600 text-white shadow-sm'
+                                                    : 'bg-white text-gray-700 border border-gray-200 hover:border-green-300 hover:text-green-700'
+                                                }`}
+                                        >
+                                            {isSelected && <span className="mr-1">✓</span>}
+                                            {rule}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    )}
+
                     <textarea
                         name="notes"
+                        value={notes}
+                        onChange={(e) => setNotes(e.target.value)}
                         rows={3}
                         className="w-full rounded-lg shadow-sm sm:text-sm px-4 py-2 border border-gray-300 focus:border-green-500 focus:ring-green-500"
                         placeholder="例如：請勿在沙灘使用、歸還前請清潔..."
                     />
+                    <p className="text-xs text-gray-500 mt-1">
+                        可自行輸入或點擊上方預設規則快速新增
+                    </p>
                 </div>
 
                 {/* Discounts */}
@@ -375,22 +489,17 @@ export function ItemCreateForm({ categories }: { categories: Category[] }) {
                     </div>
                 </div>
 
+                {/* Pickup Location with Google Places */}
                 <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">面交地點 <span className="text-red-500">*</span></label>
-                    <div className="relative rounded-md shadow-sm">
-                        <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                            <MapPin className="text-gray-400 w-4 h-4" />
-                        </div>
-                        <input
-                            type="text"
-                            name="location"
-                            required
-                            className={`block w-full rounded-lg pl-9 sm:text-sm px-4 py-2 border ${errors.location ? 'border-red-300 focus:border-red-500 focus:ring-red-500' : 'border-gray-300 focus:border-green-500 focus:ring-green-500'
-                                }`}
-                            placeholder="例如：台北市信義區市政府站"
-                        />
-                    </div>
-                    {errors.location && <p className="text-xs text-red-500 mt-1">{errors.location}</p>}
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                        面交地點 <span className="text-red-500">*</span>
+                    </label>
+                    <GooglePlacesAutocomplete
+                        value={pickupLocations}
+                        onChange={setPickupLocations}
+                        maxLocations={2}
+                        error={errors.location}
+                    />
                 </div>
 
                 <div>

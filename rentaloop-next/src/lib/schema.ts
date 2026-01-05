@@ -115,7 +115,8 @@ export const items = pgTable('items', {
     pricePerDay: integer('price_per_day'),
     deposit: integer('deposit'),
     images: text('images').array(),
-    pickupLocation: text('pickup_location'),
+    pickupLocation: text('pickup_location'), // Legacy single location (string)
+    pickupLocations: json('pickup_locations'), // New: Array of { placeId, name, address, lat, lng }
     availableFrom: timestamp('available_from'),
     availableTo: timestamp('available_to'),
     status: text('status').default('active'),
@@ -213,10 +214,15 @@ export const emailTemplates = pgTable('email_templates', {
 });
 
 // Site settings table for banners, titles, etc.
+// Site settings table for banners, titles, etc.
+import { json } from 'drizzle-orm/pg-core'; // Need to import json type
+
 export const siteSettings = pgTable('site_settings', {
     key: text('key').primaryKey(), // e.g., 'home_banner', 'products_banner'
     imageUrl: text('image_url'),
     title: text('title'),
     subtitle: text('subtitle'),
+    tagText: text('tag_text'),
+    styles: json('styles'), // For storing colors, sizes, etc. { title: { color, size }, subtitle: { color, size }, tag: { color, bg, size } }
     updatedAt: timestamp('updated_at').defaultNow(),
 });

@@ -249,12 +249,19 @@ export function MemberHostOnboarding({ initialProfile }: { initialProfile: Profi
 
 
 
-          <div className="flex items-center justify-end">
+          <div className="flex flex-col gap-3 items-end">
+            <div className="text-xs text-red-500 font-medium">
+              {!hostCity && <span>• 請選擇縣市<br /></span>}
+              {!rulesAccepted && <span>• 請勾選同意租貸規則<br /></span>}
+              {(!frontUrl || !backUrl) && <span>• 請上傳身分證正反面照片<br /></span>}
+              {!privacyAccepted && <span>• 請勾選同意隱私權條款<br /></span>}
+            </div>
+
             <button
               type="button"
               disabled={!canSubmit || isPending}
               onClick={handleSubmit}
-              className="rounded-xl bg-primary px-6 py-3 text-sm font-bold text-text-main hover:bg-primary-dark disabled:opacity-50"
+              className="rounded-xl bg-primary px-6 py-3 text-sm font-bold text-text-main hover:bg-primary-dark disabled:opacity-50 disabled:cursor-not-allowed transition-all"
             >
               {status === 'rejected' ? '重新送出申請' : '送出租貸會員申請'}
             </button>

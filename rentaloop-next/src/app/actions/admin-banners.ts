@@ -17,6 +17,8 @@ export type BannerSetting = {
     imageUrl: string | null;
     title: string | null;
     subtitle: string | null;
+    tagText: string | null;
+    styles: any | null; // Using any for JSON content for now
     updatedAt: Date | null;
 };
 
@@ -28,7 +30,7 @@ export async function getAllBannerSettings(): Promise<{ success: true; data: Ban
     assertAdmin(session);
 
     const rows = await db.select().from(siteSettings);
-    return { success: true, data: rows };
+    return { success: true, data: rows as BannerSetting[] };
 }
 
 /**
@@ -36,7 +38,7 @@ export async function getAllBannerSettings(): Promise<{ success: true; data: Ban
  */
 export async function getBannerSetting(key: string): Promise<{ success: true; data: BannerSetting | null }> {
     const rows = await db.select().from(siteSettings).where(eq(siteSettings.key, key)).limit(1);
-    return { success: true, data: rows[0] ?? null };
+    return { success: true, data: (rows[0] as BannerSetting) ?? null };
 }
 
 /**
@@ -44,7 +46,13 @@ export async function getBannerSetting(key: string): Promise<{ success: true; da
  */
 export async function upsertBannerSetting(
     key: string,
-    data: { imageUrl?: string | null; title?: string | null; subtitle?: string | null }
+    data: {
+        imageUrl?: string | null;
+        title?: string | null;
+        subtitle?: string | null;
+        tagText?: string | null;
+        styles?: any | null;
+    }
 ): Promise<{ success: true } | { success: false; error: string }> {
     const session = await auth();
     assertAdmin(session);
@@ -61,6 +69,8 @@ export async function upsertBannerSetting(
                     imageUrl: data.imageUrl ?? existing[0].imageUrl,
                     title: data.title ?? existing[0].title,
                     subtitle: data.subtitle ?? existing[0].subtitle,
+                    tagText: data.tagText ?? existing[0].tagText,
+                    styles: data.styles ?? existing[0].styles,
                     updatedAt: new Date(),
                 })
                 .where(eq(siteSettings.key, key));
@@ -71,6 +81,8 @@ export async function upsertBannerSetting(
                 imageUrl: data.imageUrl ?? null,
                 title: data.title ?? null,
                 subtitle: data.subtitle ?? null,
+                tagText: data.tagText ?? null,
+                styles: data.styles ?? null,
                 updatedAt: new Date(),
             });
         }

@@ -38,6 +38,8 @@ async function getProducts(categorySlug?: string) {
   }
 }
 
+import { getBannerSetting } from "@/app/actions/admin-banners";
+
 export default async function ProductsPage({
   searchParams,
 }: {
@@ -46,6 +48,22 @@ export default async function ProductsPage({
   const { category } = await searchParams;
   const productList = await getProducts(category);
   const { roots, getChildren } = await getAllCategories();
+
+  // Banner Data
+  const productBannerRes = await getBannerSetting('products_banner');
+  const productBanner = productBannerRes.success ? productBannerRes.data : null;
+
+  const bgImage = productBanner?.imageUrl || 'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?q=80&w=2813&auto=format&fit=crop';
+  const title = productBanner?.title;
+  const subtitle = productBanner?.subtitle || "Access premium gear for your next adventure without the clutter. Save money and reduce waste with every rental.";
+  const tagText = productBanner?.tagText === "" ? null : (productBanner?.tagText || "Sustainability Impact"); // If empty string explicitly, hide it? Or default? Assuming if undefined use default, if empty string use empty.
+  // Actually, let's treat null/undefined as default, but if user saved empty string, maybe they want to hide it?
+  // For now, let's use default if null/undefined/empty for simplicity unless we want ability to hide.
+  // Let's stick to: if db has value, use it. If not, use default.
+
+  const finalTagText = productBanner?.tagText !== null && productBanner?.tagText !== undefined ? productBanner.tagText : "Sustainability Impact";
+
+  const styles = productBanner?.styles || {};
 
   return (
     <div className="flex min-h-screen flex-col bg-gray-50 text-gray-900">
@@ -123,19 +141,45 @@ export default async function ProductsPage({
         {/* Main Content */}
         <section className="flex-1 flex flex-col gap-6">
           {/* Banner */}
-          <div className="relative overflow-hidden rounded-2xl bg-black px-8 py-10 md:py-14 shadow-lg isolate">
-            <div className="absolute inset-0 -z-10 bg-[url('https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?q=80&w=2813&auto=format&fit=crop')] bg-cover bg-center opacity-40" />
+          <div className="relative overflow-hidden rounded-2xl bg-black px-8 py-10 md:py-14 shadow-lg isolate min-h-[300px] flex items-center">
+            <div
+              className="absolute inset-0 -z-10 bg-cover bg-center opacity-40 transition-opacity"
+              style={{ backgroundImage: `url('${bgImage}')` }}
+            />
             <div className="absolute inset-0 -z-10 bg-gradient-to-r from-gray-900/90 to-transparent" />
             <div className="flex max-w-lg flex-col gap-4">
-              <div className="inline-flex w-fit items-center gap-1.5 rounded-full bg-green-500/20 px-3 py-1 text-xs font-bold text-green-300 backdrop-blur-md border border-green-500/30">
-                <span className="material-symbols-outlined text-[16px]">eco</span>
-                Sustainability Impact
-              </div>
-              <h1 className="text-3xl font-extrabold tracking-tight text-white md:text-4xl">
-                Don&apos;t Buy it. <span className="text-green-400">Rent it.</span>
-              </h1>
-              <p className="text-gray-200 text-sm md:text-base leading-relaxed">
-                Access premium gear for your next adventure without the clutter. Save money and reduce waste with every rental.
+              {finalTagText && (
+                <div
+                  className="inline-flex w-fit items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold backdrop-blur-md border"
+                  style={{
+                    color: styles.tagColor || 'rgb(134, 239, 172)',
+                    backgroundColor: styles.tagBgColor || 'rgba(34, 197, 94, 0.2)',
+                    borderColor: styles.tagColor ? `${styles.tagColor}40` : 'rgba(34, 197, 94, 0.3)'
+                  }}
+                >
+                  <span className="material-symbols-outlined text-[16px]">eco</span>
+                  {finalTagText}
+                </div>
+              )}
+
+              {title ? (
+                <h1
+                  style={{ color: styles.titleColor }}
+                  className={`${styles.titleSize || 'text-3xl md:text-4xl'} font-extrabold tracking-tight drop-shadow-sm`}
+                >
+                  {title}
+                </h1>
+              ) : (
+                <h1 className="text-3xl font-extrabold tracking-tight text-white md:text-4xl">
+                  Don&apos;t Buy it. <span className="text-green-400">Rent it.</span>
+                </h1>
+              )}
+
+              <p
+                style={{ color: styles.subtitleColor }}
+                className={`${styles.subtitleSize || 'text-sm md:text-base'} text-gray-200 leading-relaxed`}
+              >
+                {subtitle}
               </p>
             </div>
           </div>
