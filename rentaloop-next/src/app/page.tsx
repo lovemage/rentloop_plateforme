@@ -2,6 +2,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { getBannerSetting, type BannerSetting } from "@/app/actions/admin-banners";
 
+export const dynamic = "force-dynamic";
+
 const stats = [
   {
     title: "廢棄物減量",
