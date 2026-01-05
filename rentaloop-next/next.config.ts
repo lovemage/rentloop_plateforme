@@ -5,7 +5,11 @@ const nextConfig: NextConfig = {
   experimental: {
     serverActions: {
       bodySizeLimit: '10mb',
-      allowedOrigins: ['rentaloop.net', 'www.rentaloop.net', 'localhost:3000'],
+      allowedOrigins: [
+        'https://rentaloop.net',
+        'https://www.rentaloop.net',
+        'http://localhost:3000',
+      ],
     },
   },
   images: {

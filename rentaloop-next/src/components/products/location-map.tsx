@@ -44,6 +44,12 @@ export function LocationMap({ locations, apiKey }: LocationMapProps) {
         const loadMap = () => {
             if (!window.google?.maps) return;
 
+            if (typeof window.google.maps.Map !== 'function') {
+                setError("地圖初始化失敗 (Google Maps API 載入異常)");
+                setIsLoading(false);
+                return;
+            }
+
             // Calculate center
             const center = locations[0]; // Default to first location
 
@@ -107,11 +113,11 @@ export function LocationMap({ locations, apiKey }: LocationMapProps) {
         }
 
         // Load script
-        const scriptId = 'google-maps-script';
+        const scriptId = 'google-maps-script-map';
         if (!document.getElementById(scriptId)) {
             const script = document.createElement("script");
             script.id = scriptId;
-            script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&loading=async`;
+            script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&v=weekly&loading=async`;
             script.async = true;
             script.defer = true;
             script.onload = loadMap;
