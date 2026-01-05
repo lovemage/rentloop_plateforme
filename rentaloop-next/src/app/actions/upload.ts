@@ -13,6 +13,10 @@ export async function uploadImage(formData: FormData) {
     const file = formData.get('file') as File;
     if (!file) return { error: 'No file provided' };
 
+    const folderRaw = formData.get('folder');
+    const folder = typeof folderRaw === 'string' && folderRaw.length > 0 ? folderRaw : 'rentaloop/items';
+    const isBanner = folder.includes('banner');
+
     try {
         // Convert file to buffer
         const arrayBuffer = await file.arrayBuffer();
@@ -20,7 +24,7 @@ export async function uploadImage(formData: FormData) {
 
         const result = await new Promise<CloudinaryUploadResult>((resolve, reject) => {
             cloudinary.uploader.upload_stream({
-                folder: 'rentaloop/items',
+                folder,
                 resource_type: 'image',
                 // 強制轉檔為 WebP
                 format: 'webp',
@@ -30,13 +34,20 @@ export async function uploadImage(formData: FormData) {
                 flags: 'lossy',            // 使用有損壓縮以獲得更小的文件
                 // 轉換設置（強制 WebP）
                 transformation: [
-                    {
-                        width: 1600,
-                        crop: 'limit',
-                        fetch_format: 'webp',  // 強制輸出 WebP
-                        quality: 'auto:good',
-                        flags: 'progressive'    // 漸進式加載
-                    }
+                    isBanner
+                        ? {
+                            width: 2400,
+                            crop: 'limit',
+                            fetch_format: 'webp',
+                            quality: 'auto:good',
+                        }
+                        : {
+                            width: 1600,
+                            crop: 'limit',
+                            fetch_format: 'webp',  // 強制輸出 WebP
+                            quality: 'auto:good',
+                            flags: 'progressive'    // 漸進式加載
+                        }
                 ],
                 // 額外優化
                 invalidate: true,          // 清除 CDN 緩存
