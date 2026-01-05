@@ -49,3 +49,25 @@ export async function updateHomepageFeatures(features: any[]) {
         return { success: false, error: "Failed to update features" };
     }
 }
+
+export async function updateHomepageNotice(notice: any) {
+    const session = await auth();
+    if (session?.user?.role !== 'admin') return { success: false, error: "Unauthorized" };
+
+    try {
+        await db.insert(siteSettings).values({
+            key: 'home_notice',
+            value: notice,
+            updatedAt: new Date(),
+        }).onConflictDoUpdate({
+            target: siteSettings.key,
+            set: { value: notice, updatedAt: new Date() }
+        });
+
+        revalidatePath('/');
+        return { success: true };
+    } catch (error) {
+        console.error("Update Notice Error:", error);
+        return { success: false, error: "Failed to update notice" };
+    }
+}

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { getBannerSetting, type BannerSetting } from "@/app/actions/admin-banners";
-import { getHomepageStats, getHomepageFeatures, getHomepageArticles } from "@/app/actions/homepage";
+import { getHomepageStats, getHomepageFeatures, getHomepageArticles, getHomepageNotice } from "@/app/actions/homepage";
 import { ArticleSlider } from "@/components/home/article-slider";
 
 export const dynamic = "force-dynamic";
@@ -20,6 +20,9 @@ export default async function Home() {
 
   const articlesRes = await getHomepageArticles();
   const articles = (articlesRes.success ? articlesRes.data : []) ?? [];
+
+  const noticeRes = await getHomepageNotice();
+  const notice = (noticeRes.success ? noticeRes.data : null);
 
   const bgImage = homeBanner?.imageUrl || DEFAULT_BANNER_IMAGE;
   const title = homeBanner?.title || "擁抱體驗，\n何必佔有";
@@ -46,7 +49,18 @@ export default async function Home() {
 
   return (
     <div className="flex flex-col items-center">
-      <section className="w-full max-w-[1280px] px-4 md:px-10 py-5">
+      <section className="w-full max-w-[1280px] px-4 md:px-10 pt-5">
+        {notice && notice.isVisible && (
+          <div className="w-full mb-5 border-2 border-black rounded-lg p-4 bg-white shadow-sm flex flex-col md:flex-row gap-4 items-start md:items-center">
+            <div className="flex-shrink-0 bg-black text-white text-xs font-bold px-3 py-1 rounded">
+              {notice.date || new Date().toLocaleDateString()}
+            </div>
+            <div className="flex-1">
+              <h3 className="font-bold text-lg text-gray-900">{notice.title}</h3>
+              {notice.content && <p className="text-sm text-gray-700 mt-1">{notice.content}</p>}
+            </div>
+          </div>
+        )}
         <div
           className={`w-full rounded-2xl overflow-hidden relative min-h-[560px] flex flex-col ${justifyClass} p-6 md:p-12 group`}
           style={{

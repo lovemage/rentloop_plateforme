@@ -43,3 +43,16 @@ export async function getHomepageArticles() {
         return { success: false, error: "Database error" };
     }
 }
+
+export async function getHomepageNotice() {
+    try {
+        const settings = await db.select().from(siteSettings).where(eq(siteSettings.key, 'home_notice')).limit(1);
+        if (settings.length > 0 && settings[0].value) {
+            return { success: true, data: settings[0].value as any };
+        }
+        return { success: false, error: "Not found" };
+    } catch (error) {
+        console.error("Failed to fetch homepage notice:", error);
+        return { success: false, error: "Database error" };
+    }
+}

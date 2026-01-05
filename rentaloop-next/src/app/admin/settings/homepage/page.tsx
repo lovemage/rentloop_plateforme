@@ -1,13 +1,15 @@
 
 import { HomepageSettingsForm } from "@/components/admin/homepage-settings-form";
-import { getHomepageStats, getHomepageFeatures } from "@/app/actions/homepage";
+import { getHomepageStats, getHomepageFeatures, getHomepageNotice } from "@/app/actions/homepage";
 
 export default async function HomepageSettingsPage() {
     const statsRes = await getHomepageStats();
     const featuresRes = await getHomepageFeatures();
+    const noticeRes = await getHomepageNotice();
 
     const stats = statsRes.success ? statsRes.data : [];
     const features = featuresRes.success ? featuresRes.data : [];
+    const notice = (noticeRes.success ? noticeRes.data : null) || { isVisible: false, date: '', title: '', content: '' };
 
     return (
         <div className="max-w-4xl mx-auto space-y-6 pb-20">
@@ -19,6 +21,7 @@ export default async function HomepageSettingsPage() {
             <HomepageSettingsForm
                 initialStats={stats ?? []}
                 initialFeatures={features ?? []}
+                initialNotice={notice}
             />
         </div>
     );

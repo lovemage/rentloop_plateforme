@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react';
-import { updateHomepageStats, updateHomepageFeatures } from '@/app/actions/admin-settings';
+import { updateHomepageStats, updateHomepageFeatures, updateHomepageNotice } from '@/app/actions/admin-settings';
 import { toast } from 'react-hot-toast';
 import { Plus, Trash2, Save } from 'lucide-react';
 
@@ -18,15 +18,25 @@ interface Feature {
     icon: string;
 }
 
+interface Notice {
+    isVisible: boolean;
+    date: string;
+    title: string;
+    content: string;
+}
+
 export function HomepageSettingsForm({
     initialStats,
-    initialFeatures
+    initialFeatures,
+    initialNotice
 }: {
     initialStats: Stat[],
-    initialFeatures: Feature[]
+    initialFeatures: Feature[],
+    initialNotice: Notice
 }) {
     const [stats, setStats] = useState<Stat[]>(initialStats);
     const [features, setFeatures] = useState<Feature[]>(initialFeatures);
+    const [notice, setNotice] = useState<Notice>(initialNotice || { isVisible: false, date: '', title: '', content: '' });
     const [saving, setSaving] = useState(false);
 
     // Stats Handlers
@@ -50,12 +60,13 @@ export function HomepageSettingsForm({
     const handleSave = async () => {
         setSaving(true);
         try {
-            const [statsRes, featuresRes] = await Promise.all([
+            const [statsRes, featuresRes, noticeRes] = await Promise.all([
                 updateHomepageStats(stats),
-                updateHomepageFeatures(features)
+                updateHomepageFeatures(features),
+                updateHomepageNotice(notice)
             ]);
 
-            if (statsRes.success && featuresRes.success) {
+            if (statsRes.success && featuresRes.success && noticeRes.success) {
                 toast.success('首頁設定已更新');
             } else {
                 toast.error('部分更新失敗');
@@ -168,6 +179,57 @@ export function HomepageSettingsForm({
                     ))}
                     {features.length === 0 && <p className="text-center text-gray-500 py-4">目前沒有特色項目</p>}
                 </div>
+            </div>
+
+            {/* Notice Section */}
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                <div className="flex items-center justify-between mb-4">
+                    <h2 className="text-lg font-bold text-gray-900">3. 首頁公告 (Notice)</h2>
+                    <div className="flex items-center gap-2">
+                        <label className="text-sm text-gray-700">啟用公告</label>
+                        <input
+                            type="checkbox"
+                            checked={notice.isVisible}
+                            onChange={e => setNotice({ ...notice, isVisible: e.target.checked })}
+                            className="rounded text-green-600 focus:ring-green-500 w-5 h-5 border-gray-300"
+                        />
+                    </div>
+                </div>
+                {notice.isVisible && (
+                    <div className="space-y-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">公告日期</label>
+                                <input
+                                    type="date"
+                                    value={notice.date}
+                                    onChange={e => setNotice({ ...notice, date: e.target.value })}
+                                    className="w-full text-sm rounded-lg border-gray-300"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">公告標題</label>
+                                <input
+                                    type="text"
+                                    value={notice.title}
+                                    onChange={e => setNotice({ ...notice, title: e.target.value })}
+                                    className="w-full text-sm rounded-lg border-gray-300 font-bold"
+                                    placeholder="例如：系統維護通知"
+                                />
+                            </div>
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">公告內容</label>
+                            <textarea
+                                value={notice.content}
+                                onChange={e => setNotice({ ...notice, content: e.target.value })}
+                                rows={3}
+                                className="w-full text-sm rounded-lg border-gray-300"
+                                placeholder="請輸入公告詳細內容..."
+                            />
+                        </div>
+                    </div>
+                )}
             </div>
 
             <div className="flex justify-end sticky bottom-6">
