@@ -109,7 +109,7 @@ export async function sendEmail({
         `;
 
         const { data: resendData, error } = await resend.emails.send({
-            from: 'Rentaloop <no-reply@rentaloop.lovemage.com>', // User needs to verify domain or use 'onboarding@resend.dev' for testing
+            from: process.env.RESEND_FROM_EMAIL || 'Rentaloop <no-reply@rentaloop.net>',
             to: [to],
             subject: subject,
             html: fullBody,
