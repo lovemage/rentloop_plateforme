@@ -4,6 +4,8 @@ import { eq, desc, inArray } from "drizzle-orm";
 import Link from "next/link";
 import Image from "next/image";
 
+export const dynamic = "force-dynamic";
+
 // Helper to get category hierarchy
 async function getAllCategories() {
   const all = await db.select().from(categories).orderBy(desc(categories.level)); // Fetch all

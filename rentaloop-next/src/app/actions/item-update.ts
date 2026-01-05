@@ -2,7 +2,6 @@
 
 import { db } from "@/lib/db";
 import { items } from "@/lib/schema";
-import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
 import { eq } from "drizzle-orm";
@@ -11,16 +10,16 @@ export async function updateItem(itemId: string, formData: FormData) {
     // Check auth
     const session = await auth();
     if (!session?.user?.id) {
-        redirect('/auth');
+        return { success: false as const, error: "UNAUTHENTICATED" };
     }
 
     // Verify ownership
     const existingItem = await db.select({ ownerId: items.ownerId }).from(items).where(eq(items.id, itemId)).limit(1);
     if (!existingItem.length) {
-        return { error: "找不到此商品" };
+        return { success: false as const, error: "ITEM_NOT_FOUND" };
     }
     if (existingItem[0].ownerId !== session.user.id) {
-        return { error: "您沒有權限編輯此商品" };
+        return { success: false as const, error: "FORBIDDEN" };
     }
 
     // Extract data
@@ -80,12 +79,12 @@ export async function updateItem(itemId: string, formData: FormData) {
         revalidatePath(`/products/${itemId}`);
         revalidatePath('/admin/items');
         revalidatePath('/member');
+
+        return { success: true as const, id: itemId };
     } catch (error) {
         console.error("Update Item Error:", error);
-        return { error: "更新失敗，請稍後再試" };
+        return { success: false as const, error: "UPDATE_FAILED" };
     }
-
-    redirect(`/products/${itemId}`);
 }
 
 // Get single item for editing

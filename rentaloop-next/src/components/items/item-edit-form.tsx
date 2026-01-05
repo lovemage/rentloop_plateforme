@@ -6,6 +6,7 @@ import { updateItem } from '@/app/actions/item-update';
 import { ImagePlus, X, Loader2, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import { z } from 'zod';
 import toast from 'react-hot-toast';
 import { getThumbnail } from '@/lib/cloudinary-utils';
@@ -81,6 +82,7 @@ function parsePickupLocations(data: unknown): PickupLocation[] {
 }
 
 export function ItemEditForm({ item, categories }: { item: ItemData; categories: Category[] }) {
+    const router = useRouter();
     const [uploading, setUploading] = useState(false);
     const [imageUrls, setImageUrls] = useState<string[]>(item.images || []);
     const [uploadError, setUploadError] = useState<string | null>(null);
@@ -199,12 +201,14 @@ export function ItemEditForm({ item, categories }: { item: ItemData; categories:
 
         try {
             const result = await updateItem(item.id, formData);
-            if (result && 'error' in result) {
-                toast.error(result.error as string);
+            if (!result?.success) {
+                toast.error('更新失敗，請稍後再試');
                 setIsSubmitting(false);
-            } else {
-                toast.success('商品更新成功！');
+                return;
             }
+
+            toast.success('商品更新成功！');
+            router.push('/member');
         } catch {
             toast.error('發生錯誤，請稍後再試');
             setIsSubmitting(false);

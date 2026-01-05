@@ -2,7 +2,6 @@
 
 import { db } from "@/lib/db";
 import { items } from "@/lib/schema";
-import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
 
@@ -10,9 +9,7 @@ export async function createItem(formData: FormData) {
     // Check auth
     const session = await auth();
     if (!session?.user?.id) {
-        // In server actions, returning error object is better than throwing raw redirect if used with client forms handling errors
-        // But for simple <form action> redirect works.
-        redirect('/auth');
+        return { success: false as const, error: "UNAUTHENTICATED" };
     }
 
     // Extract data
@@ -52,7 +49,9 @@ export async function createItem(formData: FormData) {
     const discountRate7Days = parseInt(formData.get('discountRate7Days') as string) || 0;
 
     try {
-        await db.insert(items).values({
+        const inserted = await db
+            .insert(items)
+            .values({
             ownerId,
             categoryId: categoryId || null,
             title,
@@ -69,15 +68,17 @@ export async function createItem(formData: FormData) {
             notes,
             discountRate3Days,
             discountRate7Days
-        });
+        })
+            .returning({ id: items.id });
 
         revalidatePath('/products');
         revalidatePath('/admin/items');
+        revalidatePath('/member');
+
+        return { success: true as const, id: inserted[0]?.id };
     } catch (error) {
         console.error("Create Item Error:", error);
-        return { error: "Failed to create item" };
+        return { success: false as const, error: "CREATE_FAILED" };
     }
-
-    redirect('/products');
 }
 
