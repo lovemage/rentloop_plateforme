@@ -51,17 +51,38 @@ export function MemberHostOnboarding({ initialProfile }: { initialProfile: Profi
     return Boolean(hostCity && rulesAccepted && frontUrl && backUrl && privacyAccepted);
   }, [hostCity, rulesAccepted, frontUrl, backUrl, privacyAccepted]);
 
+  // Upload error state
+  const [uploadError, setUploadError] = useState<string | null>(null);
+
   const handleFront = (file: File) => {
+    setUploadError(null);
     startTransition(async () => {
       const res = await uploadSide(file, "front");
-      if (res.success) setFrontUrl(res.url);
+      if (res.success) {
+        setFrontUrl(res.url);
+      } else {
+        const errorMsg = res.error === "UPLOAD_FAILED"
+          ? "身分證正面上傳失敗，請稍後再試"
+          : "上傳發生錯誤";
+        setUploadError(errorMsg);
+        console.error("KYC Front upload failed:", res.error);
+      }
     });
   };
 
   const handleBack = (file: File) => {
+    setUploadError(null);
     startTransition(async () => {
       const res = await uploadSide(file, "back");
-      if (res.success) setBackUrl(res.url);
+      if (res.success) {
+        setBackUrl(res.url);
+      } else {
+        const errorMsg = res.error === "UPLOAD_FAILED"
+          ? "身分證背面上傳失敗，請稍後再試"
+          : "上傳發生錯誤";
+        setUploadError(errorMsg);
+        console.error("KYC Back upload failed:", res.error);
+      }
     });
   };
 
@@ -220,6 +241,19 @@ export function MemberHostOnboarding({ initialProfile }: { initialProfile: Profi
                 {backUrl ? <a className="text-xs font-bold text-primary hover:underline" href={backUrl} target="_blank">已上傳</a> : null}
               </label>
             </div>
+            {/* Upload Error Message */}
+            {uploadError && (
+              <div className="mt-3 p-3 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm flex items-center gap-2">
+                <span className="material-symbols-outlined text-base">error</span>
+                <span>{uploadError}</span>
+              </div>
+            )}
+            {isPending && (
+              <div className="mt-3 p-3 rounded-lg bg-blue-50 border border-blue-200 text-blue-700 text-sm flex items-center gap-2">
+                <span className="material-symbols-outlined text-base animate-spin">sync</span>
+                <span>上傳中，請稍候...</span>
+              </div>
+            )}
           </div>
 
           <div className="rounded-xl border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark p-5 mt-4">
