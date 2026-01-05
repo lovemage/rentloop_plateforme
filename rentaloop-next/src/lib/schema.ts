@@ -224,6 +224,22 @@ export const siteSettings = pgTable('site_settings', {
     title: text('title'),
     subtitle: text('subtitle'),
     tagText: text('tag_text'),
-    styles: json('styles'), // For storing colors, sizes, etc. { title: { color, size }, subtitle: { color, size }, tag: { color, bg, size } }
+    styles: json('styles'), // For storing colors, sizes, etc.
+    value: json('value'), // For storing complex data structures (e.g. stats array, features list)
+    updatedAt: timestamp('updated_at').defaultNow(),
+});
+
+export const articles = pgTable('articles', {
+    id: uuid('id').defaultRandom().primaryKey(),
+    slug: text('slug').unique().notNull(),
+    title: text('title').notNull(),
+    excerpt: text('excerpt'),
+    content: text('content').notNull(), // HTML or Marketplace
+    image: text('image'),
+    seoSchema: json('seo_schema'), // JSON-LD structured data
+    isPublished: boolean('is_published').default(true),
+    author: text('author'),
+    publishedAt: timestamp('published_at').defaultNow(),
+    createdAt: timestamp('created_at').defaultNow(),
     updatedAt: timestamp('updated_at').defaultNow(),
 });

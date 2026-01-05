@@ -57,6 +57,16 @@ const sidebarItems = [
         icon: Mail,
     },
     {
+        title: "SEO 文章 (SDGs)",
+        href: "/admin/articles",
+        icon: Globe,
+    },
+    {
+        title: "首頁設定",
+        href: "/admin/settings/homepage",
+        icon: LayoutDashboard,
+    },
+    {
         title: "檢視前台網站",
         href: "/",
         icon: Globe,

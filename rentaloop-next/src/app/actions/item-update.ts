@@ -5,6 +5,7 @@ import { items } from "@/lib/schema";
 import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
 import { eq } from "drizzle-orm";
+import { invalidateProductCache } from "@/lib/cache";
 
 export async function updateItem(itemId: string, formData: FormData) {
     // Check auth
@@ -75,6 +76,8 @@ export async function updateItem(itemId: string, formData: FormData) {
             discountRate7Days
         }).where(eq(items.id, itemId));
 
+
+        await invalidateProductCache();
         revalidatePath('/products');
         revalidatePath(`/products/${itemId}`);
         revalidatePath('/admin/items');

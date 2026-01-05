@@ -1,80 +1,24 @@
 import Link from "next/link";
 import Image from "next/image";
 import { getBannerSetting, type BannerSetting } from "@/app/actions/admin-banners";
+import { getHomepageStats, getHomepageFeatures, getHomepageArticles } from "@/app/actions/homepage";
 
 export const dynamic = "force-dynamic";
-
-const stats = [
-  {
-    title: "廢棄物減量",
-    value: "15,000 kg",
-    delta: "+12% 同比增長",
-    icon: "delete_outline",
-  },
-  {
-    title: "物品流通次數",
-    value: "50,000+",
-    delta: "+25% 活躍度",
-    icon: "sync_alt",
-  },
-  {
-    title: "碳排放減少",
-    value: "8,500 kg",
-    delta: "+10% 貢獻值",
-    icon: "co2",
-  },
-];
-
-const features = [
-  {
-    icon: "home",
-    title: "釋放居家空間",
-    description:
-      "只在需要時使用物品，讓家裡不再堆滿一年只用一次的裝備。享受極簡生活。",
-  },
-  {
-    icon: "eco",
-    title: "永續環保選擇",
-    description:
-      "每次租賃都能減少製造新產品的碳排放與資源消耗，直接為地球減負。",
-  },
-  {
-    icon: "payments",
-    title: "經濟實惠聰明",
-    description:
-      "以零售價的一小部分體驗頂級產品，把省下的錢花在更美好的體驗上。",
-  },
-];
-
-const sdgs = [
-  {
-    label: "目標 12：負責任的消費與生產",
-    description:
-      "透過延長產品生命週期與共享模式，確保永續的消費模式，減少過度生產。",
-    image:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuDkoJVaNkuUJpqSqpsjfefIJfPKNnBcvGY-1tSPH0cpO1VtdBxx4I9ezwD1siRvGpPyNKufpdGwlLoCtgTUMZLb4_o96brXoCWYYMlBumm8ohN9r33RfEdnC76aJysIEHq4OjhVx9ff6bdvpSn3Vy4UzVKGPe5BQkUkDMIuVo4SM2s5sBDuLG5VRGO4LusFO6g2EXxZxMqbFjz_G9OqCnZ48tbUDTC61krnwNKiiGyYEYADIuKo9qW28OyGOlpRe6QRHrqRH3o6",
-  },
-  {
-    label: "目標 13：氣候行動",
-    description:
-      "採取緊急行動應對氣候變遷，透過資源效率化減少碳足跡。",
-    image:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuD2zRYJ8leExYoogwCA29kg1mOOoeTKI4qoN0toTA4FCysnUumVC0G5VozCWKuXsZ_E-04wZJXY3kmy0oWzHhdvsNcRdn2-SMZyk7hXMF0nnrhXlp4zLOL1SneH7-lYN7i_jaQl0wZRPx0DJwcR5ZA6qdwx5PTgYRiDL5EF3M0tjiEcTSFHIqFaoNeu_V1F8mw7S4Bx8v1myFZXpX0xZk_2-YhxdXPDIDiAsPARi2_Qv8o4mRF1D24g6xLsTEQlKwpONs9NQdrm",
-  },
-  {
-    label: "目標 11：永續城市",
-    description:
-      "減少城市廢棄物，讓我們的社區更加包容、安全、有韌性且永續。",
-    image:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuBBvDmMunigSJTmTJ2EhqqA1FAowiMsFqsTjT-xOR86qkJc81rjeeaXxPN7X5EvASiFkqOsXnje1R_a161XiG3ng24-VtX1PpoMY8lVHUmM_umj0ChCdDgzembXlR7M5bV_DRj4UOf3ZDPPDkkpOFlAEavFFKDxXlwe-l-MCZUYunTPhPO2HRWlYHigs_w2EccdPOuSHLDyDG-AUEBBBiRAwZtuESKk61zXa1hRRLP9hN3NfCdIDnQHfINHdC0iVcas_6HTP8Gx",
-  },
-];
 
 const DEFAULT_BANNER_IMAGE = 'https://lh3.googleusercontent.com/aida-public/AB6AXuDTBPvJJQMMJ_r6epTr33NaItdolKC0lJ2vtXkCgBRVHKf5ibNgR9fGm7YvRATfVAiSCXG2R6erxAeH-AIMGNYHyv9PaUBHor69DF3JAKls2QUhOSvk3IzkoXoSHszd_hNrExcM4EkRFzcqryorEGDY8QflTqBSqMzGggmMLDMU_CR_jQXzKgjU-piZmfz75A_ogiMouI9YRGebhSM9S7b6aDAtbCpB-xLNheKgcXUYH-n2NBZpfT5-pxBE6cDHQcTQO8nZHbIR';
 
 export default async function Home() {
   const homeBannerRes = await getBannerSetting('home_banner');
   const homeBanner = homeBannerRes.success ? homeBannerRes.data : null;
+
+  const statsRes = await getHomepageStats();
+  const stats = statsRes.success ? statsRes.data : [];
+
+  const featuresRes = await getHomepageFeatures();
+  const features = featuresRes.success ? featuresRes.data : [];
+
+  const articlesRes = await getHomepageArticles();
+  const articles = articlesRes.success ? articlesRes.data : [];
 
   const bgImage = homeBanner?.imageUrl || DEFAULT_BANNER_IMAGE;
   const title = homeBanner?.title || "擁抱體驗，\n何必佔有";
@@ -91,12 +35,13 @@ export default async function Home() {
   if (styles.verticalAlign === 'start') justifyClass = "justify-start";
   if (styles.verticalAlign === 'end') justifyClass = "justify-end";
 
-  // Resolve font sizes (if number use px, if string use class - backward compat)
+  // Resolve font sizes
   const titleSize = typeof styles.titleSize === 'number' ? `${styles.titleSize}px` : undefined;
   const titleClass = typeof styles.titleSize === 'string' ? styles.titleSize : 'text-4xl md:text-6xl';
 
   const subtitleSize = typeof styles.subtitleSize === 'number' ? `${styles.subtitleSize}px` : undefined;
   const subtitleClass = typeof styles.subtitleSize === 'string' ? styles.subtitleSize : 'text-base md:text-xl';
+
 
   return (
     <div className="flex flex-col items-center">
@@ -241,21 +186,28 @@ export default async function Home() {
             </p>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {sdgs.map((goal) => (
-              <div key={goal.label} className="group flex flex-col gap-4">
+            {articles.map((article: any) => (
+              <div key={article.id} className="group flex flex-col gap-4">
+                {/* Inject JSON-LD for this article */}
+                {article.seoSchema && (
+                  <script
+                    type="application/ld+json"
+                    dangerouslySetInnerHTML={{ __html: JSON.stringify(article.seoSchema) }}
+                  />
+                )}
                 <div
                   className="w-full aspect-video bg-cover bg-center rounded-xl overflow-hidden shadow-sm"
-                  style={{ backgroundImage: `url("${goal.image}")` }}
-                  data-alt={goal.label}
+                  style={{ backgroundImage: `url("${article.image}")` }}
+                  data-alt={article.title}
                 >
                   <div className="w-full h-full bg-black/10 group-hover:bg-black/0 transition-colors" />
                 </div>
                 <div>
                   <p className="text-text-main dark:text-white text-lg font-bold leading-normal mb-1">
-                    {goal.label}
+                    {article.title}
                   </p>
                   <p className="text-text-sub dark:text-gray-400 text-sm font-normal leading-relaxed">
-                    {goal.description}
+                    {article.excerpt}
                   </p>
                 </div>
               </div>

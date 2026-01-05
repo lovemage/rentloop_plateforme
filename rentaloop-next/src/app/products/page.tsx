@@ -3,44 +3,48 @@ import { items, categories } from "@/lib/schema";
 import { eq, desc, inArray } from "drizzle-orm";
 import Link from "next/link";
 import Image from "next/image";
+import { getBannerSetting } from "@/app/actions/admin-banners";
+import { getCached } from "@/lib/cache";
 
 export const dynamic = "force-dynamic";
 
 // Helper to get category hierarchy
 async function getAllCategories() {
-  const all = await db.select().from(categories).orderBy(desc(categories.level)); // Fetch all
-  // Build tree
-  const roots = all.filter(c => !c.parentId);
-  const getChildren = (pid: string) => all.filter(c => c.parentId === pid);
-  return { roots, getChildren, all };
+  return await getCached('categories:tree', async () => {
+    const all = await db.select().from(categories).orderBy(desc(categories.level)); // Fetch all
+    // Build tree
+    const roots = all.filter(c => !c.parentId);
+    // We can't actually pass function in cache, so we return raw data and reconstruct helper or just return structured data?
+    // Redis can only store JSON. Functions are lost.
+    // So we should return 'all' and reconstruct 'getChildren' locally.
+    return all;
+  });
 }
 
 async function getProducts(categorySlug?: string) {
-  try {
-    if (categorySlug) {
-      const cat = await db.select().from(categories).where(eq(categories.slug, categorySlug)).limit(1);
+  const cacheKey = categorySlug ? `list:cat:${categorySlug}` : `list:global`;
 
-      if (cat.length > 0) {
-        const targetCat = cat[0];
-        // Find all descendant category IDs (including self)
-        // Simplification: just find direct children if it's a parent, or self.
-        // For distinct "levels", we might need recursive query, but let's do 1 level deep for now.
-        const children = await db.select({ id: categories.id }).from(categories).where(eq(categories.parentId, targetCat.id));
-        const ids = [targetCat.id, ...children.map(c => c.id)];
+  return await getCached(cacheKey, async () => {
+    try {
+      if (categorySlug) {
+        const cat = await db.select().from(categories).where(eq(categories.slug, categorySlug)).limit(1);
 
-        // Filter items
-        return await db.select().from(items).where(inArray(items.categoryId, ids)).orderBy(desc(items.createdAt));
+        if (cat.length > 0) {
+          const targetCat = cat[0];
+          const children = await db.select({ id: categories.id }).from(categories).where(eq(categories.parentId, targetCat.id));
+          const ids = [targetCat.id, ...children.map(c => c.id)];
+
+          return await db.select().from(items).where(inArray(items.categoryId, ids)).orderBy(desc(items.createdAt));
+        }
       }
+
+      return await db.select().from(items).orderBy(desc(items.createdAt));
+    } catch (err) {
+      console.error(err);
+      return [];
     }
-
-    return await db.select().from(items).orderBy(desc(items.createdAt));
-  } catch (err) {
-    console.error(err);
-    return [];
-  }
+  });
 }
-
-import { getBannerSetting } from "@/app/actions/admin-banners";
 
 export default async function ProductsPage({
   searchParams,
@@ -49,7 +53,11 @@ export default async function ProductsPage({
 }) {
   const { category } = await searchParams;
   const productList = await getProducts(category);
-  const { roots, getChildren } = await getAllCategories();
+  const allCategories = await getAllCategories();
+
+  // Reconstruct helpers locally since we can't cache functions
+  const roots = allCategories.filter(c => !c.parentId);
+  const getChildren = (pid: string) => allCategories.filter(c => c.parentId === pid);
 
   // Banner Data
   const productBannerRes = await getBannerSetting('products_banner');

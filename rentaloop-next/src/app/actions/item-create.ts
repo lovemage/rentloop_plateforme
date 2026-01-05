@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { items } from "@/lib/schema";
 import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
+import { invalidateProductCache } from "@/lib/cache";
 
 export async function createItem(formData: FormData) {
     // Check auth
@@ -52,25 +53,27 @@ export async function createItem(formData: FormData) {
         const inserted = await db
             .insert(items)
             .values({
-            ownerId,
-            categoryId: categoryId || null,
-            title,
-            description,
-            pricePerDay: price,
-            deposit,
-            pickupLocation: location, // Legacy fallback
-            pickupLocations, // New JSON array of locations
-            images,
-            availableFrom,
-            availableTo,
-            status: 'active',
-            condition,
-            notes,
-            discountRate3Days,
-            discountRate7Days
-        })
+                ownerId,
+                categoryId: categoryId || null,
+                title,
+                description,
+                pricePerDay: price,
+                deposit,
+                pickupLocation: location, // Legacy fallback
+                pickupLocations, // New JSON array of locations
+                images,
+                availableFrom,
+                availableTo,
+                status: 'active',
+                condition,
+                notes,
+                discountRate3Days,
+                discountRate7Days
+            })
             .returning({ id: items.id });
 
+
+        await invalidateProductCache();
         revalidatePath('/products');
         revalidatePath('/admin/items');
         revalidatePath('/member');

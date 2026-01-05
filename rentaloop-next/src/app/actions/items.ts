@@ -5,6 +5,7 @@ import { items, categories, users, rentals, itemQuestions, reviews, rentalMessag
 import { eq, desc, ilike, inArray, or, and } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
+import { invalidateProductCache } from "@/lib/cache";
 
 // 取得所有商品 (包含 Owner 和 Category 資訊)
 export async function getItems() {
@@ -36,6 +37,7 @@ export async function getItems() {
 export async function updateItemStatus(id: string, status: string) {
     try {
         await db.update(items).set({ status }).where(eq(items.id, id));
+        await invalidateProductCache();
         revalidatePath('/admin/items');
         return { success: true };
     } catch (error) {
@@ -56,6 +58,7 @@ export async function toggleItemStatus(id: string) {
     const newStatus = item[0].status === 'active' ? 'inactive' : 'active';
     await db.update(items).set({ status: newStatus }).where(eq(items.id, id));
 
+    await invalidateProductCache();
     revalidatePath('/member');
     revalidatePath(`/products/${id}`);
 
@@ -107,6 +110,7 @@ export async function deleteItem(id: string) {
             await tx.delete(items).where(eq(items.id, id));
         });
 
+        await invalidateProductCache();
         revalidatePath('/member');
         revalidatePath('/products');
 
