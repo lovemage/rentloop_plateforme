@@ -46,7 +46,7 @@ export function ItemActionMenu({ itemId, currentStatus }: { itemId: string; curr
                     e.stopPropagation();
                     setIsOpen(!isOpen);
                 }}
-                className="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 text-gray-500 transition-colors"
+                className="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 text-text-main dark:text-white transition-colors"
             >
                 <MoreHorizontal className="w-5 h-5" />
             </button>
@@ -60,12 +60,12 @@ export function ItemActionMenu({ itemId, currentStatus }: { itemId: string; curr
                     }}
                 >
                     <div className="py-1">
-                        <Link href={`/products/${itemId}`} className="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-white/5">
+                        <Link href={`/products/${itemId}`} className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-text-main dark:text-white hover:bg-gray-50 dark:hover:bg-white/5">
                             <Eye className="w-4 h-4" />
                             瀏覽商品
                         </Link>
                         {/* Edit Link - assuming route exists or will exist */}
-                        <Link href={`/items/${itemId}/edit`} className="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-white/5">
+                        <Link href={`/items/${itemId}/edit`} className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-text-main dark:text-white hover:bg-gray-50 dark:hover:bg-white/5">
                             <Edit className="w-4 h-4" />
                             編輯商品
                         </Link>
@@ -73,9 +73,9 @@ export function ItemActionMenu({ itemId, currentStatus }: { itemId: string; curr
                         <button
                             onClick={handleToggleStatus}
                             disabled={isPending}
-                            className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-white/5 text-left"
+                            className="w-full flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-text-main dark:text-white hover:bg-gray-50 dark:hover:bg-white/5 text-left"
                         >
-                            <Power className={`w-4 h-4 ${currentStatus === 'active' ? 'text-red-500' : 'text-green-500'}`} />
+                            <Power className={`w-4 h-4 ${currentStatus === 'active' ? 'text-red-600' : 'text-green-600'}`} />
                             {currentStatus === 'active' ? '下架商品' : '重新上架'}
                         </button>
 
@@ -84,7 +84,7 @@ export function ItemActionMenu({ itemId, currentStatus }: { itemId: string; curr
                         <button
                             onClick={handleDelete}
                             disabled={isPending}
-                            className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/10 text-left"
+                            className="w-full flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-red-600 hover:bg-red-50 dark:hover:bg-red-900/10 text-left"
                         >
                             <Trash2 className="w-4 h-4" />
                             刪除商品

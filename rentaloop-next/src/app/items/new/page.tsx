@@ -26,11 +26,10 @@ export default async function NewItemPage() {
         .limit(1);
 
     const profile = profileRow[0] ?? null;
-    const canHost =
-        profile?.hostStatus === 'approved' &&
-        profile?.hostRulesAccepted &&
-        Boolean(profile?.kycIdFrontUrl) &&
-        Boolean(profile?.kycIdBackUrl);
+
+    // Simplify check: if hostStatus is approved, allow access. 
+    // This handles manually approved users who might miss some flags.
+    const canHost = profile?.hostStatus === 'approved';
 
     if (!canHost) {
         redirect('/member');

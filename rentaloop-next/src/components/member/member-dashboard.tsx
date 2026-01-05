@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { logout } from '@/app/actions/auth';
+import { signOut } from 'next-auth/react';
 import { MemberProfileForm } from '@/components/member/member-profile-form';
 import { MemberTrackingLists } from '@/components/member/member-tracking-lists';
 import { MemberHostOnboarding } from '@/components/member/member-host-onboarding';
@@ -164,12 +164,15 @@ export function MemberDashboard({
                         </div>
 
                         <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
-                            <form action={logout}>
-                                <button type="submit" className="w-full flex items-center justify-center gap-2 rounded-xl border border-border-light dark:border-border-dark bg-white dark:bg-surface-dark px-6 py-3 text-sm font-bold shadow-sm hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors">
+                            <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+                                <button
+                                    onClick={() => signOut({ callbackUrl: '/' })}
+                                    className="w-full flex items-center justify-center gap-2 rounded-xl border border-border-light dark:border-border-dark bg-white dark:bg-surface-dark px-6 py-3 text-sm font-bold shadow-sm hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
+                                >
                                     <span className="material-symbols-outlined">logout</span>
                                     登出
                                 </button>
-                            </form>
+                            </div>
                         </div>
                     </div>
                 </section>

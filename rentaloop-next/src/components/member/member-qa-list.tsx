@@ -55,20 +55,20 @@ function QuestionCard({ question }: { question: any }) {
                         )}
                     </div>
                     <div>
-                        <div className="text-sm font-bold text-gray-900 dark:text-gray-100">
+                        <div className="text-sm font-bold text-text-main dark:text-white">
                             {question.askerName || 'Unknown User'}
                         </div>
-                        <div className="text-xs text-gray-500">
+                        <div className="text-xs font-medium text-text-main dark:text-gray-300">
                             針對 <Link href={`/products/${question.itemId}`} className="text-primary hover:underline">{question.itemTitle}</Link> 的提問
                         </div>
                     </div>
                 </div>
-                <div className="text-xs text-gray-400">
+                <div className="text-xs font-medium text-text-sub dark:text-gray-400">
                     {new Date(question.createdAt).toLocaleDateString()}
                 </div>
             </div>
 
-            <div className="bg-gray-50 dark:bg-white/5 p-3 rounded-lg text-sm text-gray-800 dark:text-gray-200 mb-4">
+            <div className="bg-gray-50 dark:bg-white/5 p-3 rounded-lg text-sm font-medium text-text-main dark:text-white mb-4">
                 {question.content}
             </div>
 
