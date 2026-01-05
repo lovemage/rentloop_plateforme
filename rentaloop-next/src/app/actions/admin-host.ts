@@ -3,6 +3,7 @@
 import { auth } from "@/auth";
 import { db } from "@/lib/db";
 import { userProfiles, users } from "@/lib/schema";
+import { getSignedKycUrl } from "@/lib/supabase-s3";
 import { desc, eq, inArray } from "drizzle-orm";
 import type { Session } from "next-auth";
 
@@ -11,6 +12,28 @@ type HostStatus = "pending" | "approved" | "rejected" | "none";
 function assertAdmin(session: Session | null) {
   if (!session?.user?.id) throw new Error("UNAUTHENTICATED");
   if (session.user.role !== "admin") throw new Error("FORBIDDEN");
+}
+
+/**
+ * Generate signed URLs for KYC images if they are S3 keys
+ */
+async function getSignedKycUrls(frontKey: string | null, backKey: string | null) {
+  // Check if the URL is already a full URL (not an S3 key)
+  const isFullUrl = (url: string | null) => url?.startsWith('http://') || url?.startsWith('https://');
+
+  const frontUrl = frontKey
+    ? isFullUrl(frontKey)
+      ? frontKey
+      : await getSignedKycUrl(frontKey, 3600)
+    : null;
+
+  const backUrl = backKey
+    ? isFullUrl(backKey)
+      ? backKey
+      : await getSignedKycUrl(backKey, 3600)
+    : null;
+
+  return { frontUrl, backUrl };
 }
 
 export async function listHostApplications() {
@@ -37,7 +60,19 @@ export async function listHostApplications() {
     .where(inArray(userProfiles.hostStatus, ["pending", "approved", "rejected"]))
     .orderBy(desc(userProfiles.updatedAt));
 
-  return { success: true as const, data: rows };
+  // Generate signed URLs for all KYC images
+  const rowsWithSignedUrls = await Promise.all(
+    rows.map(async (row) => {
+      const { frontUrl, backUrl } = await getSignedKycUrls(row.kycIdFrontUrl, row.kycIdBackUrl);
+      return {
+        ...row,
+        kycIdFrontUrl: frontUrl,
+        kycIdBackUrl: backUrl,
+      };
+    })
+  );
+
+  return { success: true as const, data: rowsWithSignedUrls };
 }
 
 export async function getHostApplication(userId: string) {
@@ -69,7 +104,22 @@ export async function getHostApplication(userId: string) {
     .where(eq(userProfiles.userId, userId))
     .limit(1);
 
-  return { success: true as const, data: rows[0] ?? null };
+  if (rows.length === 0) {
+    return { success: true as const, data: null };
+  }
+
+  // Generate signed URLs for KYC images
+  const row = rows[0];
+  const { frontUrl, backUrl } = await getSignedKycUrls(row.kycIdFrontUrl, row.kycIdBackUrl);
+
+  return {
+    success: true as const,
+    data: {
+      ...row,
+      kycIdFrontUrl: frontUrl,
+      kycIdBackUrl: backUrl,
+    },
+  };
 }
 
 export async function setHostStatus(userId: string, status: HostStatus) {
@@ -90,3 +140,4 @@ export async function setHostStatus(userId: string, status: HostStatus) {
 
   return { success: true as const };
 }
+

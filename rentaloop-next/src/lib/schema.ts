@@ -211,3 +211,12 @@ export const emailTemplates = pgTable('email_templates', {
     variables: text('variables'), // JSON string or comma-separated list of available variables
     updatedAt: timestamp('updated_at').defaultNow(),
 });
+
+// Site settings table for banners, titles, etc.
+export const siteSettings = pgTable('site_settings', {
+    key: text('key').primaryKey(), // e.g., 'home_banner', 'products_banner'
+    imageUrl: text('image_url'),
+    title: text('title'),
+    subtitle: text('subtitle'),
+    updatedAt: timestamp('updated_at').defaultNow(),
+});

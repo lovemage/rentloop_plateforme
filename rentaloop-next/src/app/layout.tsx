@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
 import { Manrope, Noto_Sans_TC } from "next/font/google";
 import "./globals.css";
-import { SiteHeader } from "@/components/layout/site-header";
-import { SiteFooter } from "@/components/layout/site-footer";
 import { SessionProvider } from "@/components/providers/session-provider";
 import { auth } from "@/auth";
 import { Toaster } from "react-hot-toast";
+import { headers } from "next/headers";
+import { SiteHeader } from "@/components/layout/site-header";
+import { SiteFooter } from "@/components/layout/site-footer";
 
 const manrope = Manrope({
   subsets: ["latin"],
@@ -33,6 +34,10 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const session = await auth();
+  const headersList = await headers();
+  const pathname = headersList.get("x-pathname") || "";
+  const isAdminRoute = pathname.startsWith("/admin");
+
   return (
     <html lang="zh-Hant" className={`${manrope.variable} ${notoSans.variable}`}>
       <head>
@@ -70,11 +75,17 @@ export default async function RootLayout({
               },
             }}
           />
-          <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden">
-            <SiteHeader />
-            <main className="flex-1 flex flex-col">{children}</main>
-            <SiteFooter />
-          </div>
+          {isAdminRoute ? (
+            // Admin routes - no header/footer, handled by AdminLayoutShell
+            <>{children}</>
+          ) : (
+            // Regular routes - with header/footer
+            <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden">
+              <SiteHeader />
+              <main className="flex-1 flex flex-col">{children}</main>
+              <SiteFooter />
+            </div>
+          )}
         </SessionProvider>
       </body>
     </html>
