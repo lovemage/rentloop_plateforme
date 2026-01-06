@@ -45,15 +45,6 @@ export function SiteHeader() {
     <>
       <header className="sticky top-0 z-50 flex items-center justify-between whitespace-nowrap border-b border-solid border-b-[#e7f3eb] dark:border-b-border-dark px-4 lg:px-10 py-3 bg-surface-light/90 dark:bg-surface-dark/90 backdrop-blur-md">
         <div className="flex items-center gap-4 md:gap-8">
-          <button
-            type="button"
-            onClick={() => setMobileOpen(true)}
-            className="md:hidden flex items-center justify-center text-text-main dark:text-white"
-            aria-label="開啟選單"
-          >
-            <span className="material-symbols-outlined text-3xl">menu</span>
-          </button>
-
           <Link
             href="/"
             className="flex items-center gap-3 text-text-main dark:text-white cursor-pointer"
@@ -124,7 +115,7 @@ export function SiteHeader() {
               />
             </div>
           </label>
-          <div className="flex gap-2">
+          <div className="hidden md:flex gap-2">
             <Link
               href="/products"
               className="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-primary hover:bg-primary-dark transition-colors text-text-main text-sm font-bold"
@@ -166,7 +157,7 @@ export function SiteHeader() {
                   <div className="gsi-material-button-icon">
                     <svg version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" style={{ display: 'block' }}>
                       <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"></path>
-                      <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"></path>
+                      <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6.09c4.51-4.18 7.09-10.36 7.09-17.65z"></path>
                       <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"></path>
                       <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"></path>
                       <path fill="none" d="M0 0h48v48H0z"></path>
@@ -178,92 +169,100 @@ export function SiteHeader() {
               </button>
             )}
           </div>
+          <button
+            type="button"
+            onClick={() => setMobileOpen(true)}
+            className="md:hidden flex items-center justify-center text-text-main dark:text-white"
+            aria-label="開啟選單"
+          >
+            <span className="material-symbols-outlined text-3xl">menu</span>
+          </button>
         </div>
       </header>
 
-      {mobileOpen ? (
-        <div className="fixed inset-0 z-[100] flex flex-col bg-background-light dark:bg-background-dark animate-fade-in overflow-y-auto">
-          <div className="flex items-center justify-between px-4 py-3 border-b border-[#e7f3eb] dark:border-border-dark sticky top-0 bg-inherit z-10">
-            <Link href="/" className="flex items-center gap-3">
-              <Image src="/rentaloop_logo.png" alt="Rentaloop" width={140} height={32} priority />
-            </Link>
-            <button
-              type="button"
-              onClick={() => setMobileOpen(false)}
-              className="p-2 text-text-main dark:text-white hover:text-primary transition-colors"
-              aria-label="關閉選單"
-            >
-              <span className="material-symbols-outlined text-3xl">close</span>
-            </button>
-          </div>
-          <nav className="flex flex-col p-6 gap-2">
-            <Link
-              href="/"
-              className="flex items-center justify-between p-4 rounded-xl hover:bg-[#e7f3eb] dark:hover:bg-surface-dark text-text-main dark:text-white transition-all group"
-            >
-              <span className="flex flex-col leading-tight">
-                <span className="text-lg font-bold">Home</span>
-                <span className="text-sm text-text-sub group-hover:text-primary">首頁</span>
-              </span>
-            </Link>
-
-            {/* Mobile Categories Accordion-like */}
-            <div className="flex flex-col rounded-xl border border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-surface-dark/50 overflow-hidden">
-              <div className="p-4 font-bold text-lg flex items-center justify-between">
-                Products
-                <Link href="/products" className="text-primary text-sm">All</Link>
-              </div>
-              <div className="px-4 pb-4 flex flex-col gap-4">
-                {roots.map(root => (
-                  <div key={root.id}>
-                    <Link href={`/products?category=${root.slug || root.id}`} className="font-bold text-gray-800 dark:text-gray-200 block mb-1">
-                      {root.name}
-                    </Link>
-                    <div className="pl-4 border-l-2 border-gray-200 dark:border-gray-700 flex flex-col gap-2">
-                      {getChildren(root.id).map(child => (
-                        <Link key={child.id} href={`/products?category=${child.slug || child.id}`} className="text-sm text-gray-500 hover:text-primary">
-                          {child.name}
-                        </Link>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="h-px bg-[#e7f3eb] dark:bg-border-dark my-2" />
-
-            {session?.user ? (
-              <Link
-                href="/member"
-                className="w-full flex items-center gap-3 p-4 rounded-xl bg-[#e7f3eb] dark:bg-surface-dark text-text-main dark:text-white font-bold hover:bg-[#d5eadd] dark:hover:bg-surface-dark/80 transition-colors border border-[#cfe7d7]/80 dark:border-surface-dark"
-              >
-                {session.user.image ? (
-                  <Image src={session.user.image} alt={session.user.name || "User"} width={32} height={32} className="rounded-full border border-gray-200" />
-                ) : (
-                  <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-lg">
-                    {session.user.name?.[0] || "U"}
-                  </div>
-                )}
-                <div className="flex flex-col items-start leading-tight">
-                  <span className="text-xs uppercase tracking-[0.2em] text-primary font-semibold">會員面板</span>
-                  <span className="text-sm font-bold">{session.user.name || "Rentaloop 會員"}</span>
-                  <span className="text-xs text-text-sub">歡迎回到 Rentaloop.net</span>
-                </div>
-                <span className="material-symbols-outlined text-primary ml-auto">arrow_forward</span>
-              </Link>
-            ) : (
-              <Link
-                href="/auth"
-                className="w-full flex items-center justify-center gap-2 p-4 rounded-xl bg-[#e7f3eb] dark:bg-surface-dark text-text-main dark:text-white font-bold hover:bg-[#d5eadd] dark:hover:bg-surface-dark/80 transition-colors"
-              >
-                <span className="material-symbols-outlined">login</span>
-                登入
-              </Link>
-            )}
-          </nav>
+      <div className={`fixed inset-0 z-[100] flex flex-col bg-background-light dark:bg-background-dark overflow-y-auto transition-all duration-300 ease-in-out ${mobileOpen ? "opacity-100 visible translate-x-0" : "opacity-0 invisible translate-x-full"}`}>
+        <div className="flex items-center justify-between px-4 py-3 border-b border-[#e7f3eb] dark:border-border-dark sticky top-0 bg-inherit z-10">
+          <Link href="/" className="flex items-center gap-3" onClick={() => setMobileOpen(false)}>
+            <Image src="/rentaloop_logo.png" alt="Rentaloop" width={140} height={32} priority />
+          </Link>
+          <button
+            type="button"
+            onClick={() => setMobileOpen(false)}
+            className="p-2 text-text-main dark:text-white hover:text-primary transition-colors"
+            aria-label="關閉選單"
+          >
+            <span className="material-symbols-outlined text-3xl">close</span>
+          </button>
         </div>
-      ) : null}
+        <nav className="flex flex-col p-6 gap-2">
+          <Link
+            href="/"
+            onClick={() => setMobileOpen(false)}
+            className="flex items-center justify-between p-4 rounded-xl hover:bg-[#e7f3eb] dark:hover:bg-surface-dark text-text-main dark:text-white transition-all group"
+          >
+            <span className="flex flex-col leading-tight">
+              <span className="text-lg font-bold">Home</span>
+              <span className="text-sm text-text-sub group-hover:text-primary">首頁</span>
+            </span>
+          </Link>
+
+          {/* Mobile Categories Accordion-like */}
+          <div className="flex flex-col rounded-xl border border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-surface-dark/50 overflow-hidden">
+            <div className="p-4 font-bold text-lg flex items-center justify-between">
+              Products
+              <Link href="/products" onClick={() => setMobileOpen(false)} className="text-primary text-sm">All</Link>
+            </div>
+            <div className="px-4 pb-4 flex flex-col gap-4">
+              {roots.map(root => (
+                <div key={root.id}>
+                  <Link href={`/products?category=${root.slug || root.id}`} onClick={() => setMobileOpen(false)} className="font-bold text-gray-800 dark:text-gray-200 block mb-1">
+                    {root.name}
+                  </Link>
+                  <div className="pl-4 border-l-2 border-gray-200 dark:border-gray-700 flex flex-col gap-2">
+                    {getChildren(root.id).map(child => (
+                      <Link key={child.id} href={`/products?category=${child.slug || child.id}`} onClick={() => setMobileOpen(false)} className="text-sm text-gray-500 hover:text-primary">
+                        {child.name}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="h-px bg-[#e7f3eb] dark:bg-border-dark my-2" />
+
+          {session?.user ? (
+            <Link
+              href="/member"
+              onClick={() => setMobileOpen(false)}
+              className="w-full flex items-center gap-3 p-4 rounded-xl bg-[#e7f3eb] dark:bg-surface-dark text-text-main dark:text-white font-bold hover:bg-[#d5eadd] dark:hover:bg-surface-dark/80 transition-colors border border-[#cfe7d7]/80 dark:border-surface-dark"
+            >
+              {session.user.image ? (
+                <Image src={session.user.image} alt={session.user.name || "User"} width={32} height={32} className="rounded-full border border-gray-200" />
+              ) : (
+                <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-lg">
+                  {session.user.name?.[0] || "U"}
+                </div>
+              )}
+              <div className="flex flex-col items-start leading-tight">
+                <span className="text-xs uppercase tracking-[0.2em] text-primary font-semibold">會員面板</span>
+                <span className="text-sm font-bold">{session.user.name || "Rentaloop 會員"}</span>
+                <span className="text-xs text-text-sub">歡迎回到 Rentaloop.net</span>
+              </div>
+            </Link>
+          ) : (
+            <Link
+              href="/auth"
+              onClick={() => setMobileOpen(false)}
+              className="w-full flex items-center justify-center gap-2 p-4 rounded-xl bg-[#e7f3eb] dark:bg-surface-dark text-text-main dark:text-white font-bold hover:bg-[#d5eadd] dark:hover:bg-surface-dark/80 transition-colors"
+            >
+              <span className="material-symbols-outlined">login</span>
+              登入
+            </Link>
+          )}
+        </nav>
+      </div>
     </>
   );
 }
