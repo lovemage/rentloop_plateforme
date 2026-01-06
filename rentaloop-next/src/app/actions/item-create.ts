@@ -46,8 +46,17 @@ export async function createItem(formData: FormData) {
 
     const condition = formData.get('condition') as string || 'good';
     const notes = formData.get('notes') as string || '';
-    const discountRate3Days = parseInt(formData.get('discountRate3Days') as string) || 0;
+    const discountRate5Days = parseInt(formData.get('discountRate5Days') as string) || 0;
     const discountRate7Days = parseInt(formData.get('discountRate7Days') as string) || 0;
+
+    // Parse delivery options
+    const deliveryOptionsJson = formData.get('deliveryOptions') as string;
+    let deliveryOptions = null;
+    try {
+        deliveryOptions = JSON.parse(deliveryOptionsJson || '[]');
+    } catch {
+        deliveryOptions = [];
+    }
 
     try {
         const inserted = await db
@@ -66,6 +75,7 @@ export async function createItem(formData: FormData) {
                 availableTo,
                 status: 'active',
                 condition,
+                deliveryOptions, // New field
                 notes,
                 discountRate3Days,
                 discountRate7Days

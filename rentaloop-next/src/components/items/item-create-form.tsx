@@ -44,14 +44,24 @@ const itemFormSchema = z.object({
     price: z.number().min(1, '租金必須大於0'),
     deposit: z.number().min(0, '押金不可為負數'),
     location: z.string().min(1, '請選擇至少一個面交地點'),
-    images: z.array(z.string().url()).min(1, '請至少上傳一張照片'),
+    images: z.array(z.string().url()).min(4, '為保障權益，請至少上傳 4 張照片'),
     availableFrom: z.string().optional(),
     availableTo: z.string().optional(),
     condition: z.string().optional(),
     notes: z.string().optional(),
     discountRate3Days: z.number().min(0).max(100).optional(),
     discountRate7Days: z.number().min(0).max(100).optional(),
+    deliveryOptions: z.array(z.string()).min(1, '請選擇至少一種交付方式'),
+    liabilityAccepted: z.literal(true, { errorMap: () => ({ message: '請閱讀並同意免責聲明' }) }),
+    videoUrl: z.string().url('請輸入有效的網址').optional().or(z.literal('')),
 });
+
+const DELIVERY_OPTIONS = [
+    { id: 'face_to_face', label: '面交 (建議)' },
+    { id: 'delivery', label: '宅配 / 郵寄' },
+    { id: 'store_pickup', label: '超商取貨' },
+    { id: 'other', label: '其他' },
+];
 
 interface Category {
     id: string;
@@ -76,9 +86,23 @@ export function ItemCreateForm({ categories }: { categories: Category[] }) {
     // Pickup locations state
     const [pickupLocations, setPickupLocations] = useState<PickupLocation[]>([]);
 
+    // New states
+    const [deliveryOptions, setDeliveryOptions] = useState<string[]>(['face_to_face']);
+    const [liabilityAccepted, setLiabilityAccepted] = useState(false);
+
     // Group categories
     const parentCategories = categories.filter(c => !c.parentId);
     const getChildren = (parentId: string) => categories.filter(c => c.parentId === parentId);
+
+    const handleDeliveryChange = (optionId: string) => {
+        setDeliveryOptions(prev => {
+            if (prev.includes(optionId)) {
+                return prev.filter(p => p !== optionId);
+            } else {
+                return [...prev, optionId];
+            }
+        });
+    };
 
     const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         if (!e.target.files?.length) return;
@@ -158,6 +182,9 @@ export function ItemCreateForm({ categories }: { categories: Category[] }) {
             notes: notes,
             discountRate3Days: Number(formData.get('discountRate3Days') || 0),
             discountRate7Days: Number(formData.get('discountRate7Days') || 0),
+            deliveryOptions: deliveryOptions,
+            liabilityAccepted: liabilityAccepted,
+            videoUrl: formData.get('videoUrl') as string,
         };
 
         const result = itemFormSchema.safeParse(data);
@@ -187,6 +214,7 @@ export function ItemCreateForm({ categories }: { categories: Category[] }) {
         formData.append('images', JSON.stringify(imageUrls));
         formData.set('notes', notes);
         formData.set('pickupLocations', JSON.stringify(pickupLocations));
+        formData.set('deliveryOptions', JSON.stringify(deliveryOptions));
 
         try {
             const result = await createItem(formData);
@@ -210,9 +238,12 @@ export function ItemCreateForm({ categories }: { categories: Category[] }) {
 
                 {/* Image Upload Section */}
                 <div>
-                    <label className="block text-sm font-medium text-gray-900 mb-4">
-                        商品照片 ({imageUrls.length}/5) <span className="text-red-500">*</span>
-                    </label>
+                    <div className="flex items-center justify-between mb-4">
+                        <label className="block text-sm font-medium text-gray-900">
+                            商品照片 (至少 4 張) <span className="text-red-500">*</span>
+                        </label>
+                        <span className="text-xs text-gray-500">建議包含正面、背面、細節及配件圖</span>
+                    </div>
 
                     <div className="grid grid-cols-3 sm:grid-cols-4 gap-4">
                         {imageUrls.map((url, idx) => (
@@ -272,8 +303,25 @@ export function ItemCreateForm({ categories }: { categories: Category[] }) {
                     )}
 
                     <p className={`text-xs mt-2 ${errors.images ? 'text-red-500' : 'text-gray-500'}`}>
-                        {errors.images || '建議至少上傳一張照片。支援 JPG, PNG, WebP (最大 5MB)'}
+                        {errors.images || '為保障雙方權益，請務必上傳至少 4 張清晰照片 (正面/背面/側面/配件)。支援 JPG, PNG, WebP'}
                     </p>
+
+                    {/* Video URL (Optional) */}
+                    <div className="mt-4">
+                        <label htmlFor="videoUrl" className="block text-sm font-medium text-gray-700 mb-1">
+                            商品影片連結 (選填)
+                        </label>
+                        <input
+                            type="url"
+                            name="videoUrl"
+                            id="videoUrl"
+                            className="w-full rounded-lg shadow-sm sm:text-sm px-4 py-2 border border-gray-300 focus:border-green-500 focus:ring-green-500"
+                            placeholder="例如：YouTube 或 Google Drive 連結 (建議提供以證明功能正常)"
+                        />
+                        <p className="text-xs text-gray-500 mt-1">
+                            強烈建議提供影片證明商品功能正常，可減少後續爭議。
+                        </p>
+                    </div>
                 </div>
 
                 <hr className="border-gray-100" />
@@ -427,8 +475,8 @@ export function ItemCreateForm({ categories }: { categories: Category[] }) {
                                             type="button"
                                             onClick={() => togglePresetRule(rule)}
                                             className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${isSelected
-                                                    ? 'bg-green-600 text-white shadow-sm'
-                                                    : 'bg-white text-gray-700 border border-gray-200 hover:border-green-300 hover:text-green-700'
+                                                ? 'bg-green-600 text-white shadow-sm'
+                                                : 'bg-white text-gray-700 border border-gray-200 hover:border-green-300 hover:text-green-700'
                                                 }`}
                                         >
                                             {isSelected && <span className="mr-1">✓</span>}
@@ -492,10 +540,34 @@ export function ItemCreateForm({ categories }: { categories: Category[] }) {
                     </div>
                 </div>
 
-                {/* Pickup Location with Google Places */}
+                {/* Delivery Options */}
                 <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                        面交地點 <span className="text-red-500">*</span>
+                        交付方式 (可複選) <span className="text-red-500">*</span>
+                    </label>
+                    <div className="grid grid-cols-2 gap-4">
+                        {DELIVERY_OPTIONS.map((option) => (
+                            <label key={option.id} className={`flex items-center p-3 rounded-lg border cursor-pointer transition-all ${deliveryOptions.includes(option.id)
+                                    ? 'border-green-500 bg-green-50 text-green-700'
+                                    : 'border-gray-200 hover:border-gray-300'
+                                }`}>
+                                <input
+                                    type="checkbox"
+                                    className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
+                                    checked={deliveryOptions.includes(option.id)}
+                                    onChange={() => handleDeliveryChange(option.id)}
+                                />
+                                <span className="ml-2 text-sm font-medium">{option.label}</span>
+                            </label>
+                        ))}
+                    </div>
+                    {errors.deliveryOptions && <p className="text-xs text-red-500 mt-1">{errors.deliveryOptions}</p>}
+                </div>
+
+                {/* Pickup Location with Google Places */}
+                <div className={deliveryOptions.includes('face_to_face') ? 'block' : 'hidden'}>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                        面交地點 (若選擇面交) <span className="text-red-500">*</span>
                     </label>
                     <GooglePlacesAutocomplete
                         value={pickupLocations}
@@ -528,6 +600,24 @@ export function ItemCreateForm({ categories }: { categories: Category[] }) {
                     <p className="text-xs text-gray-500 mt-1">若不填寫，預設為隨時可租。</p>
                 </div>
 
+            </div>
+
+            <div className="px-8 pb-4">
+                <div className={`p-4 rounded-lg border ${errors.liabilityAccepted ? 'bg-red-50 border-red-200' : 'bg-gray-50 border-gray-200'}`}>
+                    <label className="flex items-start gap-3 cursor-pointer">
+                        <input
+                            type="checkbox"
+                            className="mt-1 h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
+                            checked={liabilityAccepted}
+                            onChange={(e) => setLiabilityAccepted(e.target.checked)}
+                        />
+                        <div className="text-sm text-gray-600">
+                            <span className="font-medium text-gray-900 block mb-1">平台免責聲明與上架條款</span>
+                            我已閱讀並同意 <a href="/legal/terms" target="_blank" className="text-green-600 underline">服務條款</a>。我保證上述填寫資訊真實，物品狀況良好。我了解平台僅提供資訊媒合，不負責任何運送損壞、物品遺失或租賃糾紛。我承諾在交付前與歸還時，會與租客共同確認物品狀況並拍照存證。
+                        </div>
+                    </label>
+                    {errors.liabilityAccepted && <p className="text-xs text-red-500 mt-2 pl-7">{errors.liabilityAccepted}</p>}
+                </div>
             </div>
 
             <div className="bg-gray-50 px-8 py-4 flex items-center justify-end gap-3 border-t border-gray-100">

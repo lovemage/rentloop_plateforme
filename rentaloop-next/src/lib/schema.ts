@@ -125,6 +125,7 @@ export const items = pgTable('items', {
     discountRate3Days: integer('discount_rate_3_days').default(0), // Percentage off (e.g. 10 = 10% off)
     discountRate7Days: integer('discount_rate_7_days').default(0),
     condition: text('condition').default('good'),
+    deliveryOptions: json('delivery_options'), // Array of selected delivery methods
     notes: text('notes'), // Could be JSON or newline separated string
 
     createdAt: timestamp('created_at').defaultNow(),
