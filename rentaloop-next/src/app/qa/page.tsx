@@ -36,39 +36,35 @@ export default function QAPage() {
     ];
 
     return (
-        <div className="flex flex-col min-h-screen bg-white">
-            <SiteHeader />
-            <main className="flex-grow py-12 px-4 sm:px-6 lg:px-8">
-                <div className="max-w-2xl mx-auto">
-                    <h1 className="text-3xl font-bold mb-8 text-center">常見問題 (Q&A)</h1>
+        <div className="flex-grow py-12 px-4 sm:px-6 lg:px-8 bg-white">
+            <div className="max-w-2xl mx-auto">
+                <h1 className="text-3xl font-bold mb-8 text-center">常見問題 (Q&A)</h1>
 
-                    <div className="space-y-4">
-                        <Accordion type="single" collapsible className="w-full">
-                            {faqs.map((faq, index) => (
-                                <AccordionItem key={index} value={`item-${index}`}>
-                                    <AccordionTrigger className="text-left font-medium text-gray-900 hover:text-green-600">
-                                        {faq.question}
-                                    </AccordionTrigger>
-                                    <AccordionContent className="text-gray-600 leading-relaxed">
-                                        {faq.answer}
-                                    </AccordionContent>
-                                </AccordionItem>
-                            ))}
-                        </Accordion>
-                    </div>
-
-                    <div className="mt-12 p-6 bg-gray-50 rounded-xl border border-gray-200 text-center">
-                        <h3 className="font-medium text-gray-900 mb-2">還有其他問題嗎？</h3>
-                        <p className="text-gray-600 text-sm mb-4">
-                            如果您有其他關於平台使用的疑問，歡迎隨時聯繫我們的客服團隊。
-                        </p>
-                        <a href="/contact" className="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700">
-                            聯絡我們
-                        </a>
-                    </div>
+                <div className="space-y-4">
+                    <Accordion type="single" collapsible className="w-full">
+                        {faqs.map((faq, index) => (
+                            <AccordionItem key={index} value={`item-${index}`}>
+                                <AccordionTrigger className="text-left font-medium text-gray-900 hover:text-green-600">
+                                    {faq.question}
+                                </AccordionTrigger>
+                                <AccordionContent className="text-gray-600 leading-relaxed">
+                                    {faq.answer}
+                                </AccordionContent>
+                            </AccordionItem>
+                        ))}
+                    </Accordion>
                 </div>
-            </main>
-            <SiteFooter />
+
+                <div className="mt-12 p-6 bg-gray-50 rounded-xl border border-gray-200 text-center">
+                    <h3 className="font-medium text-gray-900 mb-2">還有其他問題嗎？</h3>
+                    <p className="text-gray-600 text-sm mb-4">
+                        如果您有其他關於平台使用的疑問，歡迎隨時聯繫我們的客服團隊。
+                    </p>
+                    <a href="/contact" className="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700">
+                        聯絡我們
+                    </a>
+                </div>
+            </div>
         </div>
     );
 }
