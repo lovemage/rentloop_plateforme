@@ -52,7 +52,7 @@ const itemFormSchema = z.object({
     discountRate3Days: z.number().min(0).max(100).optional(),
     discountRate7Days: z.number().min(0).max(100).optional(),
     deliveryOptions: z.array(z.string()).min(1, '請選擇至少一種交付方式'),
-    liabilityAccepted: z.literal(true, { errorMap: () => ({ message: '請閱讀並同意免責聲明' }) }),
+    liabilityAccepted: z.boolean().refine(val => val === true, { message: '請閱讀並同意免責聲明' }),
     videoUrl: z.string().url('請輸入有效的網址').optional().or(z.literal('')),
 });
 
@@ -548,8 +548,8 @@ export function ItemCreateForm({ categories }: { categories: Category[] }) {
                     <div className="grid grid-cols-2 gap-4">
                         {DELIVERY_OPTIONS.map((option) => (
                             <label key={option.id} className={`flex items-center p-3 rounded-lg border cursor-pointer transition-all ${deliveryOptions.includes(option.id)
-                                    ? 'border-green-500 bg-green-50 text-green-700'
-                                    : 'border-gray-200 hover:border-gray-300'
+                                ? 'border-green-500 bg-green-50 text-green-700'
+                                : 'border-gray-200 hover:border-gray-300'
                                 }`}>
                                 <input
                                     type="checkbox"

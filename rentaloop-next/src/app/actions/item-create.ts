@@ -46,7 +46,7 @@ export async function createItem(formData: FormData) {
 
     const condition = formData.get('condition') as string || 'good';
     const notes = formData.get('notes') as string || '';
-    const discountRate5Days = parseInt(formData.get('discountRate5Days') as string) || 0;
+    const discountRate3Days = parseInt(formData.get('discountRate3Days') as string) || 0;
     const discountRate7Days = parseInt(formData.get('discountRate7Days') as string) || 0;
 
     // Parse delivery options

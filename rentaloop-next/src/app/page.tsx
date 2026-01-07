@@ -3,6 +3,7 @@ import Image from "next/image";
 import { getBannerSetting, type BannerSetting } from "@/app/actions/admin-banners";
 import { getHomepageStats, getHomepageFeatures, getHomepageArticles, getHomepageNotice } from "@/app/actions/homepage";
 import { ArticleSlider } from "@/components/home/article-slider";
+import { QaSection } from "@/components/home/qa-section";
 
 export const dynamic = "force-dynamic";
 
@@ -189,6 +190,8 @@ export default async function Home() {
           </div>
         </div>
       </section>
+
+      <QaSection />
 
       <section className="w-full max-w-[960px] px-4 py-16">
         <div className="flex flex-col gap-10">
