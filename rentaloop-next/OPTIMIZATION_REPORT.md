@@ -33,7 +33,7 @@
 - ✅ 從 `ProductQA` 導出 `Question` 介面
 - ✅ 在 `page.tsx` 為 questions 陣列添加明確型別註解
 
-### 6️⃣ 日期處理 - UTC+8 時區
+### 6️⃣ 日期處理 - UTC+8 時區 
 - ✅ 創建 `src/lib/date-utils.ts` 日期工具函數
 - ✅ 提供以下功能：
   - `getNowInTaipei()` - 取得台北當前時間

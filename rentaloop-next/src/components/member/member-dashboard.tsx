@@ -370,10 +370,7 @@ export function MemberDashboard({
                                                     <span className="material-symbols-outlined text-3xl">inventory_2</span>
                                                 </div>
                                                 <h3 className="text-lg font-bold mb-2">尚未上架商品</h3>
-                                                <p className="text-text-sub mb-6">將閒置物品出租給需要的人，開始賺取額外收入。</p>
-                                                <Link href="/items/new" className="inline-flex items-center gap-2 font-bold text-primary hover:underline">
-                                                    上架第一件商品 <span className="material-symbols-outlined text-sm">arrow_forward</span>
-                                                </Link>
+
                                             </div>
                                         )}
                                     </section>

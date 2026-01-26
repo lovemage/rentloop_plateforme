@@ -49,7 +49,15 @@ export function SiteHeader() {
             href="/"
             className="flex items-center gap-3 text-text-main dark:text-white cursor-pointer"
           >
-            <Image src="/rentaloop_logo.png" alt="Rentaloop" width={140} height={32} priority />
+            <Image
+              src="/logo.png"
+              alt="Rentaloop"
+              width={0}
+              height={0}
+              sizes="100vw"
+              className="w-auto h-8"
+              priority
+            />
           </Link>
           <nav className="hidden md:flex items-center gap-9">
             <Link
@@ -183,7 +191,15 @@ export function SiteHeader() {
       <div className={`fixed inset-0 z-[100] flex flex-col bg-background-light dark:bg-background-dark overflow-y-auto transition-all duration-300 ease-in-out ${mobileOpen ? "opacity-100 visible translate-x-0" : "opacity-0 invisible translate-x-full"}`}>
         <div className="flex items-center justify-between px-4 py-3 border-b border-[#e7f3eb] dark:border-border-dark sticky top-0 bg-inherit z-10">
           <Link href="/" className="flex items-center gap-3" onClick={() => setMobileOpen(false)}>
-            <Image src="/rentaloop_logo.png" alt="Rentaloop" width={140} height={32} priority />
+            <Image
+              src="/logo.png"
+              alt="Rentaloop"
+              width={0}
+              height={0}
+              sizes="100vw"
+              className="w-auto h-8"
+              priority
+            />
           </Link>
           <button
             type="button"
