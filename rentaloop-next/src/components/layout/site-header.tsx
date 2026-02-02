@@ -50,7 +50,7 @@ export function SiteHeader() {
             className="flex items-center gap-3 text-text-main dark:text-white cursor-pointer"
           >
             <Image
-              src="/logo.png"
+              src="/rentloop-logo2.png"
               alt="Rentaloop"
               width={0}
               height={0}
@@ -192,7 +192,7 @@ export function SiteHeader() {
         <div className="flex items-center justify-between px-4 py-3 border-b border-[#e7f3eb] dark:border-border-dark sticky top-0 bg-inherit z-10">
           <Link href="/" className="flex items-center gap-3" onClick={() => setMobileOpen(false)}>
             <Image
-              src="/logo.png"
+              src="/rentloop-logo2.png"
               alt="Rentaloop"
               width={0}
               height={0}
