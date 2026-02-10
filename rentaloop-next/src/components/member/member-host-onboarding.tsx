@@ -56,14 +56,19 @@ export function MemberHostOnboarding({ initialProfile }: { initialProfile: Profi
 
   const handleFront = (file: File) => {
     setUploadError(null);
+    if (!["image/jpeg", "image/png", "image/webp", "image/jpg"].includes(file.type)) {
+      setUploadError("不支援此檔案格式，請使用 JPG 或 PNG");
+      return;
+    }
     startTransition(async () => {
       const res = await uploadSide(file, "front");
       if (res.success) {
         setFrontUrl(res.url);
       } else {
-        const errorMsg = res.error === "UPLOAD_FAILED"
-          ? "身分證正面上傳失敗，請稍後再試"
-          : "上傳發生錯誤";
+        let errorMsg = "上傳發生錯誤";
+        if (res.error === "UPLOAD_FAILED") errorMsg = "上傳失敗，請稍後再試";
+        if (res.error === "HEIC_NOT_SUPPORTED" || res.error === "UNSUPPORTED_FORMAT") errorMsg = "不支援 HEIC 格式，請使用 JPG/PNG";
+
         setUploadError(errorMsg);
         console.error("KYC Front upload failed:", res.error);
       }
@@ -72,14 +77,19 @@ export function MemberHostOnboarding({ initialProfile }: { initialProfile: Profi
 
   const handleBack = (file: File) => {
     setUploadError(null);
+    if (!["image/jpeg", "image/png", "image/webp", "image/jpg"].includes(file.type)) {
+      setUploadError("不支援此檔案格式，請使用 JPG 或 PNG");
+      return;
+    }
     startTransition(async () => {
       const res = await uploadSide(file, "back");
       if (res.success) {
         setBackUrl(res.url);
       } else {
-        const errorMsg = res.error === "UPLOAD_FAILED"
-          ? "身分證背面上傳失敗，請稍後再試"
-          : "上傳發生錯誤";
+        let errorMsg = "上傳發生錯誤";
+        if (res.error === "UPLOAD_FAILED") errorMsg = "上傳失敗，請稍後再試";
+        if (res.error === "HEIC_NOT_SUPPORTED" || res.error === "UNSUPPORTED_FORMAT") errorMsg = "不支援 HEIC 格式，請使用 JPG/PNG";
+
         setUploadError(errorMsg);
         console.error("KYC Back upload failed:", res.error);
       }
@@ -218,7 +228,7 @@ export function MemberHostOnboarding({ initialProfile }: { initialProfile: Profi
                 <span className="text-xs font-bold text-text-sub">正面</span>
                 <input
                   type="file"
-                  accept="image/*"
+                  accept="image/jpeg,image/png,image/webp,image/jpg"
                   disabled={isLocked}
                   onChange={(e) => {
                     const f = e.target.files?.[0];
@@ -231,7 +241,7 @@ export function MemberHostOnboarding({ initialProfile }: { initialProfile: Profi
                 <span className="text-xs font-bold text-text-sub">反面</span>
                 <input
                   type="file"
-                  accept="image/*"
+                  accept="image/jpeg,image/png,image/webp,image/jpg"
                   disabled={isLocked}
                   onChange={(e) => {
                     const f = e.target.files?.[0];

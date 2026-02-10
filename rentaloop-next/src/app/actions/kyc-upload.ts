@@ -13,14 +13,34 @@ export async function uploadKycImage(formData: FormData) {
 
   if (!file) return { success: false as const, error: "NO_FILE" };
 
+  // 1. Basic type validation
+  const validTypes = ["image/jpeg", "image/png", "image/webp", "image/jpg"];
+  if (!validTypes.includes(file.type)) {
+    // Check if it's HEIC/HEIF which we know fails
+    if (file.type === "image/heic" || file.type === "image/heif" || file.name.toLowerCase().endsWith(".heic")) {
+      return { success: false as const, error: "HEIC_NOT_SUPPORTED" };
+    }
+    // Keep generic for others, or strict
+  }
+
   try {
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
     // Convert to WebP using sharp for optimization
-    const optimizedBuffer = await sharp(buffer)
-      .webp({ quality: 80 })
-      .toBuffer();
+    // Wrap in specific try/catch to identify image processing errors
+    let optimizedBuffer: Buffer;
+    try {
+      optimizedBuffer = await sharp(buffer)
+        .webp({ quality: 80 })
+        .toBuffer();
+    } catch (sharpError: any) {
+      console.error("Sharp processing error:", sharpError);
+      if (sharpError.message.includes("heif") || sharpError.message.includes("format")) {
+        return { success: false as const, error: "UNSUPPORTED_FORMAT" };
+      }
+      throw sharpError; // Re-throw to outer catch for generic handling
+    }
 
     const timestamp = Date.now();
     // Store with user ID subfolder for organization
