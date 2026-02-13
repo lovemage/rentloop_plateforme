@@ -25,6 +25,8 @@ interface MemberData {
     realName: string | null;
     phone: string | null;
     hostCity: string | null;
+    instagramId: string | null;
+    threadsId: string | null;
     createdAt: Date | null;
 }
 

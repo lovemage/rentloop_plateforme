@@ -20,6 +20,8 @@ type ProfileShape = {
   kycIdBackUrl: string | null;
   hostRulesAccepted: boolean | null;
   hostRulesAcceptedAt: string | null;
+  instagramId: string | null;
+  threadsId: string | null;
   createdAt: string | null;
   updatedAt: string | null;
 };
@@ -35,7 +37,7 @@ export function MemberProfileForm({
   const [savedAt, setSavedAt] = useState<string | null>(null);
 
   // Auto-open if critical info is missing
-  const isProfileIncomplete = !initialProfile?.phone || !initialProfile?.address;
+  const isProfileIncomplete = !initialProfile?.phone || !initialProfile?.address || !initialProfile?.instagramId;
   const [isOpen, setIsOpen] = useState(isProfileIncomplete);
 
   const initialState = useMemo(
@@ -46,6 +48,8 @@ export function MemberProfileForm({
       city: initialProfile?.city ?? "",
       district: initialProfile?.district ?? "",
       address: initialProfile?.address ?? "",
+      instagramId: initialProfile?.instagramId ?? "",
+      threadsId: initialProfile?.threadsId ?? "",
     }),
     [initialProfile]
   );
@@ -129,6 +133,27 @@ export function MemberProfileForm({
                 className="h-12 rounded-xl border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark px-4 text-sm"
                 placeholder="例如: 0912xxxxxx"
                 required
+              />
+            </label>
+
+            <label className="flex flex-col gap-2">
+              <span className="text-sm font-semibold">Instagram ID <span className="text-red-500">*</span></span>
+              <input
+                value={form.instagramId}
+                onChange={(e) => setForm((p) => ({ ...p, instagramId: e.target.value }))}
+                className="h-12 rounded-xl border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark px-4 text-sm"
+                placeholder="例如: rentaloop.net.ig"
+                required
+              />
+            </label>
+
+            <label className="flex flex-col gap-2">
+              <span className="text-sm font-semibold">Threads ID <span className="text-gray-400 text-xs">(選填)</span></span>
+              <input
+                value={form.threadsId}
+                onChange={(e) => setForm((p) => ({ ...p, threadsId: e.target.value }))}
+                className="h-12 rounded-xl border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark px-4 text-sm"
+                placeholder="例如: @rentaloop.net.ig"
               />
             </label>
 

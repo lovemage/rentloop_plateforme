@@ -18,6 +18,8 @@ interface MemberData {
     realName: string | null;
     phone: string | null;
     hostCity: string | null;
+    instagramId: string | null;
+    threadsId: string | null;
     createdAt: Date | null;
 }
 
@@ -104,6 +106,20 @@ export function MemberEditModal({ member, onClose, onRefresh }: ModalProps) {
                         <InfoField label="Email" value={member.email} />
                         <InfoField label="電話" value={member.phone || '-'} />
                         <InfoField label="所在城市" value={member.hostCity || '-'} />
+                        <InfoField label="Instagram ID" value={
+                            member.instagramId ? (
+                                <a href={`https://www.instagram.com/${member.instagramId.replace('@', '')}`} target="_blank" rel="noopener noreferrer" className="text-pink-600 hover:underline font-semibold">
+                                    @{member.instagramId.replace('@', '')}
+                                </a>
+                            ) : '-'
+                        } />
+                        <InfoField label="Threads ID" value={
+                            member.threadsId ? (
+                                <a href={`https://www.threads.com/@${member.threadsId.replace('@', '')}`} target="_blank" rel="noopener noreferrer" className="text-gray-700 hover:underline font-semibold">
+                                    @{member.threadsId.replace('@', '')}
+                                </a>
+                            ) : '-'
+                        } />
                         <InfoField label="加入時間" value={member.createdAt ? new Date(member.createdAt).toLocaleDateString() : '-'} />
                         <InfoField
                             label="帳號狀態"

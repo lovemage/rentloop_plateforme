@@ -13,6 +13,8 @@ const profileSchema = z.object({
   city: z.string().trim().min(1).max(50).optional().or(z.literal("")),
   district: z.string().trim().min(1).max(50).optional().or(z.literal("")),
   address: z.string().trim().min(1).max(200).optional().or(z.literal("")),
+  instagramId: z.string().trim().min(1).max(100).optional().or(z.literal("")),
+  threadsId: z.string().trim().min(1).max(100).optional().or(z.literal("")),
 
   hostStatus: z.string().trim().min(1).max(50).optional().or(z.literal("")),
   hostCity: z.string().trim().min(1).max(50).optional().or(z.literal("")),
@@ -74,6 +76,8 @@ export async function upsertMyProfile(input: unknown) {
       city: normalizeNullable(data.city),
       district: normalizeNullable(data.district),
       address: normalizeNullable(data.address),
+      instagramId: normalizeNullable(data.instagramId),
+      threadsId: normalizeNullable(data.threadsId),
 
       hostStatus: normalizeNullable(data.hostStatus),
       hostCity: normalizeNullable(data.hostCity),
@@ -98,6 +102,8 @@ export async function upsertMyProfile(input: unknown) {
         city: normalizeNullable(data.city),
         district: normalizeNullable(data.district),
         address: normalizeNullable(data.address),
+        instagramId: normalizeNullable(data.instagramId),
+        threadsId: normalizeNullable(data.threadsId),
 
         hostStatus: normalizeNullable(data.hostStatus),
         hostCity: normalizeNullable(data.hostCity),

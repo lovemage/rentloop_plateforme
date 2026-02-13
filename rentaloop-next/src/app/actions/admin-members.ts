@@ -43,6 +43,8 @@ export async function getAdminMembers(
             realName: userProfiles.realName,
             phone: userProfiles.phone,
             hostCity: userProfiles.hostCity,
+            instagramId: userProfiles.instagramId,
+            threadsId: userProfiles.threadsId,
         })
         .from(users)
         .leftJoin(userProfiles, eq(users.id, userProfiles.userId))

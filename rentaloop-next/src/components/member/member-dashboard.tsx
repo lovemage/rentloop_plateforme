@@ -29,6 +29,8 @@ interface MemberProfile {
     kycIdBackUrl: string | null;
     hostRulesAccepted: boolean | null;
     hostRulesAcceptedAt: string | null;
+    instagramId: string | null;
+    threadsId: string | null;
     createdAt: string | null;
     updatedAt: string | null;
 }
@@ -198,7 +200,7 @@ export function MemberDashboard({
                                 }`}
                         >
                             <span className="material-symbols-outlined">storefront</span>
-                            租賃會員
+                            上傳物品
                             {(incomingRentals.length > 0 || pendingQuestions.length > 0) && (
                                 <span className="ml-1 flex h-2 w-2 rounded-full bg-red-500"></span>
                             )}

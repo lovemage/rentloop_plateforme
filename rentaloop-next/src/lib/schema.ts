@@ -44,6 +44,9 @@ export const userProfiles = pgTable('user_profiles', {
     hostRulesAccepted: boolean('host_rules_accepted').default(false),
     hostRulesAcceptedAt: timestamp('host_rules_accepted_at', { mode: 'date' }),
 
+    instagramId: text('instagram_id'),
+    threadsId: text('threads_id'),
+
     createdAt: timestamp('created_at').defaultNow(),
     updatedAt: timestamp('updated_at').defaultNow(),
 });

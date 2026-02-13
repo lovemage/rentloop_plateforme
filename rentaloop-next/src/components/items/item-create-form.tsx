@@ -543,24 +543,38 @@ export function ItemCreateForm({ categories }: { categories: Category[] }) {
                 {/* Delivery Options */}
                 <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                        交付方式 (可複選) <span className="text-red-500">*</span>
+                        交付方式 <span className="text-red-500">*</span>
                     </label>
                     <div className="grid grid-cols-2 gap-4">
-                        {DELIVERY_OPTIONS.map((option) => (
-                            <label key={option.id} className={`flex items-center p-3 rounded-lg border cursor-pointer transition-all ${deliveryOptions.includes(option.id)
-                                ? 'border-green-500 bg-green-50 text-green-700'
-                                : 'border-gray-200 hover:border-gray-300'
-                                }`}>
-                                <input
-                                    type="checkbox"
-                                    className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
-                                    checked={deliveryOptions.includes(option.id)}
-                                    onChange={() => handleDeliveryChange(option.id)}
-                                />
-                                <span className="ml-2 text-sm font-medium">{option.label}</span>
-                            </label>
-                        ))}
+                        {DELIVERY_OPTIONS.map((option) => {
+                            const isFaceToFace = option.id === 'face_to_face';
+                            return (
+                                <label key={option.id} className={`flex items-center p-3 rounded-lg border transition-all ${isFaceToFace
+                                    ? 'border-green-500 bg-green-50 text-green-700 cursor-default'
+                                    : 'border-gray-200 bg-gray-50 text-gray-400 cursor-not-allowed opacity-60'
+                                    }`}>
+                                    <input
+                                        type="checkbox"
+                                        className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
+                                        checked={isFaceToFace}
+                                        disabled
+                                        readOnly
+                                    />
+                                    <span className="ml-2 text-sm font-medium">{option.label}</span>
+                                    {!isFaceToFace && (
+                                        <span className="ml-auto text-xs text-gray-400">尚未開放</span>
+                                    )}
+                                </label>
+                            );
+                        })}
                     </div>
+                    <p className="text-xs text-amber-600 mt-2 flex items-center gap-1">
+                        <span className="material-symbols-outlined text-sm">info</span>
+                        目前平台僅開放面交方式，詳見
+                        <Link href="/delivery-rules" className="underline font-bold hover:text-amber-700" target="_blank">
+                            交付規則說明
+                        </Link>
+                    </p>
                     {errors.deliveryOptions && <p className="text-xs text-red-500 mt-1">{errors.deliveryOptions}</p>}
                 </div>
 
