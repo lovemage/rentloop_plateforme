@@ -26,6 +26,11 @@ export const metadata: Metadata = {
   title: "Rentaloop - 擁抱體驗，何必佔有",
   description:
     "Rentaloop 透過 Next.js 體驗永續租賃旅程。瀏覽商品、上架物品、管理會員資料，一站完成。",
+  icons: {
+    icon: "/rentlooplogo.png",
+    shortcut: "/rentlooplogo.png",
+    apple: "/rentlooplogo.png",
+  },
 };
 
 export default async function RootLayout({
@@ -91,4 +96,3 @@ export default async function RootLayout({
     </html>
   );
 }
-
