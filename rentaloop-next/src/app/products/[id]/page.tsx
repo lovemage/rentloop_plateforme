@@ -9,7 +9,7 @@ import { db } from "@/lib/db";
 import { items, users, userProfiles, itemQuestions, rentals } from "@/lib/schema";
 import { eq, desc, and, inArray, gt } from "drizzle-orm";
 import { auth } from "@/auth";
-import { eachDayOfInterval } from "date-fns";
+import { addDays, eachDayOfInterval } from "date-fns";
 import { getTodayDateString } from "@/lib/date-utils";
 import { getMyFavoriteProductIds, recordProductView, getFavoriteCount } from "@/app/actions/tracking";
 import { getItemReviews } from "@/app/actions/rentals";
@@ -43,6 +43,9 @@ async function getProduct(id: string): Promise<{
         name: string;
         avatar: string | null | undefined;
         rating: number;
+        reviewCount: number;
+        rentalRate: number;
+        rentalBadge: string;
         responseRate: string;
         joinDate: string;
         isVerified: boolean;
@@ -53,6 +56,7 @@ async function getProduct(id: string): Promise<{
     condition: string;
     discountRate3Days: number;
     discountRate7Days: number;
+    cleaningBufferDays: number;
 } | null> {
     try {
         const result = await db.select({
@@ -71,6 +75,8 @@ async function getProduct(id: string): Promise<{
                 avatar: users.image,
                 rating: users.rating,
                 reviewCount: users.reviewCount,
+                rentalRate: users.rentalRate,
+                rentalBadge: users.rentalBadge,
                 joinDate: users.createdAt,
                 role: users.role,
             },
@@ -85,6 +91,7 @@ async function getProduct(id: string): Promise<{
             notes: items.notes,
             discountRate3Days: items.discountRate3Days,
             discountRate7Days: items.discountRate7Days,
+            cleaningBufferDays: items.cleaningBufferDays,
         })
             .from(items)
             .leftJoin(users, eq(items.ownerId, users.id))
@@ -138,6 +145,9 @@ async function getProduct(id: string): Promise<{
                 name: data.owner?.name || "Unknown User",
                 avatar: data.owner?.avatar,
                 rating: data.owner?.rating || 5.0,
+                reviewCount: Number(data.owner?.reviewCount || 0),
+                rentalRate: Number(data.owner?.rentalRate ?? 85),
+                rentalBadge: data.owner?.rentalBadge || 'none',
                 responseRate: "95%",
                 joinDate: data.owner?.joinDate ? new Date(data.owner.joinDate).getFullYear() + "年" : "2024年",
                 isVerified: data.owner?.role === 'verified' || data.owner?.role === 'admin',
@@ -151,6 +161,7 @@ async function getProduct(id: string): Promise<{
             condition: data.condition || "良好",
             discountRate3Days: Number(data.discountRate3Days || 0),
             discountRate7Days: Number(data.discountRate7Days || 0),
+            cleaningBufferDays: Number(data.cleaningBufferDays || 0),
         };
     } catch (err) {
         console.error("Error fetching product:", err);
@@ -199,15 +210,16 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
     const today = getTodayDateString();
     const rentalRecords = await db.select({
         startDate: rentals.startDate,
-        endDate: rentals.endDate
+        endDate: rentals.endDate,
+        status: rentals.status,
     }).from(rentals)
         .where(and(
             eq(rentals.itemId, id),
-            inArray(rentals.status, ['pending', 'approved', 'ongoing', 'blocked']),
+            inArray(rentals.status, ['pending', 'approved', 'ongoing', 'blocked', 'completed']),
             gt(rentals.endDate, today)
         ));
 
-    const blockedDates = rentalRecords.flatMap(r => {
+    const bookedDates = rentalRecords.flatMap(r => {
         if (!r.startDate || !r.endDate) return [];
         try {
             const start = new Date(r.startDate);
@@ -217,15 +229,37 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
         } catch { return []; }
     });
 
+    const cleaningDates = rentalRecords.flatMap((r) => {
+        if (!r.endDate || !product.cleaningBufferDays || product.cleaningBufferDays <= 0 || r.status === 'blocked') {
+            return [];
+        }
+        try {
+            const cleaningStart = addDays(new Date(r.endDate), 1);
+            const cleaningEnd = addDays(cleaningStart, product.cleaningBufferDays - 1);
+            if (cleaningStart > cleaningEnd) return [];
+            return eachDayOfInterval({ start: cleaningStart, end: cleaningEnd });
+        } catch {
+            return [];
+        }
+    });
+
+    const blockedDates = [...bookedDates, ...cleaningDates];
 
     const isOwner = session?.user?.id === product!.ownerId;
 
     // Fetch Reviews
     const reviewsRes = await getItemReviews(id);
     const reviews = reviewsRes.success ? reviewsRes.data : [];
-    const averageRating = reviews.length > 0
+    const itemAverageRating = reviews.length > 0
         ? (reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length).toFixed(1)
         : product.owner.rating.toFixed(1); // Fallback to owner rating if no item reviews yet
+    const hostAverageRating = product.owner.rating.toFixed(1);
+    const hostRentalRate = Math.max(0, Math.min(100, product.owner.rentalRate || 85));
+    const rentalBadgeLabel = hostRentalRate === 100
+        ? '極優出租'
+        : hostRentalRate > 95
+            ? '推薦出租'
+            : null;
 
     return (
         <div className="min-h-screen bg-white pb-24 lg:pb-12">
@@ -248,7 +282,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
                     <div className="flex items-center gap-4 text-sm text-gray-500">
                         <span className="flex items-center gap-1">
                             <Star className="w-4 h-4 fill-current text-yellow-400" />
-                            <span className="font-medium text-gray-900">{averageRating}</span> ({reviews.length} 則評價)
+                            <span className="font-medium text-gray-900">{itemAverageRating}</span> ({reviews.length} 則評價)
                         </span>
                         <span>·</span>
                         <span className="flex items-center gap-1 text-gray-700 underline decoration-gray-300 underline-offset-2">
@@ -278,7 +312,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
                             </div>
                             <div className="flex items-center gap-1 text-sm text-gray-600">
                                 <Star className="w-4 h-4 fill-current text-yellow-400" />
-                                <span className="font-medium text-black">4.9</span> ·
+                                <span className="font-medium text-black">{itemAverageRating}</span> ·
                                 <span className="underline">{product.locationText.city}, {product.locationText.district}</span>
                             </div>
                         </div>
@@ -321,6 +355,34 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
                                         )}
                                     </div>
                                 )}
+
+                                <div className="mt-3 grid gap-2 rounded-xl border border-gray-100 bg-gray-50 p-3 text-sm">
+                                    <div className="flex items-center justify-between text-gray-700">
+                                        <span className="font-medium">Host 評價</span>
+                                        <span className="font-semibold">{hostAverageRating} ({product.owner.reviewCount})</span>
+                                    </div>
+                                    <div className="flex items-center justify-between text-gray-700">
+                                        <span className="font-medium">商品評價</span>
+                                        <span className="font-semibold">{itemAverageRating} ({reviews.length})</span>
+                                    </div>
+                                    <div className="space-y-1">
+                                        <div className="flex items-center justify-between text-gray-700">
+                                            <span className="font-medium">出租率</span>
+                                            <span className="font-semibold">{hostRentalRate}%</span>
+                                        </div>
+                                        <div className="h-2 w-full overflow-hidden rounded-full bg-gray-200">
+                                            <div
+                                                className="h-full rounded-full bg-green-600 transition-all"
+                                                style={{ width: `${hostRentalRate}%` }}
+                                            />
+                                        </div>
+                                        {rentalBadgeLabel && (
+                                            <div className="inline-flex rounded-full border border-green-200 bg-green-100 px-2 py-0.5 text-xs font-bold text-green-700">
+                                                {rentalBadgeLabel}
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
                             </div>
                             <div className="relative">
                                 <div className="w-14 h-14 rounded-full bg-gray-200 overflow-hidden">
@@ -462,6 +524,8 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
                                 pricePerDay={product.pricePerDay}
                                 deposit={product.deposit}
                                 blockedDates={blockedDates}
+                                bookedDates={bookedDates}
+                                cleaningDates={cleaningDates}
                                 availableRange={{ from: product.availableFrom, to: product.availableTo }}
                                 isLoggedIn={!!session?.user}
                                 isOwner={isOwner}

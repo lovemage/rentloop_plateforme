@@ -1,13 +1,102 @@
 'use server'
 
 import { db } from "@/lib/db";
-import { rentals, items, users, userProfiles, emailTemplates, reviews } from "@/lib/schema";
-import { eq, desc, and, inArray, sql, lt } from "drizzle-orm";
+import { rentals, items, users, userProfiles, reviews, hostRentalRateLogs } from "@/lib/schema";
+import { eq, desc, and, or, inArray, sql, lt } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
 
 // 預約狀態類型
-export type RentalStatus = 'pending' | 'approved' | 'rejected' | 'ongoing' | 'completed' | 'cancelled';
+export type RentalStatus = 'pending' | 'approved' | 'rejected' | 'ongoing' | 'completed' | 'cancelled' | 'blocked';
+
+const OCCUPIED_RENTAL_STATUSES = ['pending', 'approved', 'ongoing', 'blocked', 'completed'] as const;
+
+type BlockedRange = {
+    startDate: string;
+    endDate: string;
+    type: 'booked' | 'cleaning';
+};
+
+function dateToUTC(dateString: string) {
+    return new Date(`${dateString}T00:00:00.000Z`);
+}
+
+function addDaysUTC(date: Date, days: number) {
+    const next = new Date(date);
+    next.setUTCDate(next.getUTCDate() + days);
+    return next;
+}
+
+function toDateStringUTC(date: Date) {
+    return date.toISOString().slice(0, 10);
+}
+
+function hasOverlap(startA: string, endA: string, startB: string, endB: string) {
+    return !(endA < startB || startA > endB);
+}
+
+async function getItemBlockedRanges(itemId: string): Promise<BlockedRange[]> {
+    const rows = await db
+        .select({
+            startDate: rentals.startDate,
+            endDate: rentals.endDate,
+            status: rentals.status,
+            cleaningBufferDays: items.cleaningBufferDays,
+        })
+        .from(rentals)
+        .innerJoin(items, eq(rentals.itemId, items.id))
+        .where(and(eq(rentals.itemId, itemId), inArray(rentals.status, OCCUPIED_RENTAL_STATUSES)));
+
+    const ranges: BlockedRange[] = [];
+    for (const row of rows) {
+        if (!row.startDate || !row.endDate) continue;
+        ranges.push({ startDate: row.startDate, endDate: row.endDate, type: 'booked' });
+
+        const bufferDays = Number(row.cleaningBufferDays || 0);
+        if (bufferDays <= 0 || row.status === 'blocked') continue;
+
+        const cleaningStart = addDaysUTC(dateToUTC(row.endDate), 1);
+        const cleaningEnd = addDaysUTC(cleaningStart, bufferDays - 1);
+        ranges.push({
+            startDate: toDateStringUTC(cleaningStart),
+            endDate: toDateStringUTC(cleaningEnd),
+            type: 'cleaning',
+        });
+    }
+
+    return ranges;
+}
+
+async function adjustHostRentalRate(hostId: string, delta: number, rentalId: string, eventType: 'host_rejected' | 'rental_completed') {
+    const currentHost = await db
+        .select({
+            rentalRate: users.rentalRate,
+        })
+        .from(users)
+        .where(eq(users.id, hostId))
+        .limit(1);
+
+    if (currentHost.length === 0) return;
+
+    const beforeRate = Number(currentHost[0].rentalRate ?? 85);
+    const afterRate = Math.max(0, Math.min(100, beforeRate + delta));
+    const rentalBadge = afterRate === 100 ? 'elite' : afterRate > 95 ? 'recommended' : 'none';
+
+    await db.update(users).set({
+        rentalRate: afterRate,
+        rentalBadge,
+        rentalRateUpdatedAt: new Date(),
+    }).where(eq(users.id, hostId));
+
+    await db.insert(hostRentalRateLogs).values({
+        hostId,
+        rentalId,
+        eventType,
+        delta,
+        beforeRate,
+        afterRate,
+    });
+}
 
 // 自動取消逾期預約 (3天未回覆)
 export async function checkAndCancelOverdueRentals() {
@@ -124,18 +213,14 @@ export async function createRental(data: {
             return { success: false, error: "您不能預約自己的商品" };
         }
 
-        // 檢查日期是否可用（沒有衝突的預約）
-        const conflictingRentals = await db.select({ id: rentals.id })
-            .from(rentals)
-            .where(and(
-                eq(rentals.itemId, data.itemId),
-                inArray(rentals.status, ['pending', 'approved', 'ongoing']),
-                // 日期重疊檢查: NOT (end < start OR start > end)
-                sql`NOT (${rentals.endDate} < ${data.startDate} OR ${rentals.startDate} > ${data.endDate})`
-            ));
+        // 檢查日期是否可用（包含清潔保留時段）
+        const blockedRanges = await getItemBlockedRanges(data.itemId);
+        const hasConflict = blockedRanges.some((range) =>
+            hasOverlap(data.startDate, data.endDate, range.startDate, range.endDate)
+        );
 
-        if (conflictingRentals.length > 0) {
-            return { success: false, error: "所選日期已被預約，請選擇其他日期" };
+        if (hasConflict) {
+            return { success: false, error: "所選日期包含已預訂或清潔保留時段，請選擇其他日期" };
         }
 
         // 建立預約
@@ -147,7 +232,7 @@ export async function createRental(data: {
             endDate: data.endDate,
             totalDays: data.totalDays,
             totalAmount: data.totalAmount,
-            status: 'approved', // Auto-approve as requested
+            status: 'pending',
         }).returning();
 
         // 寄送通知信
@@ -219,6 +304,7 @@ export async function getAllRentals() {
             totalDays: rentals.totalDays,
             totalAmount: rentals.totalAmount,
             status: rentals.status,
+            rejectionReason: rentals.rejectionReason,
             createdAt: rentals.createdAt,
             // Item info
             itemId: rentals.itemId,
@@ -265,6 +351,16 @@ export async function approveRental(rentalId: string) {
     if (!session?.user?.id) return { success: false, error: "Unauthorized" };
 
     try {
+        const rental = await db.select({
+            id: rentals.id,
+            ownerId: rentals.ownerId,
+            status: rentals.status,
+        }).from(rentals).where(eq(rentals.id, rentalId)).limit(1);
+
+        if (rental.length === 0) return { success: false, error: "找不到預約資料" };
+        if (rental[0].ownerId !== session.user.id) return { success: false, error: "權限不足" };
+        if (rental[0].status !== 'pending') return { success: false, error: "目前狀態無法接受預約" };
+
         await db.update(rentals)
             .set({ status: 'approved' }) // Host approved, waiting for start date to become ongoing? Or directly ongoing? Assuming approved means "Accepted"
             .where(eq(rentals.id, rentalId));
@@ -285,26 +381,35 @@ export async function rejectRental(rentalId: string, reason: string) {
     if (!session?.user?.id) return { success: false, error: "Unauthorized" };
 
     try {
-        // Update status and reason
-        await db.update(rentals)
-            .set({ status: 'rejected', rejectionReason: reason })
-            .where(eq(rentals.id, rentalId));
-
-        // Get rental details for email
-        const rental = await db.select({
+        const rentalBeforeUpdate = await db.select({
             id: rentals.id,
+            ownerId: rentals.ownerId,
             renterId: rentals.renterId,
-            itemTitle: items.title
+            itemId: rentals.itemId,
+            status: rentals.status,
+            itemTitle: items.title,
         })
             .from(rentals)
             .leftJoin(items, eq(rentals.itemId, items.id))
             .where(eq(rentals.id, rentalId))
             .limit(1);
 
-        if (rental.length > 0) {
+        if (rentalBeforeUpdate.length === 0) return { success: false, error: "找不到預約資料" };
+        if (rentalBeforeUpdate[0].ownerId !== session.user.id) return { success: false, error: "權限不足" };
+        if (rentalBeforeUpdate[0].status !== 'pending') return { success: false, error: "目前狀態無法拒絕預約" };
+
+        // Update status and reason
+        await db.update(rentals)
+            .set({ status: 'rejected', rejectionReason: reason })
+            .where(eq(rentals.id, rentalId));
+
+        await adjustHostRentalRate(session.user.id, -5, rentalId, 'host_rejected');
+
+        // Get rental details for email
+        if (rentalBeforeUpdate.length > 0) {
             const renter = await db.select({ email: users.email, name: users.name })
                 .from(users)
-                .where(eq(users.id, rental[0].renterId))
+                .where(eq(users.id, rentalBeforeUpdate[0].renterId))
                 .limit(1);
 
             if (renter.length > 0 && renter[0].email) {
@@ -314,7 +419,7 @@ export async function rejectRental(rentalId: string, reason: string) {
                     templateKey: "rental_rejected",
                     data: {
                         name: renter[0].name || "Member",
-                        item: rental[0].itemTitle || "Item",
+                        item: rentalBeforeUpdate[0].itemTitle || "Item",
                         reason: reason
                     }
                 });
@@ -322,6 +427,7 @@ export async function rejectRental(rentalId: string, reason: string) {
         }
 
         revalidatePath('/member');
+        revalidatePath(`/products/${rentalBeforeUpdate[0].itemId}`);
         return { success: true };
     } catch (e) {
         console.error(e);
@@ -335,11 +441,25 @@ export async function completeRental(rentalId: string) {
     if (!session?.user?.id) return { success: false, error: "Unauthorized" };
 
     try {
+        const rental = await db.select({
+            id: rentals.id,
+            ownerId: rentals.ownerId,
+            itemId: rentals.itemId,
+            status: rentals.status,
+        }).from(rentals).where(eq(rentals.id, rentalId)).limit(1);
+
+        if (rental.length === 0) return { success: false, error: "找不到預約資料" };
+        if (rental[0].ownerId !== session.user.id) return { success: false, error: "權限不足" };
+        if (!['approved', 'ongoing'].includes(rental[0].status || '')) return { success: false, error: "目前狀態無法完成訂單" };
+
         await db.update(rentals)
             .set({ status: 'completed' })
             .where(eq(rentals.id, rentalId));
 
+        await adjustHostRentalRate(session.user.id, 2, rentalId, 'rental_completed');
+
         revalidatePath('/member');
+        revalidatePath(`/products/${rental[0].itemId}`);
         return { success: true };
     } catch (e) {
         console.error(e);
@@ -398,6 +518,7 @@ export async function getUserRentals() {
             totalDays: rentals.totalDays,
             totalAmount: rentals.totalAmount,
             status: rentals.status,
+            rejectionReason: rentals.rejectionReason,
             createdAt: rentals.createdAt,
             itemId: rentals.itemId,
             itemTitle: items.title,
@@ -510,28 +631,53 @@ export async function submitReview(data: {
     try {
         const rental = await db.select().from(rentals).where(eq(rentals.id, data.rentalId)).limit(1);
         if (rental.length === 0) return { success: false, error: "Rental not found" };
+        if (rental[0].status !== 'completed') return { success: false, error: "訂單尚未完成，無法評價" };
 
-        // Determine reviewer and reviewee
-        // Currently only renter reviews owner/item? Requirement says "Renter can review".
-        // Renter -> Review Owner (and technically item)
-        if (rental[0].renterId !== session.user.id) {
-            return { success: false, error: "You can only review your own rentals" };
+        let revieweeId: string | null = null;
+        let reviewType: 'renter_to_host' | 'host_to_renter' | null = null;
+
+        if (rental[0].renterId === session.user.id) {
+            revieweeId = rental[0].ownerId;
+            reviewType = 'renter_to_host';
+        } else if (rental[0].ownerId === session.user.id) {
+            revieweeId = rental[0].renterId;
+            reviewType = 'host_to_renter';
+        } else {
+            return { success: false, error: "權限不足，無法評價此訂單" };
         }
 
         // Check if already reviewed
-        const existing = await db.select().from(reviews).where(eq(reviews.rentalId, data.rentalId)).limit(1);
+        const existing = await db
+            .select()
+            .from(reviews)
+            .where(and(eq(reviews.rentalId, data.rentalId), eq(reviews.reviewerId, session.user.id)))
+            .limit(1);
         if (existing.length > 0) return { success: false, error: "Already reviewed" };
 
         await db.insert(reviews).values({
             rentalId: data.rentalId,
             reviewerId: session.user.id,
-            revieweeId: rental[0].ownerId, // Renter reviewing Owner
+            revieweeId,
             rating: data.rating,
             comment: data.comment || '', // Optional comment
+            reviewType,
             isVisible: true,
         });
 
+        const revieweeRatings = await db
+            .select({ rating: reviews.rating })
+            .from(reviews)
+            .where(and(eq(reviews.revieweeId, revieweeId), eq(reviews.isVisible, true)));
+
+        const totalScore = revieweeRatings.reduce((sum, row) => sum + row.rating, 0);
+        const averageRating = revieweeRatings.length > 0 ? totalScore / revieweeRatings.length : 0;
+        await db.update(users).set({
+            rating: averageRating,
+            reviewCount: revieweeRatings.length,
+        }).where(eq(users.id, revieweeId));
+
         revalidatePath(`/products/${rental[0].itemId}`);
+        revalidatePath('/member');
         return { success: true };
     } catch (e) {
         console.error(e);
@@ -557,6 +703,7 @@ export async function getItemReviews(itemId: string) {
             .where(
                 and(
                     eq(rentals.itemId, itemId),
+                    or(eq(reviews.reviewType, 'renter_to_host'), sql`${reviews.reviewType} is null`),
                     eq(reviews.isVisible, true)
                 )
             )
@@ -592,17 +739,13 @@ export async function blockDates(data: {
         if (item.length === 0) return { success: false, error: "找不到此商品" };
         if (item[0].ownerId !== userId) return { success: false, error: "您無權操作此商品" };
 
-        // 檢查日期是否衝突
-        const conflictingRentals = await db.select({ id: rentals.id })
-            .from(rentals)
-            .where(and(
-                eq(rentals.itemId, data.itemId),
-                inArray(rentals.status, ['pending', 'approved', 'ongoing', 'blocked']),
-                sql`NOT (${rentals.endDate} < ${data.startDate} OR ${rentals.startDate} > ${data.endDate})`
-            ));
+        const blockedRanges = await getItemBlockedRanges(data.itemId);
+        const hasConflict = blockedRanges.some((range) =>
+            hasOverlap(data.startDate, data.endDate, range.startDate, range.endDate)
+        );
 
-        if (conflictingRentals.length > 0) {
-            return { success: false, error: "所選日期區間已經有預約或已被封鎖" };
+        if (hasConflict) {
+            return { success: false, error: "所選日期區間已經有預約、清潔保留或已被封鎖" };
         }
 
         // 建立封鎖紀錄 (Pseudo-rental)

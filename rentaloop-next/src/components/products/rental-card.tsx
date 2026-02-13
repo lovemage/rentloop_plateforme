@@ -13,6 +13,8 @@ interface RentalCardProps {
     pricePerDay: number;
     deposit: number;
     blockedDates?: Date[];
+    bookedDates?: Date[];
+    cleaningDates?: Date[];
     availableRange?: { from: Date | null; to: Date | null };
     isLoggedIn?: boolean;
     isOwner?: boolean;
@@ -26,6 +28,8 @@ export function RentalCard({
     pricePerDay,
     deposit,
     blockedDates = [],
+    bookedDates = [],
+    cleaningDates = [],
     availableRange,
     isLoggedIn = false,
     isOwner = false,
@@ -223,6 +227,8 @@ export function RentalCard({
                     <RentalCalendar
                         pricePerDay={pricePerDay}
                         disabledDates={blockedDates}
+                        bookedDates={bookedDates}
+                        cleaningDates={cleaningDates}
                         availableRange={availableRange}
                         onDateChange={handleDateChange}
                         discountRate3Days={discountRate3Days}
@@ -299,6 +305,8 @@ export function RentalCard({
                             <RentalCalendar
                                 pricePerDay={pricePerDay}
                                 disabledDates={blockedDates}
+                                bookedDates={bookedDates}
+                                cleaningDates={cleaningDates}
                                 availableRange={availableRange}
                                 onDateChange={handleDateChange}
                                 discountRate3Days={discountRate3Days}

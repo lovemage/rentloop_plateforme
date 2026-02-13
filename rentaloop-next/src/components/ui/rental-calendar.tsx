@@ -24,6 +24,8 @@ import toast from 'react-hot-toast';
 interface RentalCalendarProps {
     pricePerDay: number;
     disabledDates?: Date[];
+    bookedDates?: Date[];
+    cleaningDates?: Date[];
     availableRange?: { from: Date | null; to: Date | null };
     onDateChange?: (startDate: Date | null, endDate: Date | null, days: number, total: number) => void;
     discountRate3Days?: number;
@@ -33,6 +35,8 @@ interface RentalCalendarProps {
 export function RentalCalendar({
     pricePerDay,
     disabledDates = [],
+    bookedDates = [],
+    cleaningDates = [],
     availableRange,
     onDateChange,
     discountRate3Days = 0,
@@ -56,11 +60,23 @@ export function RentalCalendar({
     const nextMonth = () => setCurrentMonth(addMonths(currentMonth, 1));
     const prevMonth = () => setCurrentMonth(subMonths(currentMonth, 1));
 
+    const legacyDisabledSet = new Set(disabledDates.map((d) => format(d, 'yyyy-MM-dd')));
+    const bookedDateSet = new Set(bookedDates.map((d) => format(d, 'yyyy-MM-dd')));
+    const cleaningDateSet = new Set(cleaningDates.map((d) => format(d, 'yyyy-MM-dd')));
+
     const isDateDisabled = (date: Date) => {
+        const key = format(date, 'yyyy-MM-dd');
         if (isBefore(date, addDays(new Date(), -1))) return true;
         if (availableRange?.from && isBefore(date, availableRange.from)) return true;
         if (availableRange?.to && isAfter(date, availableRange.to)) return true;
-        return disabledDates.some(disabledDate => isSameDay(date, disabledDate));
+        return legacyDisabledSet.has(key) || bookedDateSet.has(key) || cleaningDateSet.has(key);
+    };
+
+    const getDateType = (date: Date): 'booked' | 'cleaning' | 'available' => {
+        const key = format(date, 'yyyy-MM-dd');
+        if (bookedDateSet.has(key) || legacyDisabledSet.has(key)) return 'booked';
+        if (cleaningDateSet.has(key)) return 'cleaning';
+        return 'available';
     };
 
     const calculateTotal = (start: Date, end: Date) => {
@@ -114,7 +130,12 @@ export function RentalCalendar({
     // Helper styles
     const getDayClass = (date: Date) => {
         const disabled = isDateDisabled(date);
-        if (disabled) return "text-gray-300 cursor-not-allowed bg-gray-50 opacity-50"; // Simplified disabled state
+        const dateType = getDateType(date);
+        if (disabled) {
+            if (dateType === 'booked') return "text-gray-300 cursor-not-allowed bg-gray-100 opacity-75";
+            if (dateType === 'cleaning') return "text-orange-400 cursor-not-allowed bg-orange-50 opacity-85";
+            return "text-gray-300 cursor-not-allowed bg-gray-50 opacity-50";
+        }
 
         const isStart = startDate && isSameDay(date, startDate);
         const isEnd = endDate && isSameDay(date, endDate);
@@ -174,6 +195,16 @@ export function RentalCalendar({
 
             {/* Footer Info */}
             <div className="mt-4 pt-4 border-t border-gray-100">
+                <div className="mb-3 flex flex-wrap items-center gap-3 text-xs text-gray-500">
+                    <div className="flex items-center gap-1.5">
+                        <span className="h-2.5 w-2.5 rounded-sm bg-gray-300" />
+                        <span>已預訂</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                        <span className="h-2.5 w-2.5 rounded-sm bg-orange-200" />
+                        <span>清潔保留</span>
+                    </div>
+                </div>
                 <div className="flex items-center justify-between text-sm">
                     <span className="text-gray-500">
                         {startDate ? format(startDate, 'MM/dd') : '-'}

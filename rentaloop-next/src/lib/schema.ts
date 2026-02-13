@@ -1,4 +1,4 @@
-import { pgTable, uuid, text, timestamp, integer, date, boolean, real, primaryKey } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, text, timestamp, integer, date, boolean, real, primaryKey, json } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 import type { AdapterAccount } from "next-auth/adapters"
 
@@ -16,6 +16,9 @@ export const users = pgTable("user", {
     kycImageUrl: text('kyc_image_url'),
     rating: real('rating').default(0),
     reviewCount: integer('review_count').default(0),
+    rentalRate: integer('rental_rate').default(85),
+    rentalBadge: text('rental_badge').default('none'),
+    rentalRateUpdatedAt: timestamp('rental_rate_updated_at'),
     isBlocked: boolean('is_blocked').default(false),
     adminNotes: text('admin_notes'),
     createdAt: timestamp('created_at').defaultNow(),
@@ -122,6 +125,7 @@ export const items = pgTable('items', {
     pickupLocations: json('pickup_locations'), // New: Array of { placeId, name, address, lat, lng }
     availableFrom: timestamp('available_from'),
     availableTo: timestamp('available_to'),
+    cleaningBufferDays: integer('cleaning_buffer_days').default(0).notNull(),
     status: text('status').default('active'),
 
     // New Fields
@@ -165,7 +169,19 @@ export const reviews = pgTable('reviews', {
     revieweeId: text('reviewee_id').references(() => users.id).notNull(),
     rating: integer('rating').notNull(),
     comment: text('comment'),
+    reviewType: text('review_type').default('renter_to_host'),
     isVisible: boolean('is_visible').default(false),
+    createdAt: timestamp('created_at').defaultNow(),
+});
+
+export const hostRentalRateLogs = pgTable('host_rental_rate_logs', {
+    id: uuid('id').defaultRandom().primaryKey(),
+    hostId: text('host_id').references(() => users.id).notNull(),
+    rentalId: uuid('rental_id').references(() => rentals.id),
+    eventType: text('event_type').notNull(),
+    delta: integer('delta').notNull(),
+    beforeRate: integer('before_rate').notNull(),
+    afterRate: integer('after_rate').notNull(),
     createdAt: timestamp('created_at').defaultNow(),
 });
 
@@ -220,7 +236,6 @@ export const emailTemplates = pgTable('email_templates', {
 
 // Site settings table for banners, titles, etc.
 // Site settings table for banners, titles, etc.
-import { json } from 'drizzle-orm/pg-core'; // Need to import json type
 
 export const siteSettings = pgTable('site_settings', {
     key: text('key').primaryKey(), // e.g., 'home_banner', 'products_banner'

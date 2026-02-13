@@ -12,8 +12,10 @@ interface Rental {
     id: string;
     startDate: string;
     endDate: string;
+    totalDays: number;
     totalAmount: number;
     status: string | null;
+    rejectionReason?: string | null;
     createdAt: Date | null;
     itemId: string;
     itemTitle: string | null;
@@ -22,7 +24,7 @@ interface Rental {
     renter?: { name: string | null; image: string | null; lineId?: string | null };
 }
 
-export function MemberRentalList({ rentals, type }: { rentals: any[], type: 'renter' | 'owner' }) {
+export function MemberRentalList({ rentals, type }: { rentals: Rental[], type: 'renter' | 'owner' }) {
     const router = useRouter();
     const [isPending, startTransition] = useTransition();
 
@@ -258,7 +260,17 @@ export function MemberRentalList({ rentals, type }: { rentals: any[], type: 'ren
                                             className="px-4 py-2 text-sm font-bold text-primary border-2 border-primary/20 hover:bg-primary/5 rounded-xl transition-colors flex items-center gap-1"
                                         >
                                             <span className="material-symbols-outlined text-lg">star</span>
-                                            給予評價
+                                            評價 Host
+                                        </button>
+                                    )}
+
+                                    {type === 'owner' && rental.status === 'completed' && (
+                                        <button
+                                            onClick={() => openReviewModal(rental.id)}
+                                            className="px-4 py-2 text-sm font-bold text-primary border-2 border-primary/20 hover:bg-primary/5 rounded-xl transition-colors flex items-center gap-1"
+                                        >
+                                            <span className="material-symbols-outlined text-lg">star</span>
+                                            評價租客
                                         </button>
                                     )}
                                 </div>

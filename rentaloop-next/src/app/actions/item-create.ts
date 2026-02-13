@@ -48,6 +48,10 @@ export async function createItem(formData: FormData) {
     const notes = formData.get('notes') as string || '';
     const discountRate3Days = parseInt(formData.get('discountRate3Days') as string) || 0;
     const discountRate7Days = parseInt(formData.get('discountRate7Days') as string) || 0;
+    const cleaningBufferDaysRaw = parseInt(formData.get('cleaningBufferDays') as string, 10);
+    const cleaningBufferDays = Number.isFinite(cleaningBufferDaysRaw)
+        ? Math.max(0, Math.min(30, cleaningBufferDaysRaw))
+        : 0;
 
     // Parse delivery options
     const deliveryOptionsJson = formData.get('deliveryOptions') as string;
@@ -78,7 +82,8 @@ export async function createItem(formData: FormData) {
                 deliveryOptions, // New field
                 notes,
                 discountRate3Days,
-                discountRate7Days
+                discountRate7Days,
+                cleaningBufferDays,
             })
             .returning({ id: items.id });
 
@@ -94,4 +99,3 @@ export async function createItem(formData: FormData) {
         return { success: false as const, error: "CREATE_FAILED" };
     }
 }
-

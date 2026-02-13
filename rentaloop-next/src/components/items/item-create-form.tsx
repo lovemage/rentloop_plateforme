@@ -43,6 +43,7 @@ const itemFormSchema = z.object({
     description: z.string().min(10, '描述至少10字').max(2000, '描述過長，最多2000字'),
     price: z.number().min(1, '租金必須大於0'),
     deposit: z.number().min(0, '押金不可為負數'),
+    cleaningBufferDays: z.number().min(0, '清潔時間不可小於 0').max(30, '清潔時間最多 30 天'),
     location: z.string().min(1, '請選擇至少一個面交地點'),
     images: z.array(z.string().url()).min(4, '為保障權益，請至少上傳 4 張照片'),
     availableFrom: z.string().optional(),
@@ -87,22 +88,12 @@ export function ItemCreateForm({ categories }: { categories: Category[] }) {
     const [pickupLocations, setPickupLocations] = useState<PickupLocation[]>([]);
 
     // New states
-    const [deliveryOptions, setDeliveryOptions] = useState<string[]>(['face_to_face']);
+    const [deliveryOptions] = useState<string[]>(['face_to_face']);
     const [liabilityAccepted, setLiabilityAccepted] = useState(false);
 
     // Group categories
     const parentCategories = categories.filter(c => !c.parentId);
     const getChildren = (parentId: string) => categories.filter(c => c.parentId === parentId);
-
-    const handleDeliveryChange = (optionId: string) => {
-        setDeliveryOptions(prev => {
-            if (prev.includes(optionId)) {
-                return prev.filter(p => p !== optionId);
-            } else {
-                return [...prev, optionId];
-            }
-        });
-    };
 
     const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         if (!e.target.files?.length) return;
@@ -174,6 +165,7 @@ export function ItemCreateForm({ categories }: { categories: Category[] }) {
             description: formData.get('description') as string,
             price: Number(formData.get('price')),
             deposit: Number(formData.get('deposit')),
+            cleaningBufferDays: Number(formData.get('cleaningBufferDays') || 0),
             location: locationValue,
             images: imageUrls,
             availableFrom: formData.get('availableFrom') as string,
@@ -612,6 +604,27 @@ export function ItemCreateForm({ categories }: { categories: Category[] }) {
                         </div>
                     </div>
                     <p className="text-xs text-gray-500 mt-1">若不填寫，預設為隨時可租。</p>
+                </div>
+
+                <div>
+                    <label htmlFor="cleaningBufferDays" className="block text-sm font-medium text-gray-700 mb-1">
+                        歸還後清潔時間（天）
+                    </label>
+                    <input
+                        type="number"
+                        id="cleaningBufferDays"
+                        name="cleaningBufferDays"
+                        min="0"
+                        max="30"
+                        defaultValue={0}
+                        className={`block w-full rounded-lg border px-4 py-2 shadow-sm sm:text-sm ${errors.cleaningBufferDays
+                            ? 'border-red-300 focus:border-red-500 focus:ring-red-500'
+                            : 'border-gray-300 focus:border-green-500 focus:ring-green-500'
+                            }`}
+                    />
+                    <p className={`text-xs mt-1 ${errors.cleaningBufferDays ? 'text-red-500' : 'text-gray-500'}`}>
+                        {errors.cleaningBufferDays || '設定歸還後保留給清潔整備的天數，期間將自動不可出租。'}
+                    </p>
                 </div>
 
             </div>
