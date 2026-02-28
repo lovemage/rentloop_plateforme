@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { Manrope, Noto_Sans_TC } from "next/font/google";
 import "./globals.css";
 import { SessionProvider } from "@/components/providers/session-provider";
 import { auth } from "@/auth";
@@ -7,19 +6,6 @@ import { Toaster } from "react-hot-toast";
 import { headers } from "next/headers";
 import { SiteHeader } from "@/components/layout/site-header";
 import { SiteFooter } from "@/components/layout/site-footer";
-
-const manrope = Manrope({
-  subsets: ["latin"],
-  variable: "--font-manrope",
-  display: "swap",
-});
-
-const notoSans = Noto_Sans_TC({
-  subsets: ["latin"],
-  variable: "--font-noto-sans",
-  weight: ["400", "500", "700"],
-  display: "swap",
-});
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://rentaloop.net"),
@@ -44,7 +30,7 @@ export default async function RootLayout({
   const isAdminRoute = pathname.startsWith("/admin");
 
   return (
-    <html lang="zh-Hant" className={`${manrope.variable} ${notoSans.variable}`}>
+    <html lang="zh-Hant">
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />

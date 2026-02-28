@@ -3,15 +3,8 @@
 
 :root {
   color-scheme: light;
-  --font-display: var(
-    --font-manrope,
-    var(--font-noto-sans),
-    "Manrope",
-    "Noto Sans",
-    "PingFang TC",
-    "Microsoft JhengHei",
-    sans-serif
-  );
+  --font-display: "Manrope", "Noto Sans TC", "Noto Sans", "PingFang TC",
+    "Microsoft JhengHei", sans-serif;
   --color-primary: #2ea043;
   --color-primary-dark: #238636;
   --color-background-light: #ffffff;
