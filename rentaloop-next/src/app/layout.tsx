@@ -22,10 +22,10 @@ const notoSans = Noto_Sans_TC({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://rentaloop-next.local"),
+  metadataBase: new URL("https://rentaloop.net"),
   title: "Rentaloop - 擁抱體驗，何必佔有",
   description:
-    "Rentaloop 透過 Next.js 體驗永續租賃旅程。瀏覽商品、上架物品、管理會員資料，一站完成。",
+    "Rentaloop 是台灣 C2C 租賃平台，提供攝影器材、露營裝備與家電租借。快速上架、安心交易，讓好物被重複使用，省錢又永續。",
   icons: {
     icon: "/rentlooplogo.png",
     shortcut: "/rentlooplogo.png",
