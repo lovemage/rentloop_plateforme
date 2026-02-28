@@ -1,28 +1,94 @@
+'use client'
+
+import { type FormEvent, useRef, useState, useTransition } from 'react';
+import { sendContactSupportEmail } from '@/app/actions/contact-support';
+
 const supportContexts = [
   {
     icon: "help_center",
     title: "使用問題",
     description: "關於如何租賃、上架物品、平台規則或帳戶管理的疑問。我們提供詳細的操作指南。",
-    mailto: "mailto:service@rentaloop.net?subject=使用問題諮詢",
+    subject: "使用問題諮詢",
     action: "詢問使用問題",
   },
   {
     icon: "gavel",
     title: "租借糾紛",
     description: "遇到物品損壞、延遲歸還或交易雙方的爭議？我們的客服團隊將協助您公正處理。",
-    mailto: "mailto:service@rentaloop.net?subject=租借糾紛回報",
+    subject: "租借糾紛回報",
     action: "回報糾紛案件",
   },
   {
     icon: "bug_report",
     title: "系統困難",
     description: "發現系統錯誤 (Bug)、功能故障或操作介面異常？請告訴我們，幫助平台運作更順暢。",
-    mailto: "mailto:service@rentaloop.net?subject=系統問題回報",
+    subject: "系統問題回報",
     action: "報告技術問題",
   },
 ];
 
 export default function ContactPage() {
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [topic, setTopic] = useState("一般諮詢");
+  const [subject, setSubject] = useState("客服諮詢");
+  const [feedback, setFeedback] = useState<{ type: "success" | "error"; message: string } | null>(null);
+  const [isPending, startTransition] = useTransition();
+  const formRef = useRef<HTMLFormElement>(null);
+
+  const jumpToForm = () => {
+    const formSection = document.getElementById('support-form');
+    formSection?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
+  const handleOpenForm = (nextTopic: string, nextSubject: string) => {
+    setIsFormOpen(true);
+    setTopic(nextTopic);
+    setSubject(nextSubject);
+    setFeedback(null);
+    jumpToForm();
+  };
+
+  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const formData = new FormData(event.currentTarget);
+
+    const name = formData.get('name');
+    const email = formData.get('email');
+    const phone = formData.get('phone');
+    const message = formData.get('message');
+
+    if (
+      typeof name !== 'string' ||
+      typeof email !== 'string' ||
+      typeof phone !== 'string' ||
+      typeof message !== 'string'
+    ) {
+      setFeedback({ type: 'error', message: '送出資料格式錯誤，請重新填寫。' });
+      return;
+    }
+
+    startTransition(async () => {
+      const result = await sendContactSupportEmail({
+        name,
+        email,
+        phone,
+        topic,
+        subject,
+        message,
+      });
+
+      if (result.success) {
+        setFeedback({ type: 'success', message: '客服信件已送出，我們會盡快與您聯繫。' });
+        formRef.current?.reset();
+        setTopic('一般諮詢');
+        setSubject('客服諮詢');
+        return;
+      }
+
+      setFeedback({ type: 'error', message: result.error || '送出失敗，請稍後再試。' });
+    });
+  };
+
   return (
     <div className="bg-background-light dark:bg-background-dark text-text-main dark:text-gray-100 min-h-screen flex flex-col">
       <main className="flex-grow flex flex-col items-center w-full">
@@ -42,12 +108,16 @@ export default function ContactPage() {
                 </h2>
               </div>
               <div className="flex flex-wrap gap-4 mt-2">
-                <a
+                <button
+                  type="button"
                   className="flex items-center justify-center rounded-lg h-12 px-6 bg-primary hover:bg-primary-dark transition-all text-text-main font-bold text-base shadow-lg hover:shadow-xl hover:-translate-y-0.5 transform duration-200"
-                  href="#contact-options"
+                  onClick={() => {
+                    setIsFormOpen(true);
+                    jumpToForm();
+                  }}
                 >
-                  選擇聯絡主題
-                </a>
+                  立即填寫客服表單
+                </button>
                 <a
                   className="flex items-center justify-center rounded-lg h-12 px-6 bg-white dark:bg-surface-dark border border-gray-200 dark:border-gray-700 text-text-main dark:text-white font-bold text-base hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
                   href="#"
@@ -97,16 +167,100 @@ export default function ContactPage() {
                   <p className="text-text-sub dark:text-gray-400 leading-relaxed mb-6 flex-grow">
                     {context.description}
                   </p>
-                  <a
+                  <button
+                    type="button"
                     className="inline-flex items-center text-text-main dark:text-primary font-bold hover:underline decoration-2 decoration-primary underline-offset-4 mt-auto"
-                    href={context.mailto}
+                    onClick={() => handleOpenForm(context.title, context.subject)}
                   >
                     {context.action}
                     <span className="material-symbols-outlined text-sm ml-1">arrow_forward</span>
-                  </a>
+                  </button>
                 </div>
               ))}
             </div>
+          </div>
+        </section>
+
+        <section className="w-full px-4 md:px-10 py-10 md:py-16 max-w-4xl mx-auto" id="support-form">
+          <div className="rounded-2xl border border-[#d7eadf] bg-[#fcfffd] shadow-lg overflow-hidden">
+            <button
+              type="button"
+              className="w-full px-6 py-5 flex items-center justify-between text-left hover:bg-[#f2fbf5] transition-colors"
+              onClick={() => setIsFormOpen((prev) => !prev)}
+            >
+              <div>
+                <h2 className="text-xl md:text-2xl font-black text-text-main">客服聯絡表單</h2>
+                <p className="text-sm text-text-sub mt-1">點擊展開填寫，預設為收合狀態。</p>
+              </div>
+              <span className="material-symbols-outlined text-primary">{isFormOpen ? 'expand_less' : 'expand_more'}</span>
+            </button>
+
+            {isFormOpen && (
+              <form ref={formRef} onSubmit={handleSubmit} className="border-t border-[#e7f3eb] px-6 py-6 md:px-8 md:py-8 space-y-5 bg-[#f9fefb]">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <label htmlFor="name" className="text-sm font-semibold">姓名</label>
+                    <input id="name" name="name" required className="w-full rounded-lg border border-[#cfe7d7] bg-[#f8fff9] px-3 py-2 text-sm text-[#1f402a] placeholder:text-[#78a88a] focus:outline-none focus:ring-2 focus:ring-[#a9e0be]" placeholder="請輸入您的姓名" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label htmlFor="email" className="text-sm font-semibold">Email</label>
+                    <input id="email" name="email" type="email" required className="w-full rounded-lg border border-[#cfe7d7] bg-[#f8fff9] px-3 py-2 text-sm text-[#1f402a] placeholder:text-[#78a88a] focus:outline-none focus:ring-2 focus:ring-[#a9e0be]" placeholder="name@example.com" />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <label htmlFor="phone" className="text-sm font-semibold">電話（選填）</label>
+                    <input id="phone" name="phone" className="w-full rounded-lg border border-[#cfe7d7] bg-[#f8fff9] px-3 py-2 text-sm text-[#1f402a] placeholder:text-[#78a88a] focus:outline-none focus:ring-2 focus:ring-[#a9e0be]" placeholder="09xx-xxx-xxx" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label htmlFor="topic" className="text-sm font-semibold">支援情境</label>
+                    <input id="topic" name="topic" value={topic} readOnly className="w-full rounded-lg border border-[#d8e9de] bg-[#eef8f1] px-3 py-2 text-sm text-[#2c5b3b]" />
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label htmlFor="subject" className="text-sm font-semibold">主旨</label>
+                  <input
+                    id="subject"
+                    name="subject"
+                    value={subject}
+                    onChange={(event) => setSubject(event.target.value)}
+                    required
+                    className="w-full rounded-lg border border-[#cfe7d7] bg-[#f8fff9] px-3 py-2 text-sm text-[#1f402a] placeholder:text-[#78a88a] focus:outline-none focus:ring-2 focus:ring-[#a9e0be]"
+                    placeholder="請輸入主旨"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label htmlFor="message" className="text-sm font-semibold">問題描述</label>
+                  <textarea
+                    id="message"
+                    name="message"
+                    required
+                    rows={6}
+                    className="w-full rounded-lg border border-[#cfe7d7] bg-[#f8fff9] px-3 py-2 text-sm text-[#1f402a] placeholder:text-[#78a88a] focus:outline-none focus:ring-2 focus:ring-[#a9e0be]"
+                    placeholder="請描述發生時間、操作步驟與問題細節，方便客服快速協助。"
+                  />
+                </div>
+
+                {feedback && (
+                  <p className={`text-sm font-medium ${feedback.type === 'success' ? 'text-green-700' : 'text-red-600'}`}>
+                    {feedback.message}
+                  </p>
+                )}
+
+                <div className="pt-2">
+                  <button
+                    type="submit"
+                    disabled={isPending}
+                    className="inline-flex items-center justify-center rounded-xl h-11 px-6 bg-primary hover:bg-primary-dark text-text-main font-bold disabled:opacity-60 disabled:cursor-not-allowed"
+                  >
+                    {isPending ? '送出中...' : '送出客服需求'}
+                  </button>
+                </div>
+              </form>
+            )}
           </div>
         </section>
 
@@ -134,12 +288,18 @@ export default function ContactPage() {
                 <span>平均回覆時間：約 24 小時內</span>
               </div>
               <div className="pt-4 w-full flex justify-center">
-                <a
+                <button
+                  type="button"
                   className="flex items-center justify-center w-full sm:w-auto min-w-[220px] rounded-xl h-12 px-8 bg-primary hover:bg-primary-dark text-text-main font-bold text-lg tracking-wide shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200 border border-primary/40"
-                  href="mailto:service@rentaloop.net"
+                  onClick={() => {
+                    setIsFormOpen(true);
+                    setTopic('一般諮詢');
+                    setSubject('客服諮詢');
+                    jumpToForm();
+                  }}
                 >
-                  撰寫郵件至官方客服
-                </a>
+                  填寫客服表單
+                </button>
               </div>
             </div>
           </div>

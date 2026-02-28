@@ -6,7 +6,27 @@ import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
 
-export async function updateHomepageStats(stats: Array<Record<string, unknown>>) {
+type HomepageStatInput = {
+    title: string;
+    value: string;
+    delta: string;
+    icon: string;
+};
+
+type HomepageFeatureInput = {
+    title: string;
+    description: string;
+    icon: string;
+};
+
+type HomepageNoticeInput = {
+    isVisible: boolean;
+    date: string;
+    title: string;
+    content: string;
+};
+
+export async function updateHomepageStats(stats: HomepageStatInput[]) {
     const session = await auth();
     if (session?.user?.role !== 'admin') return { success: false, error: "Unauthorized" };
 
@@ -28,7 +48,7 @@ export async function updateHomepageStats(stats: Array<Record<string, unknown>>)
     }
 }
 
-export async function updateHomepageFeatures(features: Array<Record<string, unknown>>) {
+export async function updateHomepageFeatures(features: HomepageFeatureInput[]) {
     const session = await auth();
     if (session?.user?.role !== 'admin') return { success: false, error: "Unauthorized" };
 
@@ -50,7 +70,7 @@ export async function updateHomepageFeatures(features: Array<Record<string, unkn
     }
 }
 
-export async function updateHomepageNotice(notice: Record<string, unknown>) {
+export async function updateHomepageNotice(notice: HomepageNoticeInput) {
     const session = await auth();
     if (session?.user?.role !== 'admin') return { success: false, error: "Unauthorized" };
 

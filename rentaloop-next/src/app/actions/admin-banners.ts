@@ -16,6 +16,7 @@ import { type InferSelectModel } from 'drizzle-orm';
 
 export type SiteSetting = InferSelectModel<typeof siteSettings>;
 
+
 export type BannerSetting = {
     key: string;
     imageUrl: string | null;

@@ -1,11 +1,94 @@
 import Link from "next/link";
 import Image from "next/image";
-import { getBannerSetting, type BannerSetting } from "@/app/actions/admin-banners";
+import { getBannerSetting } from "@/app/actions/admin-banners";
 import { getHomepageStats, getHomepageFeatures, getHomepageArticles, getHomepageNotice } from "@/app/actions/homepage";
 import { ArticleSlider } from "@/components/home/article-slider";
 import { QaSection } from "@/components/home/qa-section";
 
 export const dynamic = "force-dynamic";
+
+type HomepageNotice = {
+  isVisible: boolean;
+  date: string;
+  title: string;
+  content: string;
+};
+
+type HomepageStat = {
+  title: string;
+  value: string;
+  delta: string;
+  icon: string;
+};
+
+type HomepageFeature = {
+  title: string;
+  description: string;
+  icon: string;
+};
+
+type HomepageArticle = {
+  id: string;
+  image: string | null;
+  title: string;
+  excerpt: string | null;
+  content: string;
+  seoSchema: Record<string, unknown> | null;
+};
+
+function normalizeHomepageNotice(data: Record<string, unknown> | null | undefined): HomepageNotice {
+  return {
+    isVisible: typeof data?.isVisible === "boolean" ? data.isVisible : false,
+    date: typeof data?.date === "string" ? data.date : "",
+    title: typeof data?.title === "string" ? data.title : "",
+    content: typeof data?.content === "string" ? data.content : "",
+  };
+}
+
+function normalizeHomepageStats(data: Array<Record<string, unknown>>): HomepageStat[] {
+  return data.map((item) => ({
+    title: typeof item.title === "string" ? item.title : "",
+    value: typeof item.value === "string" ? item.value : "",
+    delta: typeof item.delta === "string" ? item.delta : "",
+    icon: typeof item.icon === "string" ? item.icon : "",
+  }));
+}
+
+function normalizeHomepageFeatures(data: Array<Record<string, unknown>>): HomepageFeature[] {
+  return data.map((item) => ({
+    title: typeof item.title === "string" ? item.title : "",
+    description: typeof item.description === "string" ? item.description : "",
+    icon: typeof item.icon === "string" ? item.icon : "",
+  }));
+}
+
+function normalizeSeoSchema(data: unknown): Record<string, unknown> | null {
+  if (!data || typeof data !== "object" || Array.isArray(data)) {
+    return null;
+  }
+
+  return data as Record<string, unknown>;
+}
+
+function normalizeHomepageArticles(
+  data: Array<{
+    id: string;
+    image: string | null;
+    title: string;
+    excerpt: string | null;
+    content: string;
+    seoSchema: unknown;
+  }>
+): HomepageArticle[] {
+  return data.map((item) => ({
+    id: item.id,
+    image: item.image,
+    title: item.title,
+    excerpt: item.excerpt,
+    content: item.content,
+    seoSchema: normalizeSeoSchema(item.seoSchema),
+  }));
+}
 
 const DEFAULT_BANNER_IMAGE = 'https://lh3.googleusercontent.com/aida-public/AB6AXuDTBPvJJQMMJ_r6epTr33NaItdolKC0lJ2vtXkCgBRVHKf5ibNgR9fGm7YvRATfVAiSCXG2R6erxAeH-AIMGNYHyv9PaUBHor69DF3JAKls2QUhOSvk3IzkoXoSHszd_hNrExcM4EkRFzcqryorEGDY8QflTqBSqMzGggmMLDMU_CR_jQXzKgjU-piZmfz75A_ogiMouI9YRGebhSM9S7b6aDAtbCpB-xLNheKgcXUYH-n2NBZpfT5-pxBE6cDHQcTQO8nZHbIR';
 
@@ -14,22 +97,26 @@ export default async function Home() {
   const homeBanner = homeBannerRes.success ? homeBannerRes.data : null;
 
   const statsRes = await getHomepageStats();
-  const stats = (statsRes.success ? statsRes.data : []) ?? [];
+  const stats = statsRes.success ? normalizeHomepageStats(statsRes.data ?? []) : [];
 
   const featuresRes = await getHomepageFeatures();
-  const features = (featuresRes.success ? featuresRes.data : []) ?? [];
+  const features = featuresRes.success ? normalizeHomepageFeatures(featuresRes.data ?? []) : [];
 
   const articlesRes = await getHomepageArticles();
-  const articles = (articlesRes.success ? articlesRes.data : []) ?? [];
+  const articles = articlesRes.success ? normalizeHomepageArticles(articlesRes.data ?? []) : [];
 
   const noticeRes = await getHomepageNotice();
-  const notice = (noticeRes.success ? noticeRes.data : null);
+  const notice = normalizeHomepageNotice(noticeRes.success ? noticeRes.data : null);
 
   const bgImage = homeBanner?.imageUrl || DEFAULT_BANNER_IMAGE;
   const title = homeBanner?.title || "擁抱體驗，\n何必佔有";
   const subtitle = homeBanner?.subtitle || "加入循環經濟的行列。租賃優質裝備，不僅能省下開銷，更能透過減少浪費為地球盡一份心力。";
   const tagText = homeBanner?.tagText;
   const styles = homeBanner?.styles || {};
+  const tagColor = typeof styles.tagColor === "string" ? styles.tagColor : undefined;
+  const tagBgColor = typeof styles.tagBgColor === "string" ? styles.tagBgColor : undefined;
+  const titleColor = typeof styles.titleColor === "string" ? styles.titleColor : undefined;
+  const subtitleColor = typeof styles.subtitleColor === "string" ? styles.subtitleColor : undefined;
 
   // Resolve alignment classes
   let alignClass = "items-center text-center";
@@ -75,8 +162,8 @@ export default async function Home() {
             {tagText && (
               <span
                 style={{
-                  color: styles.tagColor,
-                  backgroundColor: styles.tagBgColor,
+                  color: tagColor,
+                  backgroundColor: tagBgColor,
                 }}
                 className="px-4 py-1.5 rounded-full text-base font-bold backdrop-blur-sm shadow-sm"
               >
@@ -84,13 +171,13 @@ export default async function Home() {
               </span>
             )}
             <h1
-              style={{ color: styles.titleColor, fontSize: titleSize }}
+              style={{ color: titleColor, fontSize: titleSize }}
               className={`whitespace-pre-line ${titleClass} font-black leading-tight tracking-tight drop-shadow-sm`}
             >
               {title}
             </h1>
             <h2
-              style={{ color: styles.subtitleColor, fontSize: subtitleSize }}
+              style={{ color: subtitleColor, fontSize: subtitleSize }}
               className={`${subtitleClass} font-medium leading-relaxed max-w-2xl drop-shadow-md`}
             >
               {subtitle}

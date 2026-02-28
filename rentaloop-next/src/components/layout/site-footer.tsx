@@ -19,9 +19,9 @@ export function SiteFooter() {
             <a className="text-text-sub dark:text-gray-400 text-sm hover:text-primary transition-colors" href="#">
               關於我們
             </a>
-            <a className="text-text-sub dark:text-gray-400 text-sm hover:text-primary transition-colors" href="#">
+            <Link className="text-text-sub dark:text-gray-400 text-sm hover:text-primary transition-colors" href="/how-it-works">
               運作流程
-            </a>
+            </Link>
           </div>
           <div className="flex flex-col gap-3">
             <h4 className="text-text-main dark:text-white font-bold">支援</h4>

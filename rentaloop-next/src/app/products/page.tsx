@@ -74,12 +74,18 @@ export default async function ProductsPage({
   const finalTagText = productBanner?.tagText !== null && productBanner?.tagText !== undefined ? productBanner.tagText : "Sustainability Impact";
 
   const styles = productBanner?.styles || {};
+  const textAlign = typeof styles.textAlign === "string" ? styles.textAlign : undefined;
+  const verticalAlign = typeof styles.verticalAlign === "string" ? styles.verticalAlign : undefined;
+  const tagColor = typeof styles.tagColor === "string" ? styles.tagColor : undefined;
+  const tagBgColor = typeof styles.tagBgColor === "string" ? styles.tagBgColor : undefined;
+  const titleColor = typeof styles.titleColor === "string" ? styles.titleColor : undefined;
+  const subtitleColor = typeof styles.subtitleColor === "string" ? styles.subtitleColor : undefined;
 
 
   // Resolve alignment classes
   let alignClass = "items-start text-left"; // Default distinct from home page? Or keep left for products default.
-  if (styles.textAlign === 'center') alignClass = "items-center text-center";
-  if (styles.textAlign === 'right') alignClass = "items-end text-right";
+  if (textAlign === 'center') alignClass = "items-center text-center";
+  if (textAlign === 'right') alignClass = "items-end text-right";
   // Default for products page is usually left aligned if styles are empty? 
   // But let's respect styles. If styles is empty object, default logic check.
   // Actually, if styles is empty, let's default to Left for specific "Products" feel or Center?
@@ -87,11 +93,11 @@ export default async function ProductsPage({
   // Admin form defaults to 'center'.
   // However, older data might be empty. Let's look at getBannerSetting source.
   // Just use logic:
-  if (!styles.textAlign) alignClass = "items-start text-left"; // Default to left if no setting
+  if (!textAlign) alignClass = "items-start text-left"; // Default to left if no setting
 
   let justifyClass = "justify-center";
-  if (styles.verticalAlign === 'start') justifyClass = "justify-start";
-  if (styles.verticalAlign === 'end') justifyClass = "justify-end";
+  if (verticalAlign === 'start') justifyClass = "justify-start";
+  if (verticalAlign === 'end') justifyClass = "justify-end";
 
   // Resolve font sizes
   const titleSize = typeof styles.titleSize === 'number' ? `${styles.titleSize}px` : undefined;
@@ -187,9 +193,9 @@ export default async function ProductsPage({
                 <div
                   className="inline-flex w-fit items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold backdrop-blur-md border"
                   style={{
-                    color: styles.tagColor || 'rgb(134, 239, 172)',
-                    backgroundColor: styles.tagBgColor || 'rgba(34, 197, 94, 0.2)',
-                    borderColor: styles.tagColor ? `${styles.tagColor}40` : 'rgba(34, 197, 94, 0.3)'
+                    color: tagColor || 'rgb(134, 239, 172)',
+                    backgroundColor: tagBgColor || 'rgba(34, 197, 94, 0.2)',
+                    borderColor: tagColor ? `${tagColor}40` : 'rgba(34, 197, 94, 0.3)'
                   }}
                 >
                   <span className="material-symbols-outlined text-[16px]">eco</span>
@@ -199,7 +205,7 @@ export default async function ProductsPage({
 
               {title ? (
                 <h1
-                  style={{ color: styles.titleColor, fontSize: titleSize }}
+                  style={{ color: titleColor, fontSize: titleSize }}
                   className={`${titleClass} font-extrabold tracking-tight drop-shadow-sm`}
                 >
                   {title}
@@ -211,7 +217,7 @@ export default async function ProductsPage({
               )}
 
               <p
-                style={{ color: styles.subtitleColor, fontSize: subtitleSize }}
+                style={{ color: subtitleColor, fontSize: subtitleSize }}
                 className={`${subtitleClass} text-gray-200 leading-relaxed max-w-xl`}
               >
                 {subtitle}

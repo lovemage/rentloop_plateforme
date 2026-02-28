@@ -2,14 +2,60 @@
 import { HomepageSettingsForm } from "@/components/admin/homepage-settings-form";
 import { getHomepageStats, getHomepageFeatures, getHomepageNotice } from "@/app/actions/homepage";
 
+type Stat = {
+    title: string;
+    value: string;
+    delta: string;
+    icon: string;
+};
+
+type Feature = {
+    title: string;
+    description: string;
+    icon: string;
+};
+
+type Notice = {
+    isVisible: boolean;
+    date: string;
+    title: string;
+    content: string;
+};
+
+function normalizeStats(data: Array<Record<string, unknown>>): Stat[] {
+    return data.map((item) => ({
+        title: typeof item.title === "string" ? item.title : "",
+        value: typeof item.value === "string" ? item.value : "",
+        delta: typeof item.delta === "string" ? item.delta : "",
+        icon: typeof item.icon === "string" ? item.icon : "",
+    }));
+}
+
+function normalizeFeatures(data: Array<Record<string, unknown>>): Feature[] {
+    return data.map((item) => ({
+        title: typeof item.title === "string" ? item.title : "",
+        description: typeof item.description === "string" ? item.description : "",
+        icon: typeof item.icon === "string" ? item.icon : "",
+    }));
+}
+
+function normalizeNotice(data: Record<string, unknown> | null): Notice {
+    return {
+        isVisible: typeof data?.isVisible === "boolean" ? data.isVisible : false,
+        date: typeof data?.date === "string" ? data.date : "",
+        title: typeof data?.title === "string" ? data.title : "",
+        content: typeof data?.content === "string" ? data.content : "",
+    };
+}
+
 export default async function HomepageSettingsPage() {
     const statsRes = await getHomepageStats();
     const featuresRes = await getHomepageFeatures();
     const noticeRes = await getHomepageNotice();
 
-    const stats = statsRes.success ? statsRes.data : [];
-    const features = featuresRes.success ? featuresRes.data : [];
-    const notice = (noticeRes.success ? noticeRes.data : null) || { isVisible: false, date: '', title: '', content: '' };
+    const stats = statsRes.success ? normalizeStats(statsRes.data ?? []) : [];
+    const features = featuresRes.success ? normalizeFeatures(featuresRes.data ?? []) : [];
+    const notice = normalizeNotice(noticeRes.success ? (noticeRes.data ?? null) : null);
 
     return (
         <div className="max-w-4xl mx-auto space-y-6 pb-20">

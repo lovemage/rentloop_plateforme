@@ -12,17 +12,17 @@
     "Microsoft JhengHei",
     sans-serif
   );
-  --color-primary: #13ec5b;
-  --color-primary-dark: #0ea841;
-  --color-background-light: #f6f8f6;
-  --color-background-dark: #f6f8f6;
-  --color-surface-light: #ffffff;
-  --color-surface-dark: #ffffff;
-  --color-text-main: #0d1b12;
-  --color-text-sub: #4c9a66;
-  --color-border-light: #cfe7d7;
-  --color-border-dark: #cfe7d7;
-  --color-forest: #1f402a;
+  --color-primary: #2ea043;
+  --color-primary-dark: #238636;
+  --color-background-light: #ffffff;
+  --color-background-dark: #121614;
+  --color-surface-light: #f6fdf8;
+  --color-surface-dark: #1a201c;
+  --color-text-main: #18241d;
+  --color-text-sub: #566b5f;
+  --color-border-light: #d0e8d8;
+  --color-border-dark: #2d3832;
+  --color-forest: #154c27;
 }
 
 :root.dark,
