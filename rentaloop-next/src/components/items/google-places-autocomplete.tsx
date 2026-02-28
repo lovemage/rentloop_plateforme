@@ -105,7 +105,8 @@ export function GooglePlacesAutocomplete({
     useEffect(() => {
         // Check if script already loaded
         if (window.google?.maps?.places) {
-            setIsLoading(false);
+            // Defer setState to avoid cascading renders
+            queueMicrotask(() => setIsLoading(false));
             return;
         }
 
@@ -131,8 +132,11 @@ export function GooglePlacesAutocomplete({
         // Load Google Places API script
         const apiKey = process.env.NEXT_PUBLIC_GOOGLE_PLACES_API_KEY;
         if (!apiKey) {
-            setApiError('Google Places API Key 未設定');
-            setIsLoading(false);
+            // Defer setState to avoid cascading renders
+            queueMicrotask(() => {
+                setApiError('Google Places API Key 未設定');
+                setIsLoading(false);
+            });
             return;
         }
 
@@ -158,8 +162,11 @@ export function GooglePlacesAutocomplete({
 
     useEffect(() => {
         if (!isLoading && showInput && inputRef.current) {
-            initAutocomplete();
-            inputRef.current.focus();
+            // Defer to avoid cascading renders
+            queueMicrotask(() => {
+                initAutocomplete();
+                inputRef.current?.focus();
+            });
         }
     }, [isLoading, showInput, initAutocomplete]);
 

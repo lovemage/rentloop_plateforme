@@ -8,7 +8,7 @@ export async function getHomepageStats() {
     try {
         const settings = await db.select().from(siteSettings).where(eq(siteSettings.key, 'home_stats')).limit(1);
         if (settings.length > 0 && settings[0].value) {
-            return { success: true, data: settings[0].value as any[] };
+            return { success: true, data: settings[0].value as Array<Record<string, unknown>> };
         }
         return { success: false, error: "Not found" };
     } catch (error) {
@@ -21,7 +21,7 @@ export async function getHomepageFeatures() {
     try {
         const settings = await db.select().from(siteSettings).where(eq(siteSettings.key, 'home_features')).limit(1);
         if (settings.length > 0 && settings[0].value) {
-            return { success: true, data: settings[0].value as any[] };
+            return { success: true, data: settings[0].value as Array<Record<string, unknown>> };
         }
         return { success: false, error: "Not found" };
     } catch (error) {
@@ -48,7 +48,7 @@ export async function getHomepageNotice() {
     try {
         const settings = await db.select().from(siteSettings).where(eq(siteSettings.key, 'home_notice')).limit(1);
         if (settings.length > 0 && settings[0].value) {
-            return { success: true, data: settings[0].value as any };
+            return { success: true, data: settings[0].value as Record<string, unknown> };
         }
         return { success: false, error: "Not found" };
     } catch (error) {

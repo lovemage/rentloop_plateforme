@@ -34,9 +34,9 @@ export async function uploadKycImage(formData: FormData) {
       optimizedBuffer = await sharp(buffer)
         .webp({ quality: 80 })
         .toBuffer();
-    } catch (sharpError: any) {
+    } catch (sharpError: unknown) {
       console.error("Sharp processing error:", sharpError);
-      if (sharpError.message.includes("heif") || sharpError.message.includes("format")) {
+      if (sharpError instanceof Error && (sharpError.message.includes("heif") || sharpError.message.includes("format"))) {
         return { success: false as const, error: "UNSUPPORTED_FORMAT" };
       }
       throw sharpError; // Re-throw to outer catch for generic handling

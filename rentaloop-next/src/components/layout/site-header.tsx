@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { signIn, useSession } from "next-auth/react";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
+import { useRouter } from "next/navigation";
 
 const navItems = [
   { href: "/", label: "Home", subLabel: "首頁" },
@@ -23,9 +24,22 @@ export function SiteHeader() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [memberModalOpen, setMemberModalOpen] = useState(false);
+  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
   const { data: session } = useSession();
   const pathname = usePathname();
+  const router = useRouter();
   const isActive = (href: string) => pathname === href;
+
+  const toggleCategory = (categoryId: string) => {
+    const newExpanded = new Set(expandedCategories);
+    if (newExpanded.has(categoryId)) {
+      newExpanded.delete(categoryId);
+    } else {
+      newExpanded.add(categoryId);
+    }
+    setExpandedCategories(newExpanded);
+  };
 
   // Fetch categories
   useEffect(() => {
@@ -130,6 +144,12 @@ export function SiteHeader() {
             >
               <span className="truncate">開始租賃</span>
             </Link>
+            <Link
+              href="/contact"
+              className="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-[#e7f3eb] dark:bg-surface-dark hover:bg-[#d5eadd] dark:hover:bg-surface-dark/80 transition-colors text-text-main dark:text-white text-sm font-bold border border-[#cfe7d7] dark:border-surface-dark/60"
+            >
+              <span className="truncate">聯絡我們</span>
+            </Link>
             {session?.user ? (
               <div className="flex items-center">
                 {session.user.role === 'admin' && (
@@ -138,8 +158,8 @@ export function SiteHeader() {
                     Admin
                   </Link>
                 )}
-                <Link
-                  href="/member"
+                <button
+                  onClick={() => setMemberModalOpen(true)}
                   className="ml-2 flex items-center gap-3 rounded-xl h-10 px-4 bg-[#e7f3eb] dark:bg-surface-dark text-text-main dark:text-white font-bold hover:bg-[#d5eadd] dark:hover:bg-surface-dark/80 transition-colors border border-[#cfe7d7] dark:border-surface-dark/60"
                 >
                   {session.user.image ? (
@@ -153,7 +173,7 @@ export function SiteHeader() {
                     <span className="text-xs text-text-sub dark:text-green-300 font-medium uppercase tracking-wide">會員面板</span>
                     <span className="text-sm font-bold text-text-main dark:text-white">{session.user.name || "Rentaloop 會員"}</span>
                   </div>
-                </Link>
+                </button>
               </div>
             ) : (
               <button
@@ -222,25 +242,36 @@ export function SiteHeader() {
             </span>
           </Link>
 
-          {/* Mobile Categories Accordion-like */}
+          {/* Mobile Categories Accordion-like with Collapsible Icons */}
           <div className="flex flex-col rounded-xl border border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-surface-dark/50 overflow-hidden">
             <div className="p-4 font-bold text-lg flex items-center justify-between">
-              Products
+              <span className="flex items-center gap-2">
+                <span className="material-symbols-outlined text-[20px]">shopping_bag</span>
+                Products
+              </span>
               <Link href="/products" onClick={() => setMobileOpen(false)} className="text-primary text-sm">All</Link>
             </div>
-            <div className="px-4 pb-4 flex flex-col gap-4">
+            <div className="px-4 pb-4 flex flex-col gap-3">
               {roots.map(root => (
                 <div key={root.id}>
-                  <Link href={`/products?category=${root.slug || root.id}`} onClick={() => setMobileOpen(false)} className="font-bold text-gray-800 dark:text-gray-200 block mb-1">
-                    {root.name}
-                  </Link>
-                  <div className="pl-4 border-l-2 border-gray-200 dark:border-gray-700 flex flex-col gap-2">
-                    {getChildren(root.id).map(child => (
-                      <Link key={child.id} href={`/products?category=${child.slug || child.id}`} onClick={() => setMobileOpen(false)} className="text-sm text-gray-500 hover:text-primary">
-                        {child.name}
-                      </Link>
-                    ))}
-                  </div>
+                  <button
+                    onClick={() => toggleCategory(root.id)}
+                    className="w-full flex items-center justify-between font-bold text-gray-800 dark:text-gray-200 hover:text-primary transition-colors p-2 rounded hover:bg-gray-100 dark:hover:bg-surface-dark/70"
+                  >
+                    <span>{root.name}</span>
+                    <span className={`material-symbols-outlined text-[18px] transition-transform duration-200 ${expandedCategories.has(root.id) ? 'rotate-180' : ''}`}>
+                      expand_more
+                    </span>
+                  </button>
+                  {expandedCategories.has(root.id) && (
+                    <div className="pl-4 border-l-2 border-gray-200 dark:border-gray-700 flex flex-col gap-2 mt-2">
+                      {getChildren(root.id).map(child => (
+                        <Link key={child.id} href={`/products?category=${child.slug || child.id}`} onClick={() => setMobileOpen(false)} className="text-sm text-gray-500 hover:text-primary transition-colors">
+                          {child.name}
+                        </Link>
+                      ))}
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
@@ -279,6 +310,68 @@ export function SiteHeader() {
           )}
         </nav>
       </div>
+
+      {/* Member Modal */}
+      {memberModalOpen && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+          <div className="bg-white dark:bg-surface-dark rounded-2xl shadow-2xl max-w-md w-full p-8 animate-in fade-in zoom-in-95 duration-200">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold text-text-main dark:text-white">會員資訊</h2>
+              <button
+                onClick={() => setMemberModalOpen(false)}
+                className="p-2 hover:bg-gray-100 dark:hover:bg-surface-dark/70 rounded-lg transition-colors"
+              >
+                <span className="material-symbols-outlined text-text-main dark:text-white">close</span>
+              </button>
+            </div>
+
+            {session?.user && (
+              <div className="space-y-6">
+                <div className="flex items-center gap-4">
+                  {session.user.image ? (
+                    <Image src={session.user.image} alt={session.user.name || "User"} width={64} height={64} className="rounded-full border-2 border-primary" />
+                  ) : (
+                    <div className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-2xl">
+                      {session.user.name?.[0] || "U"}
+                    </div>
+                  )}
+                  <div className="flex-1">
+                    <p className="text-sm text-text-sub dark:text-gray-400 uppercase tracking-wide font-semibold">會員名稱</p>
+                    <p className="text-lg font-bold text-text-main dark:text-white">{session.user.name || "Rentaloop 會員"}</p>
+                  </div>
+                </div>
+
+                <div className="bg-gray-50 dark:bg-surface-dark/50 rounded-lg p-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="material-symbols-outlined text-primary text-[20px]">star</span>
+                    <p className="text-sm text-text-sub dark:text-gray-400 font-semibold">會員評分</p>
+                  </div>
+                  <p className="text-3xl font-bold text-primary">4.8</p>
+                  <p className="text-xs text-text-sub dark:text-gray-400 mt-1">基於 24 則評價</p>
+                </div>
+
+                <button
+                  onClick={() => {
+                    setMemberModalOpen(false);
+                    router.push("/member");
+                  }}
+                  className="w-full bg-primary hover:bg-primary-dark transition-colors text-text-main font-bold py-3 px-4 rounded-lg flex items-center justify-center gap-2"
+                >
+                  <span className="material-symbols-outlined text-[20px]">person</span>
+                  前往會員面板
+                </button>
+
+                <button
+                  onClick={() => setMemberModalOpen(false)}
+                  className="w-full bg-gray-100 dark:bg-surface-dark/50 hover:bg-gray-200 dark:hover:bg-surface-dark/70 transition-colors text-text-main dark:text-white font-bold py-3 px-4 rounded-lg"
+                >
+                  關閉
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </>
   );
 }

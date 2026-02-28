@@ -10,7 +10,7 @@ interface Article {
     title: string;
     excerpt: string | null;
     content: string;
-    seoSchema: any;
+    seoSchema: Record<string, unknown> | null;
 }
 
 export function ArticleSlider({ articles }: { articles: Article[] }) {

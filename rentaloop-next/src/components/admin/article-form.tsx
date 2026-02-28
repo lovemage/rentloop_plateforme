@@ -9,15 +9,18 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { toast } from 'react-hot-toast';
 
+import { type InferSelectModel } from 'drizzle-orm';
+import { articles } from '@/lib/schema';
+
 interface ArticleFormProps {
-    initialData?: any;
+    initialData?: InferSelectModel<typeof articles>;
     isEdit?: boolean;
 }
 
 export function ArticleForm({ initialData, isEdit = false }: ArticleFormProps) {
     const router = useRouter();
     const [submitting, setSubmitting] = useState(false);
-    const [imageUrl, setImageUrl] = useState<string>(initialData?.image || '');
+    const [imageUrl, setImageUrl] = useState<string | null>(initialData?.image || null);
     const [uploading, setUploading] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -47,7 +50,9 @@ export function ArticleForm({ initialData, isEdit = false }: ArticleFormProps) {
 
     const handleSubmit = async (formData: FormData) => {
         setSubmitting(true);
-        formData.append('image', imageUrl);
+        if (imageUrl) {
+            formData.append('image', imageUrl);
+        }
 
         try {
             let result;
@@ -98,7 +103,7 @@ export function ArticleForm({ initialData, isEdit = false }: ArticleFormProps) {
                         <label className="block text-sm font-medium text-gray-700 mb-1">簡短摘要 (Excerpt) <span className="text-red-500">*</span></label>
                         <textarea
                             name="excerpt"
-                            defaultValue={initialData?.excerpt}
+                            defaultValue={initialData?.excerpt ?? ''}
                             required
                             rows={3}
                             className="w-full rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 px-4 py-2 border"

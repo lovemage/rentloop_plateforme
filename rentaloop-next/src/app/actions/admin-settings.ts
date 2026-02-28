@@ -6,7 +6,7 @@ import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
 
-export async function updateHomepageStats(stats: any[]) {
+export async function updateHomepageStats(stats: Array<Record<string, unknown>>) {
     const session = await auth();
     if (session?.user?.role !== 'admin') return { success: false, error: "Unauthorized" };
 
@@ -28,7 +28,7 @@ export async function updateHomepageStats(stats: any[]) {
     }
 }
 
-export async function updateHomepageFeatures(features: any[]) {
+export async function updateHomepageFeatures(features: Array<Record<string, unknown>>) {
     const session = await auth();
     if (session?.user?.role !== 'admin') return { success: false, error: "Unauthorized" };
 
@@ -50,7 +50,7 @@ export async function updateHomepageFeatures(features: any[]) {
     }
 }
 
-export async function updateHomepageNotice(notice: any) {
+export async function updateHomepageNotice(notice: Record<string, unknown>) {
     const session = await auth();
     if (session?.user?.role !== 'admin') return { success: false, error: "Unauthorized" };
 

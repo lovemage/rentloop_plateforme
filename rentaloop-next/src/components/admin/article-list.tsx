@@ -5,8 +5,10 @@ import Link from "next/link";
 import { deleteArticle } from "@/app/actions/articles";
 import { toast } from "react-hot-toast";
 import Image from "next/image";
+import { type InferSelectModel } from 'drizzle-orm';
+import { articles } from '@/lib/schema';
 
-export function ArticleList({ initialArticles }: { initialArticles: any[] }) {
+export function ArticleList({ initialArticles }: { initialArticles: Array<InferSelectModel<typeof articles>> }) {
     const [articles, setArticles] = useState(initialArticles);
 
     async function handleDelete(id: string) {

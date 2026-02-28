@@ -29,15 +29,21 @@ export function LocationMap({ locations, apiKey }: LocationMapProps) {
 
     useEffect(() => {
         if (!locations || locations.length === 0) {
-            setError("無面交地點資訊");
-            setIsLoading(false);
+            // Defer setState to avoid cascading renders
+            queueMicrotask(() => {
+                setError("無面交地點資訊");
+                setIsLoading(false);
+            });
             return;
         }
 
         if (!apiKey) {
             console.error("Missing Google Maps API Key");
-            setError("地圖設定錯誤 (Missing API Key)");
-            setIsLoading(false);
+            // Defer setState to avoid cascading renders
+            queueMicrotask(() => {
+                setError("地圖設定錯誤 (Missing API Key)");
+                setIsLoading(false);
+            });
             return;
         }
 
@@ -148,8 +154,8 @@ export function LocationMap({ locations, apiKey }: LocationMapProps) {
             // Script loading started by another component, wait for it
             const existingScript = document.getElementById(scriptId) as HTMLScriptElement;
             const originalOnLoad = existingScript.onload;
-            existingScript.onload = (e) => {
-                if (typeof originalOnLoad === 'function') (originalOnLoad as any)(e);
+            existingScript.onload = (e: Event) => {
+                if (typeof originalOnLoad === 'function') originalOnLoad.call(existingScript, e);
                 loadMap();
             };
             // Fallback interval check if onload missed

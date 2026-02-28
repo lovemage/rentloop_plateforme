@@ -12,13 +12,17 @@ function assertAdmin(session: Session | null) {
     if (session.user.role !== "admin") throw new Error("FORBIDDEN");
 }
 
+import { type InferSelectModel } from 'drizzle-orm';
+
+export type SiteSetting = InferSelectModel<typeof siteSettings>;
+
 export type BannerSetting = {
     key: string;
     imageUrl: string | null;
     title: string | null;
     subtitle: string | null;
     tagText: string | null;
-    styles: any | null; // Using any for JSON content for now
+    styles: Record<string, unknown> | null;
     updatedAt: Date | null;
 };
 
@@ -51,7 +55,7 @@ export async function upsertBannerSetting(
         title?: string | null;
         subtitle?: string | null;
         tagText?: string | null;
-        styles?: any | null;
+        styles?: Record<string, unknown> | null;
     }
 ): Promise<{ success: true } | { success: false; error: string }> {
     const session = await auth();

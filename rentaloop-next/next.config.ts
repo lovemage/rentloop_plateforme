@@ -38,7 +38,10 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  outputFileTracingRoot: path.join(__dirname, ".."),
+  outputFileTracingRoot:
+    process.env.NODE_ENV === "production"
+      ? path.join(__dirname, "..")
+      : __dirname,
 };
 
 export default nextConfig;
