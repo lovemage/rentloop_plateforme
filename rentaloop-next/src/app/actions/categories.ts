@@ -1,8 +1,8 @@
 'use server'
 
 import { db } from "@/lib/db";
-import { categories } from "@/lib/schema";
-import { eq, asc } from "drizzle-orm";
+import { categories, items } from "@/lib/schema";
+import { eq, asc, and, isNotNull, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
 export type Category = typeof categories.$inferSelect;
@@ -12,7 +12,46 @@ export type NewCategory = typeof categories.$inferInsert;
 export async function getCategories() {
     try {
         const allCategories = await db.select().from(categories).orderBy(asc(categories.level));
-        return { success: true, data: allCategories };
+
+        const itemCounts = await db
+            .select({
+                categoryId: items.categoryId,
+                count: sql<number>`count(*)::int`,
+            })
+            .from(items)
+            .where(and(isNotNull(items.categoryId), eq(items.status, 'active')))
+            .groupBy(items.categoryId);
+
+        const directCountByCategoryId = new Map(itemCounts.map((row) => [row.categoryId, row.count]));
+        const childrenByParentId = new Map<string, string[]>();
+
+        for (const category of allCategories) {
+            if (!category.parentId) continue;
+            const children = childrenByParentId.get(category.parentId) ?? [];
+            children.push(category.id);
+            childrenByParentId.set(category.parentId, children);
+        }
+
+        const aggregateCache = new Map<string, number>();
+        const getAggregateCount = (categoryId: string): number => {
+            const cachedCount = aggregateCache.get(categoryId);
+            if (cachedCount !== undefined) return cachedCount;
+
+            const directCount = directCountByCategoryId.get(categoryId) ?? 0;
+            const children = childrenByParentId.get(categoryId) ?? [];
+            const descendantsCount = children.reduce((sum, childId) => sum + getAggregateCount(childId), 0);
+            const totalCount = directCount + descendantsCount;
+
+            aggregateCache.set(categoryId, totalCount);
+            return totalCount;
+        };
+
+        const categoriesWithCount = allCategories.map((category) => ({
+            ...category,
+            itemCount: getAggregateCount(category.id),
+        }));
+
+        return { success: true, data: categoriesWithCount };
     } catch (error) {
         console.error("Failed to fetch categories:", error);
         return { success: false, error: "Failed to fetch categories" };

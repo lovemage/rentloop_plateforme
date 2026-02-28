@@ -18,6 +18,7 @@ interface Category {
   slug: string | null;
   parentId: string | null;
   level: number | null;
+  itemCount?: number;
 }
 
 export function SiteHeader() {
@@ -113,6 +114,7 @@ export function SiteHeader() {
                       {getChildren(root.id).map(child => (
                         <Link key={child.id} href={`/products?category=${child.slug || child.id}`} className="text-sm text-gray-500 hover:text-primary dark:text-gray-400">
                           {child.name}
+                          <span className="ml-1 text-xs text-gray-400 dark:text-gray-500">({child.itemCount ?? 0})</span>
                         </Link>
                       ))}
                     </div>
@@ -208,107 +210,127 @@ export function SiteHeader() {
         </div>
       </header>
 
-      <div className={`fixed inset-0 z-[100] flex flex-col bg-background-light dark:bg-background-dark overflow-y-auto transition-all duration-300 ease-in-out ${mobileOpen ? "opacity-100 visible translate-x-0" : "opacity-0 invisible translate-x-full"}`}>
-        <div className="flex items-center justify-between px-4 py-3 border-b border-[#e7f3eb] dark:border-border-dark sticky top-0 bg-inherit z-10">
-          <Link href="/" className="flex items-center gap-3" onClick={() => setMobileOpen(false)}>
-            <Image
-              src="/rentlooplogo.png"
-              alt="Rentaloop"
-              width={0}
-              height={0}
-              sizes="100vw"
-              className="w-auto h-8"
-              priority
-            />
-          </Link>
-          <button
-            type="button"
-            onClick={() => setMobileOpen(false)}
-            className="p-2 text-text-main dark:text-white hover:text-primary transition-colors"
-            aria-label="關閉選單"
-          >
-            <span className="material-symbols-outlined text-3xl">close</span>
-          </button>
-        </div>
-        <nav className="flex flex-col p-6 gap-2">
-          <Link
-            href="/"
-            onClick={() => setMobileOpen(false)}
-            className="flex items-center justify-between p-4 rounded-xl hover:bg-[#e7f3eb] dark:hover:bg-surface-dark text-text-main dark:text-white transition-all group"
-          >
-            <span className="flex flex-col leading-tight">
-              <span className="text-lg font-bold">Home</span>
-              <span className="text-sm text-text-sub group-hover:text-primary">首頁</span>
-            </span>
-          </Link>
-
-          {/* Mobile Categories Accordion-like with Collapsible Icons */}
-          <div className="flex flex-col rounded-xl border border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-surface-dark/50 overflow-hidden">
-            <div className="p-4 font-bold text-lg flex items-center justify-between">
-              <span className="flex items-center gap-2">
-                <span className="material-symbols-outlined text-[20px]">shopping_bag</span>
-                Products
-              </span>
-              <Link href="/products" onClick={() => setMobileOpen(false)} className="text-primary text-sm">All</Link>
-            </div>
-            <div className="px-4 pb-4 flex flex-col gap-3">
-              {roots.map(root => (
-                <div key={root.id}>
-                  <button
-                    onClick={() => toggleCategory(root.id)}
-                    className="w-full flex items-center justify-between font-bold text-gray-800 dark:text-gray-200 hover:text-primary transition-colors p-2 rounded hover:bg-gray-100 dark:hover:bg-surface-dark/70"
-                  >
-                    <span>{root.name}</span>
-                    <span className={`material-symbols-outlined text-[18px] transition-transform duration-200 ${expandedCategories.has(root.id) ? 'rotate-180' : ''}`}>
-                      expand_more
-                    </span>
-                  </button>
-                  {expandedCategories.has(root.id) && (
-                    <div className="pl-4 border-l-2 border-gray-200 dark:border-gray-700 flex flex-col gap-2 mt-2">
-                      {getChildren(root.id).map(child => (
-                        <Link key={child.id} href={`/products?category=${child.slug || child.id}`} onClick={() => setMobileOpen(false)} className="text-sm text-gray-500 hover:text-primary transition-colors">
-                          {child.name}
-                        </Link>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
+      <div className={`fixed inset-0 z-[100] flex bg-black/60 backdrop-blur-sm transition-all duration-300 ease-in-out ${mobileOpen ? "opacity-100 visible" : "opacity-0 invisible"}`} onClick={() => setMobileOpen(false)}>
+        <div className={`w-[85%] max-w-sm h-full bg-surface-light dark:bg-surface-dark shadow-2xl flex flex-col overflow-y-auto transition-transform duration-300 ease-out ${mobileOpen ? "translate-x-0" : "-translate-x-full"}`} onClick={e => e.stopPropagation()}>
+          {/* Header */}
+          <div className="flex items-center justify-between px-6 py-5 border-b border-[#e7f3eb] dark:border-border-dark sticky top-0 bg-inherit z-10">
+            <Link href="/" className="flex items-center gap-3" onClick={() => setMobileOpen(false)}>
+              <Image
+                src="/rentlooplogo.png"
+                alt="Rentaloop"
+                width={0}
+                height={0}
+                sizes="100vw"
+                className="w-auto h-8"
+                priority
+              />
+            </Link>
+            <button
+              type="button"
+              onClick={() => setMobileOpen(false)}
+              className="p-2 -mr-2 text-text-main dark:text-white hover:text-primary transition-colors rounded-full hover:bg-gray-100 dark:hover:bg-gray-800"
+              aria-label="關閉選單"
+            >
+              <span className="material-symbols-outlined text-2xl">close</span>
+            </button>
           </div>
 
-          <div className="h-px bg-[#e7f3eb] dark:bg-border-dark my-2" />
-
-          {session?.user ? (
-            <Link
-              href="/member"
-              onClick={() => setMobileOpen(false)}
-              className="w-full flex items-center gap-3 p-4 rounded-xl bg-[#e7f3eb] dark:bg-surface-dark text-text-main dark:text-white font-bold hover:bg-[#d5eadd] dark:hover:bg-surface-dark/80 transition-colors border border-[#cfe7d7]/80 dark:border-surface-dark"
-            >
-              {session.user.image ? (
-                <Image src={session.user.image} alt={session.user.name || "User"} width={32} height={32} className="rounded-full border border-gray-200" />
-              ) : (
-                <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-lg">
-                  {session.user.name?.[0] || "U"}
+          {/* User Profile Section (Top) */}
+          <div className="px-6 py-6 border-b border-[#e7f3eb] dark:border-border-dark bg-gray-50/50 dark:bg-surface-dark/50">
+            {session?.user ? (
+              <Link href="/member" onClick={() => setMobileOpen(false)} className="flex items-center gap-4 group">
+                {session.user.image ? (
+                  <Image src={session.user.image} alt={session.user.name || "User"} width={48} height={48} className="rounded-full border-2 border-white dark:border-gray-700 shadow-sm" />
+                ) : (
+                  <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-xl border-2 border-white dark:border-gray-700 shadow-sm">
+                    {session.user.name?.[0] || "U"}
+                  </div>
+                )}
+                <div className="flex flex-col">
+                  <span className="text-sm font-bold text-text-main dark:text-white group-hover:text-primary transition-colors">{session.user.name || "Rentaloop 會員"}</span>
+                  <span className="text-xs text-text-sub flex items-center gap-1 mt-0.5">查看會員面板 <span className="material-symbols-outlined text-[14px]">chevron_right</span></span>
                 </div>
-              )}
-              <div className="flex flex-col items-start leading-tight">
-                <span className="text-xs uppercase tracking-[0.2em] text-primary font-semibold">會員面板</span>
-                <span className="text-sm font-bold">{session.user.name || "Rentaloop 會員"}</span>
-                <span className="text-xs text-text-sub">歡迎回到 Rentaloop.net</span>
+              </Link>
+            ) : (
+              <Link href="/auth" onClick={() => setMobileOpen(false)} className="flex items-center gap-3 text-text-main dark:text-white hover:text-primary transition-colors font-bold group">
+                <div className="w-12 h-12 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-500 dark:text-gray-400 group-hover:bg-primary/10 group-hover:text-primary transition-colors">
+                  <span className="material-symbols-outlined">person</span>
+                </div>
+                <div className="flex flex-col">
+                  <span>登入 / 註冊</span>
+                  <span className="text-xs text-text-sub font-normal mt-0.5">管理您的租賃與裝備</span>
+                </div>
+              </Link>
+            )}
+          </div>
+
+          <nav className="flex flex-col flex-1 px-4 py-4 gap-1">
+            <Link href="/" onClick={() => setMobileOpen(false)} className={`flex items-center gap-4 px-4 py-3.5 rounded-xl transition-colors ${isActive("/") ? "bg-primary/10 text-primary font-bold" : "text-text-main dark:text-white hover:bg-gray-100 dark:hover:bg-gray-800 font-medium"}`}>
+              <span className="material-symbols-outlined text-[22px]">home</span>
+              <span>首頁</span>
+            </Link>
+            
+            {/* Products Accordion */}
+            <div className="flex flex-col">
+              <button onClick={() => toggleCategory('mobile-products')} className={`flex items-center justify-between px-4 py-3.5 rounded-xl transition-colors w-full ${isActive("/products") || expandedCategories.has('mobile-products') ? "text-primary font-bold" : "text-text-main dark:text-white hover:bg-gray-100 dark:hover:bg-gray-800 font-medium"}`}>
+                <div className="flex items-center gap-4">
+                  <span className="material-symbols-outlined text-[22px]">shopping_bag</span>
+                  <span>商品總覽</span>
+                </div>
+                <span className={`material-symbols-outlined text-[20px] transition-transform duration-300 ${expandedCategories.has('mobile-products') ? 'rotate-180' : ''}`}>
+                  expand_more
+                </span>
+              </button>
+              
+              <div className={`overflow-hidden transition-all duration-300 ease-in-out ${expandedCategories.has('mobile-products') ? 'max-h-[1000px] opacity-100' : 'max-h-0 opacity-0'}`}>
+                <div className="pl-12 pr-4 py-2 flex flex-col gap-1">
+                  <Link href="/products" onClick={() => setMobileOpen(false)} className={`block py-2.5 text-sm transition-colors ${isActive("/products") && !pathname.includes('category') ? "text-primary font-bold" : "text-text-sub dark:text-gray-400 hover:text-primary"}`}>
+                    全部商品
+                  </Link>
+                  {roots.map(root => (
+                    <div key={root.id} className="flex flex-col">
+                      <Link href={`/products?category=${root.slug || root.id}`} onClick={() => setMobileOpen(false)} className="block py-2.5 text-sm text-text-sub dark:text-gray-300 font-bold hover:text-primary transition-colors">
+                        {root.name}
+                      </Link>
+                      <div className="pl-3 border-l-2 border-gray-100 dark:border-gray-800 ml-1 flex flex-col gap-1 my-1">
+                        {getChildren(root.id).map(child => (
+                          <Link key={child.id} href={`/products?category=${child.slug || child.id}`} onClick={() => setMobileOpen(false)} className="block py-2 text-sm text-gray-500 dark:text-gray-400 hover:text-primary transition-colors">
+                            {child.name}
+                            <span className="ml-1 text-xs text-gray-400 dark:text-gray-500">({child.itemCount ?? 0})</span>
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
+            </div>
+
+            {/* Other Main Links */}
+            <Link href="/contact" onClick={() => setMobileOpen(false)} className={`flex items-center gap-4 px-4 py-3.5 rounded-xl transition-colors ${isActive("/contact") ? "bg-primary/10 text-primary font-bold" : "text-text-main dark:text-white hover:bg-gray-100 dark:hover:bg-gray-800 font-medium"}`}>
+              <span className="material-symbols-outlined text-[22px]">support_agent</span>
+              <span>聯絡我們</span>
             </Link>
-          ) : (
-            <Link
-              href="/auth"
-              onClick={() => setMobileOpen(false)}
-              className="w-full flex items-center justify-center gap-2 p-4 rounded-xl bg-[#e7f3eb] dark:bg-surface-dark text-text-main dark:text-white font-bold hover:bg-[#d5eadd] dark:hover:bg-surface-dark/80 transition-colors"
-            >
-              <span className="material-symbols-outlined">login</span>
-              登入
+
+            {session?.user?.role === 'admin' && (
+              <>
+                <div className="h-px bg-gray-100 dark:bg-gray-800 my-2 mx-4" />
+                <Link href="/admin" onClick={() => setMobileOpen(false)} className={`flex items-center gap-4 px-4 py-3.5 rounded-xl transition-colors ${isActive("/admin") ? "bg-primary/10 text-primary font-bold" : "text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-800 font-medium"}`}>
+                  <span className="material-symbols-outlined text-[22px]">admin_panel_settings</span>
+                  <span>管理後台</span>
+                </Link>
+              </>
+            )}
+
+          </nav>
+          
+          <div className="px-6 py-6 mt-auto border-t border-gray-100 dark:border-gray-800">
+            <Link href="/products" onClick={() => setMobileOpen(false)} className="flex items-center justify-center w-full gap-2 bg-primary hover:bg-primary-dark text-text-main font-bold py-3.5 rounded-xl transition-colors shadow-sm">
+              <span className="material-symbols-outlined text-[20px]">add_circle</span>
+              開始租賃
             </Link>
-          )}
-        </nav>
+          </div>
+        </div>
       </div>
 
       {/* Member Modal */}
